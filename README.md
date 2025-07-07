@@ -50,6 +50,8 @@
   - 예제: [ENFJ.KR/yt/1ZX1vEDTfY4](https://enfj.kr/yt/1ZX1vEDTfY4)
 - 유튜브 영상 + 시작 시간 옵션: `ENFJ.KR/{유튜브 영상 아이디}/{시작 시간}`
   - 예제: [ENFJ.KR/yt/1ZX1vEDTfY4/1m6s](https://enfj.kr/yt/1ZX1vEDTfY4/1m6s)
+- 유튜브 영상 썸네일: `ENFJ.KR/yt/img/{유튜브 영상 아이디}`
+  - 예제: [ENFJ.KR/yt/img/1ZX1vEDTfY4](https://enfj.kr/yt/img/1ZX1vEDTfY4)
 
 ## 주의사항
 
