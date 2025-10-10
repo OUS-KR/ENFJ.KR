@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INTP 두뇌 활용 능력 테스트</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+    <header class="main-nav">
+        <a href="/u/tests/" class="logo">INTP.KR Tests</a>
+        <div class="nav-right-section">
+            <nav class="nav-links" id="nav-links">
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">오늘의 콘텐츠</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/today-fortune/">오늘의 운세</a>
+                        <a href="/u/tests/today-game/">오늘의 게임</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">정보</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/info-characteristics/">특징</a>
+                        <a href="/u/tests/info-careers/">커리어</a>
+                        <a href="/u/tests/info-cognitive-functions/">인지기능</a>
+                        <a href="/u/tests/info-subtypes/">하위유형</a>
+                        <a href="/u/tests/info-relationships/">인간관계</a>
+                        <a href="/u/tests/info-misconceptions/">흔한 오해</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">테스트</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/test-logic-quiz/">논리력 퀴즈</a>
+                        <a href="/u/tests/test-relationship-style/">연애 스타일 테스트</a>
+                        <a href="/u/tests/test-stress-triggers/">스트레스 테스트</a>
+                        <a href="/u/tests/test-brain-utilization/">두뇌 활용 테스트</a>
+                        <a href="/u/tests/test-bingo/">빙고 챌린지</a>
+                        <a href="/u/tests/test-empathy-quiz/">INTP 공감 퀴즈</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">게임</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/game-logic-puzzle/">논리 퍼즐</a>
+                        <a href="/u/tests/game-strategy-simulation/">전략 시뮬레이션</a>
+                        <a href="/u/tests/game-code-decryption/">기억력 게임</a>
+                        <a href="/u/tests/game-abstract-reasoning/">추상적 사고 게임</a>
+                        <a href="/u/tests/game-travel-planner/">여행 계획 챌린지</a>
+                        <a href="/u/tests/game-maze-challenge/">미로 챌린지</a>
+                        <a href="/u/tests/game-code-breaker/">암호 해독기</a>
+                        <a href="/u/tests/game-pathfinder/">경로 탐색기</a>
+                    </div>
+                </div>
+            </nav>
+            <button id="theme-switcher" class="theme-switcher">🌙</button>
+            <button id="hamburger" class="hamburger">☰</button>
+        </div>
+    </header>
+    <div id="quiz-container" class="container">
+        <div id="start-area">
+            <h1>INTP 두뇌 활용 능력 테스트</h1>
+            <p>당신은 INTP의 두뇌를 얼마나 잘 활용하고 있을까요?<br>재미있는 퀴즈로 당신의 지적 능력을 탐색해보세요!</p>
+            <button id="start-btn" class="btn btn-primary">테스트 시작하기</button>
+        </div>
+
+        <div id="quiz-area" class="hidden">
+            <div class="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div id="question"></div>
+            <div id="answers"></div>
+        </div>
+
+        <div id="result-area" class="hidden">
+            <div class="result-card">
+                <h2 id="result-title" class="result-title"></h2>
+                <p id="result-text"></p>
+                <button id="retry-btn" class="btn btn-primary">다시하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/js/main.js" defer></script>
+    <script>
+        const quizContainer = document.getElementById('quiz-container');
+        const startArea = document.getElementById('start-area');
+        const quizArea = document.getElementById('quiz-area');
+        const resultArea = document.getElementById('result-area');
+        const startBtn = document.getElementById('start-btn');
+        const retryBtn = document.getElementById('retry-btn');
+        const questionEl = document.getElementById('question');
+        const answersEl = document.getElementById('answers');
+        const resultTitleEl = document.getElementById('result-title');
+        const resultTextEl = document.getElementById('result-text');
+        const progressBar = document.getElementById('progress-bar');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const quizData = [
+            {
+                question: '당신은 복잡한 퍼즐을 마주했을 때?',
+                answers: [
+                    { text: '모든 조각을 분석하고 패턴을 찾아내 해결한다.', score: 10 },
+                    { text: '일단 직관적으로 맞춰보다가 안 되면 설명서를 본다.', score: 5 },
+                    { text: '너무 복잡해 보여서 금방 포기한다.', score: 1 }
+                ]
+            },
+            {
+                question: '새로운 이론이나 개념을 접했을 때 당신의 반응은?',
+                answers: [
+                    { text: '그 이론의 근본 원리와 다른 이론과의 연결고리를 탐구한다.', score: 10 },
+                    { text: '일단 흥미를 느끼지만, 깊이 파고들기보다는 개요만 파악한다.', score: 5 },
+                    { text: '나와는 상관없는 일이라고 생각한다.', score: 1 }
+                ]
+            },
+            {
+                question: '당신은 \'생각\'을 어떻게 정의하는가?',
+                answers: [
+                    { text: '정보를 분석하고 재구성하여 새로운 결론을 도출하는 과정.', score: 10 },
+                    { text: '머릿속에서 아이디어를 떠올리고 정리하는 활동.', score: 5 },
+                    { text: '어떤 문제에 대해 고민하는 행위.', score: 1 }
+                ]
+            },
+            {
+                question: '일상생활에서 비효율적인 시스템을 발견했을 때 당신은?',
+                answers: [
+                    { text: '더 효율적인 대안을 머릿속으로 시뮬레이션하고 개선 방안을 구상한다.', score: 10 },
+                    { text: '불편함을 느끼지만, 딱히 바꾸려 하지는 않는다.', score: 5 },
+                    { text: '그냥 그런가 보다 하고 넘어간다.', score: 1 }
+                ]
+            },
+            {
+                question: '당신은 꿈을 자주 꾸는 편인가? 꾼다면 어떤 꿈을 꾸는가?',
+                answers: [
+                    { text: '복잡한 문제 해결이나 추상적인 개념에 대한 꿈을 꾼다.', score: 10 },
+                    { text: '현실과 비슷한 일상적인 꿈을 꾼다.', score: 5 },
+                    { text: '꿈을 잘 꾸지 않거나, 꾸더라도 기억하지 못한다.', score: 1 }
+                ]
+            },
+            {
+                question: '당신에게 \'창의성\'이란 무엇인가?',
+                answers: [
+                    { text: '기존의 지식을 재조합하여 새로운 가치를 창출하는 능력.', score: 10 },
+                    { text: '남들이 생각하지 못한 독특한 아이디어를 떠올리는 능력.', score: 5 },
+                    { text: '예술적인 감각이나 재능.', score: 1 }
+                ]
+            },
+            {
+                question: '당신은 어떤 종류의 책을 가장 즐겨 읽는가?',
+                answers: [
+                    { text: '과학, 철학, 역사 등 지식을 탐구하는 비문학 서적.', score: 10 },
+                    { text: '흥미로운 스토리와 상상력을 자극하는 소설.', score: 5 },
+                    { text: '자기계발이나 실용적인 정보를 담은 책.', score: 1 }
+                ]
+            },
+            {
+                question: '당신은 새로운 언어를 배운다면 어떤 방식으로 접근할 것인가?',
+                answers: [
+                    { text: '언어의 문법적 구조와 규칙을 분석하고 체계적으로 학습한다.', score: 10 },
+                    { text: '원어민과 대화하며 자연스럽게 익히는 것을 선호한다.', score: 5 },
+                    { text: '단어와 문장을 암기하며 반복 학습한다.', score: 1 }
+                ]
+            },
+            {
+                question: '당신은 \'미래\'를 어떻게 상상하는가?',
+                answers: [
+                    { text: '현재의 기술과 사회 변화를 바탕으로 가능한 모든 시나리오를 예측한다.', score: 10 },
+                    { text: '막연하지만, 지금보다 더 발전된 모습일 것이라고 생각한다.', score: 5 },
+                    { text: '크게 상상하지 않으며, 현재에 집중한다.', score: 1 }
+                ]
+            },
+            {
+                question: '당신에게 \'진실\'이란 무엇인가?',
+                answers: [
+                    { text: '객관적인 사실과 논리적 증명으로 뒷받침되는 것.', score: 10 },
+                    { text: '많은 사람들이 동의하고 믿는 것.', score: 5 },
+                    { text: '개인의 경험과 감정으로 느껴지는 것.', score: 1 }
+                ]
+            }
+        ];
+
+        startBtn.addEventListener('click', startQuiz);
+        retryBtn.addEventListener('click', startQuiz);
+
+        function setInitialView() {
+            startArea.style.display = 'block';
+            quizArea.style.display = 'none';
+            resultArea.style.display = 'none';
+        }
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            resultTitleEl.innerText = '';
+            resultTextEl.innerText = '';
+            
+            startArea.style.display = 'none';
+            quizArea.style.display = 'block';
+            resultArea.style.display = 'none';
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            updateProgressBar();
+            const currentQuestion = quizData[currentQuestionIndex];
+            questionEl.innerText = currentQuestion.question;
+            answersEl.innerHTML = '';
+            currentQuestion.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.innerText = answer.text;
+                button.addEventListener('click', (e) => selectAnswer(answer.score, e.target));
+                answersEl.appendChild(button);
+            });
+        }
+
+        function selectAnswer(answerScore, selectedButton) {
+            score += answerScore;
+            selectedButton.classList.add('selected');
+            
+            const answerButtons = answersEl.querySelectorAll('button');
+            answerButtons.forEach(button => button.disabled = true);
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                updateProgressBar();
+
+                if (currentQuestionIndex < quizData.length) {
+                    quizContainer.style.opacity = 0;
+                    setTimeout(() => {
+                        showQuestion();
+                        quizContainer.style.opacity = 1;
+                    }, 400);
+                } else {
+                    showResult();
+                }
+            }, 500);
+        }
+
+        function showResult() {
+            quizArea.style.display = 'none';
+            resultArea.style.display = 'block';
+            let resultTitle = '';
+            let resultMessage = '';
+            if (score >= 80) {
+                resultTitle = '천재적인 사색가';
+                resultMessage = '당신은 INTP의 두뇌를 120% 활용하고 있습니다! 복잡한 문제도 즐겁게 해결하며, 세상의 본질을 꿰뚫어 보는 통찰력을 가졌군요. 당신의 지적 호기심은 끝이 없습니다.';
+            } else if (score >= 50) {
+                resultTitle = '논리적인 탐구자';
+                resultMessage = '당신은 INTP의 뛰어난 논리력과 분석 능력을 잘 활용하고 있습니다. 새로운 지식과 아이디어를 탐구하는 것을 즐기며, 합리적인 사고로 문제를 해결하려 노력합니다.';
+            } else {
+                resultTitle = '유연한 사고의 소유자';
+                resultMessage = '당신은 INTP의 특성 외에 다양한 방식으로 두뇌를 활용하는군요. 논리적인 분석만큼이나 직관이나 감각적인 경험도 중요하게 생각하며, 유연한 사고로 세상을 바라봅니다.';
+            }
+            resultTitleEl.innerText = resultTitle;
+            resultTextEl.innerText = resultMessage;
+        }
+
+        function updateProgressBar() {
+            const progress = (currentQuestionIndex / quizData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        setInitialView();
+    </script>
+</body>
+</html>
+

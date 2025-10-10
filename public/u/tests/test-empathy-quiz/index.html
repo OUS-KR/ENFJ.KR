@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INTP 공감 퀴즈</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+    <header class="main-nav">
+        <a href="/u/tests/" class="logo">INTP.KR Tests</a>
+        <div class="nav-right-section">
+            <nav class="nav-links" id="nav-links">
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">오늘의 콘텐츠</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/today-fortune/">오늘의 운세</a>
+                        <a href="/u/tests/today-game/">오늘의 게임</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">정보</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/info-characteristics/">특징</a>
+                        <a href="/u/tests/info-careers/">커리어</a>
+                        <a href="/u/tests/info-cognitive-functions/">인지기능</a>
+                        <a href="/u/tests/info-subtypes/">하위유형</a>
+                        <a href="/u/tests/info-relationships/">인간관계</a>
+                        <a href="/u/tests/info-misconceptions/">흔한 오해</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">테스트</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/test-logic-quiz/">논리력 퀴즈</a>
+                        <a href="/u/tests/test-relationship-style/">연애 스타일 테스트</a>
+                        <a href="/u/tests/test-stress-triggers/">스트레스 테스트</a>
+                        <a href="/u/tests/test-brain-utilization/">두뇌 활용 테스트</a>
+                        <a href="/u/tests/test-bingo/">빙고 챌린지</a>
+                        <a href="/u/tests/test-empathy-quiz/">INTP 공감 퀴즈</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">게임</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/game-logic-puzzle/">논리 퍼즐</a>
+                        <a href="/u/tests/game-strategy-simulation/">전략 시뮬레이션</a>
+                        <a href="/u/tests/game-code-decryption/">기억력 게임</a>
+                        <a href="/u/tests/game-abstract-reasoning/">추상적 사고 게임</a>
+                        <a href="/u/tests/game-travel-planner/">여행 계획 챌린지</a>
+                        <a href="/u/tests/game-maze-challenge/">미로 챌린지</a>
+                        <a href="/u/tests/game-code-breaker/">암호 해독기</a>
+                        <a href="/u/tests/game-pathfinder/">경로 탐색기</a>
+                    </div>
+                </div>
+            </nav>
+            <button id="theme-switcher" class="theme-switcher">🌙</button>
+            <button id="hamburger" class="hamburger">☰</button>
+        </div>
+    </header>
+    <div id="quiz-container" class="container">
+        <div id="start-area">
+            <h1>INTP 공감 퀴즈</h1>
+            <p>다음 문장들이 얼마나 당신의 이야기처럼 들리나요?<br>INTP로서 공감하는 문항들을 선택하고 당신의 공감도를 확인해보세요!</p>
+            <button id="start-btn" class="btn btn-primary">퀴즈 시작하기</button>
+        </div>
+
+        <div id="quiz-area" class="hidden">
+            <div class="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div id="question"></div>
+            <div id="answers"></div>
+        </div>
+
+        <div id="result-area" class="hidden">
+            <div class="result-card">
+                <h2 id="result-title" class="result-title"></h2>
+                <p id="result-text"></p>
+                <button id="retry-btn" class="btn btn-primary">다시하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/js/main.js" defer></script>
+    <script>
+        const quizContainer = document.getElementById('quiz-container');
+        const startArea = document.getElementById('start-area');
+        const quizArea = document.getElementById('quiz-area');
+        const resultArea = document.getElementById('result-area');
+        const startBtn = document.getElementById('start-btn');
+        const retryBtn = document.getElementById('retry-btn');
+        const questionEl = document.getElementById('question');
+        const answersEl = document.getElementById('answers');
+        const resultTitleEl = document.getElementById('result-title');
+        const resultTextEl = document.getElementById('result-text');
+        const progressBar = document.getElementById('progress-bar');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const quizData = [
+            {
+                question: '모임이 취소되면 솔직히 기쁘다.',
+                answers: [
+                    { text: '공감', score: 10 },
+                    { text: '비공감', score: 0 }
+                ]
+            },
+            {
+                question: '처음 보는 사람에게 말을 거는 것이 즐겁다.',
+                answers: [
+                    { text: '공감', score: 0 },
+                    { text: '비공감', score: 10 }
+                ]
+            },
+            {
+                question: '내 생각을 논리적으로 설명했는데 상대방이 감정적으로 반응하면 답답하다.',
+                answers: [
+                    { text: '공감', score: 10 },
+                    { text: '비공감', score: 0 }
+                ]
+            },
+            {
+                question: '사람들의 이름을 잘 기억하고, 기념일을 챙기는 것을 좋아한다.',
+                answers: [
+                    { text: '공감', score: 0 },
+                    { text: '비공감', score: 10 }
+                ]
+            },
+            {
+                question: '하나의 주제에 꽂히면 끝을 볼 때까지 파고든다.',
+                answers: [
+                    { text: '공감', score: 10 },
+                    { text: '비공감', score: 0 }
+                ]
+            },
+            {
+                question: '비효율적인 시스템을 보면 어떻게든 개선하고 싶다는 생각이 든다.',
+                answers: [
+                    { text: '공감', score: 10 },
+                    { text: '비공감', score: 0 }
+                ]
+            },
+            {
+                question: '패션과 스타일에 관심이 많고, 나를 표현하는 중요한 수단이라고 생각한다.',
+                answers: [
+                    { text: '공감', score: 0 },
+                    { text: '비공감', score: 10 }
+                ]
+            },
+            {
+                question: '머릿속으로 하는 생각이 너무 많아 가끔 잠들기 힘들다.',
+                answers: [
+                    { text: '공감', score: 10 },
+                    { text: '비공감', score: 0 }
+                ]
+            },
+            {
+                question: '갈등을 피하기보다는 정면으로 부딪혀 해결하는 편이다.',
+                answers: [
+                    { text: '공감', score: 0 },
+                    { text: '비공감', score: 10 }
+                ]
+            },
+            {
+                question: '다른 사람을 돕고 그들이 기뻐하는 모습을 보면 큰 보람을 느낀다.',
+                answers: [
+                    { text: '공감', score: 0 },
+                    { text: '비공감', score: 10 }
+                ]
+            }
+        ];
+
+        startBtn.addEventListener('click', startQuiz);
+        retryBtn.addEventListener('click', startQuiz);
+
+        function setInitialView() {
+            startArea.style.display = 'block';
+            quizArea.style.display = 'none';
+            resultArea.style.display = 'none';
+        }
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            resultTitleEl.innerText = '';
+            resultTextEl.innerText = '';
+            startArea.style.display = 'none';
+            quizArea.style.display = 'block';
+            resultArea.style.display = 'none';
+            showQuestion();
+        }
+
+        function showQuestion() {
+            updateProgressBar();
+            const currentQuestion = quizData[currentQuestionIndex];
+            questionEl.innerText = currentQuestion.question;
+            answersEl.innerHTML = '';
+            currentQuestion.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.innerText = answer.text;
+                button.addEventListener('click', (e) => selectAnswer(answer.score, e.target));
+                answersEl.appendChild(button);
+            });
+        }
+
+        function selectAnswer(answerScore, selectedButton) {
+            score += answerScore;
+            selectedButton.classList.add('selected');
+            const answerButtons = answersEl.querySelectorAll('button');
+            answerButtons.forEach(button => button.disabled = true);
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                updateProgressBar();
+                if (currentQuestionIndex < quizData.length) {
+                    quizContainer.style.opacity = 0;
+                    setTimeout(() => {
+                        showQuestion();
+                        quizContainer.style.opacity = 1;
+                    }, 400);
+                } else {
+                    showResult();
+                }
+            }, 500);
+        }
+
+        function showResult() {
+            quizArea.style.display = 'none';
+            resultArea.style.display = 'block';
+            let resultTitle = '';
+            let resultMessage = '';
+            if (score >= 80) {
+                resultTitle = 'INTP 공감도 100%';
+                resultMessage = '당신은 INTP의 특징에 깊이 공감하고 있습니다. 복잡한 세상을 논리적으로 분석하고 지적 탐구를 즐기는 당신은 의심할 여지 없는 INTP입니다.';
+            } else if (score >= 50) {
+                resultTitle = 'INTP 공감도 70%';
+                resultMessage = '당신은 INTP의 여러 특징에 공감하지만, 다른 성향도 함께 가지고 있는 것 같군요. 분석적인 동시에 다른 가치도 존중하는 유연한 사상가입니다.';
+            } else {
+                resultTitle = 'INTP 공감도 30%';
+                resultMessage = '당신은 INTP보다는 다른 성향에 더 가까워 보입니다. 합리성보다는 다른 가치를 더 중요하게 생각할 수 있습니다. 자신의 독특한 강점을 탐색해보세요!';
+            }
+            resultTitleEl.innerText = resultTitle;
+            resultTextEl.innerText = resultMessage;
+        }
+
+        function updateProgressBar() {
+            const progress = (currentQuestionIndex / quizData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        setInitialView();
+    </script>
+</body>
+</html>

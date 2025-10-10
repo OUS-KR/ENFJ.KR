@@ -1,0 +1,125 @@
+body {
+    /* touch-action: none; Disable double-tap to zoom on mobile */
+}
+
+#game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    position: relative;
+}
+
+/* Add styles for new UI elements */
+#game-setup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#game-setup select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid var(--card-border);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-size: 1em;
+}
+
+#game-controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+#stats-container {
+    margin-top: 20px;
+    padding: 15px;
+    border: 2px solid var(--h-color);
+    border-radius: 8px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    width: 300px;
+}
+
+#stats-container h3 {
+    color: var(--h-color);
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+#stats-container p {
+    margin: 5px 0;
+    font-size: 1.1em;
+}
+
+#stats-container span {
+    font-weight: bold;
+    color: var(--accent-color);
+}
+
+/* Adjust existing styles */
+#ui-container {
+    display: flex;
+    justify-content: space-between;
+    width: 400px; /* Match canvas width */
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--text-color); /* Ensure text color is consistent */
+}
+
+#game-canvas {
+    background-color: var(--bg-color);
+    border: 2px solid var(--h-color);
+    border-radius: 8px;
+    /* touch-action: none; Ensure touch events are handled by JS */
+}
+
+/* Remove #start-btn margin-top as it's now part of game-controls */
+#start-btn {
+    margin-top: 0;
+}
+
+#feedback {
+    position: absolute;
+    top: 250px; /* Centered vertically on the canvas itself */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Adjust for element's own size */
+    font-size: 3em; /* Larger for visibility */
+    font-weight: bold;
+    color: var(--h-color); /* Theme color */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Add some shadow for contrast */
+    opacity: 0; /* Start hidden */
+    transition: opacity 0.1s ease-in-out; /* Smooth fade */
+    pointer-events: none; /* Allow clicks to pass through */
+    z-index: 999; /* Ensure it's above all other elements */
+}
+
+/* Adjust existing styles */
+#ui-container {
+    display: flex;
+    flex-direction: column; /* Arrange rows vertically */
+    width: 400px; /* Match canvas width */
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: var(--text-color); /* Ensure text color is consistent */
+}
+
+.ui-row {
+    display: flex;
+    justify-content: space-between; /* Score left, Combo right */
+    width: 100%;
+    margin-bottom: 5px; /* Space between rows */
+}
+
+.judgment-counts-row {
+    display: flex;
+    justify-content: space-around; /* Distribute counts evenly */
+    width: 100%;
+    font-size: 0.9em; /* Slightly smaller for counts */
+}

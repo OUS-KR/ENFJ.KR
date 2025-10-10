@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>기억력 게임 (Simon Says)</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .simon-board {
+            display: grid;
+            grid-template-columns: 120px 120px;
+            grid-template-rows: 120px 120px;
+            gap: 20px;
+        }
+        .simon-btn {
+            border-radius: 15px;
+            cursor: pointer;
+            border: 2px solid var(--card-border);
+            transition: filter 0.1s;
+        }
+        .simon-btn:hover {
+            filter: brightness(1.1);
+        }
+        .simon-btn.active {
+            filter: brightness(1.5);
+            box-shadow: 0 0 15px #fff;
+        }
+        #green { background-color: #2ecc71; }
+        #red { background-color: #e74c3c; }
+        #yellow { background-color: #f1c40f; }
+        #blue { background-color: #3498db; }
+        
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #start-btn {
+            padding: 12px 30px;
+            font-size: 1.2em;
+        }
+        #level-display {
+            margin-top: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            min-height: 22px;
+        }
+        #message {
+            margin-top: 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+            min-height: 25px;
+        }
+    </style>
+</head>
+<body>
+    <header class="main-nav">
+        <a href="/u/tests/" class="logo">INTP.KR Tests</a>
+        <div class="nav-right-section">
+            <nav class="nav-links" id="nav-links">
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">오늘의 콘텐츠</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/today-fortune/">오늘의 운세</a>
+                        <a href="/u/tests/today-game/">오늘의 게임</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">정보</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/info-characteristics/">특징</a>
+                        <a href="/u/tests/info-careers/">커리어</a>
+                        <a href="/u/tests/info-cognitive-functions/">인지기능</a>
+                        <a href="/u/tests/info-subtypes/">하위유형</a>
+                        <a href="/u/tests/info-relationships/">인간관계</a>
+                        <a href="/u/tests/info-misconceptions/">흔한 오해</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">테스트</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/test-logic-quiz/">논리력 퀴즈</a>
+                        <a href="/u/tests/test-relationship-style/">연애 스타일 테스트</a>
+                        <a href="/u/tests/test-stress-triggers/">스트레스 테스트</a>
+                        <a href="/u/tests/test-brain-utilization/">두뇌 활용 테스트</a>
+                        <a href="/u/tests/test-bingo/">빙고 챌린지</a>
+                        <a href="/u/tests/test-empathy-quiz/">INTP 공감 퀴즈</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">게임</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/game-logic-puzzle/">논리 퍼즐</a>
+                        <a href="/u/tests/game-strategy-simulation/">전략 시뮬레이션</a>
+                        <a href="/u/tests/game-code-decryption/">기억력 게임</a>
+                        <a href="/u/tests/game-abstract-reasoning/">추상적 사고 게임</a>
+                        <a href="/u/tests/game-travel-planner/">여행 계획 챌린지</a>
+                        <a href="/u/tests/game-maze-challenge/">미로 챌린지</a>
+                        <a href="/u/tests/game-code-breaker/">암호 해독기</a>
+                        <a href="/u/tests/game-pathfinder/">경로 탐색기</a>
+                    </div>
+                </div>
+            </nav>
+            <button id="theme-switcher" class="theme-switcher">🌙</button>
+            <button id="hamburger" class="hamburger">☰</button>
+        </div>
+    </header>
+    <div class="container">
+        <h1>기억력 게임 (Simon Says)</h1>
+        <p style="text-align:center;">컴퓨터가 보여주는 색상 순서를 기억하고 그대로 따라 해보세요.</p>
+        
+        <div class="game-container">
+            <div class="simon-board">
+                <div id="green" class="simon-btn"></div>
+                <div id="red" class="simon-btn"></div>
+                <div id="yellow" class="simon-btn"></div>
+                <div id="blue" class="simon-btn"></div>
+            </div>
+            <div class="controls">
+                <button id="start-btn" class="btn btn-primary">시작</button>
+            </div>
+            <div id="level-display"></div>
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <script src="/assets/js/main.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const colors = ['green', 'red', 'yellow', 'blue'];
+            const buttons = {
+                green: document.getElementById('green'),
+                red: document.getElementById('red'),
+                yellow: document.getElementById('yellow'),
+                blue: document.getElementById('blue'),
+            };
+            const startBtn = document.getElementById('start-btn');
+            const messageElement = document.getElementById('message');
+            const levelDisplay = document.getElementById('level-display');
+
+            let gameSequence = [];
+            let playerSequence = [];
+            let level = 0;
+            let isPlayerTurn = false;
+
+            function playSequence() {
+                isPlayerTurn = false;
+                messageElement.textContent = '순서를 기억하세요...';
+                disablePlayerInteraction();
+
+                let i = 0;
+                const interval = setInterval(() => {
+                    if (i >= gameSequence.length) {
+                        clearInterval(interval);
+                        startPlayerTurn();
+                        return;
+                    }
+                    const color = gameSequence[i];
+                    activateButton(color);
+                    i++;
+                }, 800);
+            }
+
+            function activateButton(color) {
+                const button = buttons[color];
+                button.classList.add('active');
+                setTimeout(() => {
+                    button.classList.remove('active');
+                }, 400);
+            }
+
+            function startPlayerTurn() {
+                isPlayerTurn = true;
+                playerSequence = [];
+                messageElement.textContent = '따라 해보세요!';
+                enablePlayerInteraction();
+            }
+
+            function handlePlayerInput(color) {
+                if (!isPlayerTurn) return;
+
+                activateButton(color);
+                playerSequence.push(color);
+
+                const lastIndex = playerSequence.length - 1;
+                if (playerSequence[lastIndex] !== gameSequence[lastIndex]) {
+                    messageElement.textContent = '게임 오버!';
+                    messageElement.style.color = 'var(--error-color)';
+                    levelDisplay.textContent = `최종 단계: ${level}`;
+                    startBtn.style.display = 'inline-block';
+                    disablePlayerInteraction();
+                    return;
+                }
+
+                if (playerSequence.length === gameSequence.length) {
+                    isPlayerTurn = false;
+                    setTimeout(() => {
+                        nextRound();
+                    }, 1000);
+                }
+            }
+
+            function nextRound() {
+                level++;
+                levelDisplay.textContent = `현재 단계: ${level}`;
+                messageElement.textContent = '';
+                const nextColor = colors[Math.floor(Math.random() * colors.length)];
+                gameSequence.push(nextColor);
+                playSequence();
+            }
+
+            function startGame() {
+                gameSequence = [];
+                playerSequence = [];
+                level = 0;
+                levelDisplay.textContent = '';
+                messageElement.textContent = '';
+                messageElement.style.color = 'var(--h-color)';
+                startBtn.style.display = 'none';
+                nextRound();
+            }
+
+            function enablePlayerInteraction() {
+                for (const color in buttons) {
+                    buttons[color].style.cursor = 'pointer';
+                }
+            }
+
+            function disablePlayerInteraction() {
+                 for (const color in buttons) {
+                    buttons[color].style.cursor = 'default';
+                }
+            }
+
+            startBtn.addEventListener('click', startGame);
+            for (const color in buttons) {
+                buttons[color].addEventListener('click', () => handlePlayerInput(color));
+            }
+        });
+    </script>
+</body>
+</html>

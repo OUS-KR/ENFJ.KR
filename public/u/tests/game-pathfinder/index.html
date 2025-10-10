@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>경로 탐색기</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+        #game-grid { display: grid; grid-template-columns: repeat(5, 60px); grid-template-rows: repeat(5, 60px); border: 2px solid var(--h-color); position: relative; background-color: var(--card-bg); }
+        .grid-cell { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 1.5em; color: var(--h-color); }
+        .grid-line { position: absolute; background-color: var(--card-border); transition: background-color 0.2s; cursor: pointer; }
+        .grid-line:hover { background-color: var(--nav-link-hover); }
+        .grid-line.drawn { background-color: var(--h-color); }
+        .grid-line.solution { background-color: var(--success-color) !important; opacity: 0.7; }
+        .grid-line.hint { background-color: var(--nav-link-hover) !important; }
+        .horizontal { width: 60px; height: 4px; transform: translateY(-2px); }
+        .vertical { width: 4px; height: 60px; transform: translateX(-2px); }
+        #controls { margin-top: 20px; text-align: center; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+        .message-box {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            text-align: center;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 4px var(--shadow-color);
+            display: none; /* Initially hidden */
+        }
+    </style>
+</head>
+<body>
+    <header class="main-nav">
+        <a href="/u/tests/" class="logo">INTP.KR Tests</a>
+        <div class="nav-right-section">
+            <nav class="nav-links" id="nav-links">
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">오늘의 콘텐츠</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/today-fortune/">오늘의 운세</a>
+                        <a href="/u/tests/today-game/">오늘의 게임</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">정보</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/info-characteristics/">특징</a>
+                        <a href="/u/tests/info-careers/">커리어</a>
+                        <a href="/u/tests/info-cognitive-functions/">인지기능</a>
+                        <a href="/u/tests/info-subtypes/">하위유형</a>
+                        <a href="/u/tests/info-relationships/">인간관계</a>
+                        <a href="/u/tests/info-misconceptions/">흔한 오해</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">테스트</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/test-logic-quiz/">논리력 퀴즈</a>
+                        <a href="/u/tests/test-relationship-style/">연애 스타일 테스트</a>
+                        <a href="/u/tests/test-stress-triggers/">스트레스 테스트</a>
+                        <a href="/u/tests/test-brain-utilization/">두뇌 활용 테스트</a>
+                        <a href="/u/tests/test-bingo/">빙고 챌린지</a>
+                        <a href="/u/tests/test-empathy-quiz/">INTP 공감 퀴즈</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">게임</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/game-logic-puzzle/">논리 퍼즐</a>
+                        <a href="/u/tests/game-strategy-simulation/">전략 시뮬레이션</a>
+                        <a href="/u/tests/game-code-decryption/">기억력 게임</a>
+                        <a href="/u/tests/game-abstract-reasoning/">추상적 사고 게임</a>
+                        <a href="/u/tests/game-travel-planner/">여행 계획 챌린지</a>
+                        <a href="/u/tests/game-maze-challenge/">미로 챌린지</a>
+                        <a href="/u/tests/game-code-breaker/">암호 해독기</a>
+                        <a href="/u/tests/game-pathfinder/">경로 탐색기</a>
+                    </div>
+                </div>
+            </nav>
+            <button id="theme-switcher" class="theme-switcher">🌙</button>
+            <button id="hamburger" class="hamburger">☰</button>
+        </div>
+    </header>
+    <div class="container">
+        <h1>경로 탐색기 (Pathfinder)</h1>
+        <p style="text-align:center;">격자 가장자리를 클릭하여 선을 그리고, 모든 숫자를 만족시키는 <strong>하나의 연속된 루프</strong>를 완성하세요.<br>각 셀의 숫자는 해당 셀을 둘러싼 네 변 중 루프의 일부가 되어야 하는 선의 개수를 의미합니다.<br>완성된 경로는 갈라지거나 끊어지지 않는 하나의 닫힌 루프여야 합니다.</p>
+        <div style="display:flex; justify-content:center; margin-top:20px;">
+            <div id="game-grid"></div>
+        </div>
+        <div id="controls">
+            <button id="validate-btn" class="btn">내 답안 검증</button>
+            <button id="hint-btn" class="btn">힌트</button>
+            <button id="show-solution-btn" class="btn btn-primary">정답 보기</button>
+            <button id="new-game-btn" class="btn">새로운 퍼즐</button>
+        </div>
+        <div id="message-container" class="message-box">
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <script src="/assets/js/main.js" defer></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const gridContainer = document.getElementById('game-grid');
+        const messageContainer = document.getElementById('message-container');
+        const message = document.getElementById('message');
+        const validateBtn = document.getElementById('validate-btn');
+        const newGameBtn = document.getElementById('new-game-btn');
+        const showSolutionBtn = document.getElementById('show-solution-btn');
+        const hintBtn = document.getElementById('hint-btn');
+        const size = 5;
+
+        let puzzle;
+        let solution;
+        let lines = {};
+
+        function getLineKey({r1, c1, r2, c2}) {
+            r1=parseInt(r1); c1=parseInt(c1); r2=parseInt(r2); c2=parseInt(c2);
+            if (r1 > r2 || (r1 === r2 && c1 > c2)) {
+                return `${r2},${c2},${r1},${c1}`;
+            }
+            return `${r1},${c1},${r2},${c2}`;
+        }
+
+        function generatePuzzle() {
+            let path, newSolution;
+            const minLoopLength = 10; // 최소 루프 길이
+
+            while (true) {
+                const visited = new Set();
+                path = [];
+                newSolution = {};
+                const startR = Math.floor(Math.random() * (size + 1));
+                const startC = Math.floor(Math.random() * (size + 1));
+                const startNode = `${startR},${startC}`;
+
+                let r = startR, c = startC;
+                visited.add(startNode);
+                path.push([r, c]);
+
+                let stuck = false;
+                while (path.length > 0) {
+                    const [currR, currC] = path[path.length - 1];
+                    const neighbors = [];
+                    // Up, Down, Left, Right
+                    const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+                    dirs.sort(() => Math.random() - 0.5); // Shuffle directions
+
+                    let moved = false;
+                    for (const [dr, dc] of dirs) {
+                        const nextR = currR + dr;
+                        const nextC = currC + dc;
+                        const nextNode = `${nextR},${nextC}`;
+
+                        if (nextR >= 0 && nextR <= size && nextC >= 0 && nextC <= size) {
+                            if (nextR === startR && nextC === startC && path.length > 1) {
+                                path.push([nextR, nextC]);
+                                moved = true;
+                                break;
+                            }
+                            if (!visited.has(nextNode)) {
+                                visited.add(nextNode);
+                                path.push([nextR, nextC]);
+                                moved = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (moved && path[path.length - 1][0] === startR && path[path.length - 1][1] === startC) {
+                        break; // Loop closed
+                    }
+
+                    if (!moved) { // Backtrack
+                        path.pop();
+                    }
+                }
+                
+                if (path.length >= minLoopLength) {
+                    const lastNode = path[path.length - 1];
+                    if (lastNode && lastNode[0] === startR && lastNode[1] === startC) {
+                        break; // Found a good loop
+                    }
+                }
+            }
+
+            for (let i = 0; i < path.length - 1; i++) {
+                const [r1, c1] = path[i];
+                const [r2, c2] = path[i+1];
+                newSolution[getLineKey({r1, c1, r2, c2})] = true;
+            }
+
+            const newPuzzle = Array(size).fill(0).map(() => Array(size).fill(0));
+
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    let surroundingLines = 0;
+                    if (newSolution[getLineKey({r1:r, c1:c, r2:r, c2:c+1})]) surroundingLines++;
+                    if (newSolution[getLineKey({r1:r+1, c1:c, r2:r+1, c2:c+1})]) surroundingLines++;
+                    if (newSolution[getLineKey({r1:r, c1:c, r2:r+1, c2:c})]) surroundingLines++;
+                    if (newSolution[getLineKey({r1:r, c1:c+1, r2:r+1, c2:c+1})]) surroundingLines++;
+                    newPuzzle[r][c] = surroundingLines;
+                }
+            }
+
+            return { puzzle: newPuzzle, solution: newSolution };
+        }
+
+        function showMessage(text, color) {
+            message.textContent = text;
+            message.style.color = color;
+            messageContainer.style.display = 'block';
+        }
+
+        function hideMessage() {
+            message.textContent = '';
+            messageContainer.style.display = 'none';
+        }
+
+        function drawGrid() {
+            gridContainer.innerHTML = '';
+            lines = {};
+            hideMessage();
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'grid-cell';
+                    cell.textContent = puzzle[r][c]; // Always show the number
+                    gridContainer.appendChild(cell);
+                }
+            }
+            for (let r = 0; r <= size; r++) {
+                for (let c = 0; c <= size; c++) {
+                    if (c < size) {
+                        const hLine = document.createElement('div');
+                        hLine.className = 'grid-line horizontal';
+                        hLine.style.top = `${r * 60}px`;
+                        hLine.style.left = `${c * 60}px`;
+                        hLine.dataset.r1 = r; hLine.dataset.c1 = c; hLine.dataset.r2 = r; hLine.dataset.c2 = c + 1;
+                        hLine.addEventListener('click', toggleLine);
+                        gridContainer.appendChild(hLine);
+                    }
+                    if (r < size) {
+                        const vLine = document.createElement('div');
+                        vLine.className = 'grid-line vertical';
+                        vLine.style.top = `${r * 60}px`;
+                        vLine.style.left = `${c * 60}px`;
+                        vLine.dataset.r1 = r; vLine.dataset.c1 = c; vLine.dataset.r2 = r + 1; vLine.dataset.c2 = c;
+                        vLine.addEventListener('click', toggleLine);
+                        gridContainer.appendChild(vLine);
+                    }
+                }
+            }
+        }
+
+        function startNewGame() {
+            const newPuzzleData = generatePuzzle();
+            puzzle = newPuzzleData.puzzle;
+            solution = newPuzzleData.solution;
+            drawGrid();
+        }
+
+        function toggleLine(e) {
+            hideMessage();
+            const line = e.target;
+            line.classList.remove('solution', 'hint');
+            line.classList.toggle('drawn');
+            const key = getLineKey(line.dataset);
+            if (line.classList.contains('drawn')) {
+                lines[key] = true;
+            } else {
+                delete lines[key];
+            }
+            checkWinCondition(); // Automatic validation
+        }
+
+        function checkWinCondition() {
+            // Check if the number of drawn lines matches the solution
+            if (Object.keys(lines).length !== Object.keys(solution).length) {
+                return;
+            }
+
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    let surroundingLines = 0;
+                    if (lines[getLineKey({r1:r, c1:c, r2:r, c2:c+1})]) surroundingLines++;
+                    if (lines[getLineKey({r1:r+1, c1:c, r2:r+1, c2:c+1})]) surroundingLines++;
+                    if (lines[getLineKey({r1:r, c1:c, r2:r+1, c2:c})]) surroundingLines++;
+                    if (lines[getLineKey({r1:r, c1:c+1, r2:r+1, c2:c+1})]) surroundingLines++;
+                    if (surroundingLines !== puzzle[r][c]) {
+                        return; // Not a solution
+                    }
+                }
+            }
+
+            const allLineKeys = Object.keys(lines);
+            if (allLineKeys.length === 0) {
+                 return;
+            }
+            const points = {};
+            allLineKeys.forEach(key => {
+                const [r1, c1, r2, c2] = key.split(',').map(Number);
+                const p1Key = `${r1},${c1}`; const p2Key = `${r2},${c2}`;
+                points[p1Key] = (points[p1Key] || 0) + 1;
+                points[p2Key] = (points[p2Key] || 0) + 1;
+            });
+
+            for (const point in points) {
+                if (points[point] !== 2) {
+                    return; // Not a single loop
+                }
+            }
+            
+            showMessage('정답입니다! 완벽한 루프를 완성했습니다.', 'var(--success-color)');
+        }
+
+        function validateSolution() {
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    let surroundingLines = 0;
+                    if (lines[getLineKey({r1:r, c1:c, r2:r, c2:c+1})]) surroundingLines++;
+                    if (lines[getLineKey({r1:r+1, c1:c, r2:r+1, c2:c+1})]) surroundingLines++;
+                    if (lines[getLineKey({r1:r, c1:c, r2:r+1, c2:c})]) surroundingLines++;
+                    if (lines[getLineKey({r1:r, c1:c+1, r2:r+1, c2:c+1})]) surroundingLines++;
+                    if (surroundingLines !== puzzle[r][c]) {
+                        showMessage(`(${r + 1}, ${c + 1}) 셀의 힌트(${puzzle[r][c]})가 맞지 않습니다.`, 'var(--error-color)');
+                        return;
+                    }
+                }
+            }
+
+            const allLineKeys = Object.keys(lines);
+            if (allLineKeys.length === 0) {
+                 showMessage('선을 먼저 그려주세요.', 'var(--error-color)');
+                 return;
+            }
+            const points = {};
+            allLineKeys.forEach(key => {
+                const [r1, c1, r2, c2] = key.split(',').map(Number);
+                const p1Key = `${r1},${c1}`; const p2Key = `${r2},${c2}`;
+                points[p1Key] = (points[p1Key] || 0) + 1;
+                points[p2Key] = (points[p2Key] || 0) + 1;
+            });
+
+            for (const point in points) {
+                if (points[point] !== 2) {
+                    showMessage('루프가 아니거나 여러 개의 루프가 존재합니다. 모든 선은 2개의 다른 선과 만나야 합니다.', 'var(--error-color)');
+                    return;
+                }
+            }
+            
+            showMessage('정답입니다! 완벽한 루프를 완성했습니다.', 'var(--success-color)');
+        }
+        
+        function resetLines() {
+            document.querySelectorAll('.grid-line').forEach(line => {
+                line.classList.remove('drawn', 'solution', 'hint');
+            });
+            lines = {};
+        }
+
+        function showSolution() {
+            resetLines();
+            for (const key in solution) {
+                const [r1, c1, r2, c2] = key.split(',');
+                const line = document.querySelector(`[data-r1='${r1}'][data-c1='${c1}'][data-r2='${r2}'][data-c2='${c2}']`);
+                if (line) {
+                    line.classList.add('drawn', 'solution');
+                    lines[key] = true;
+                }
+            }
+            showMessage('정답 경로입니다.', 'var(--h-color)');
+        }
+
+        function showHint() {
+            const solutionKeys = Object.keys(solution);
+            const undrawnKeys = solutionKeys.filter(key => !lines[key]);
+
+            if (undrawnKeys.length === 0) {
+                showMessage('모든 힌트를 확인했습니다.', 'var(--h-color)');
+                return;
+            }
+
+            const randomKey = undrawnKeys[Math.floor(Math.random() * undrawnKeys.length)];
+            const [r1, c1, r2, c2] = randomKey.split(',');
+            const line = document.querySelector(`[data-r1='${r1}'][data-c1='${c1}'][data-r2='${r2}'][data-c2='${c2}']`);
+            if (line && !line.classList.contains('drawn')) {
+                line.classList.add('drawn', 'hint');
+                lines[randomKey] = true;
+                checkWinCondition(); // Check after hint
+            }
+        }
+
+        validateBtn.addEventListener('click', validateSolution);
+        newGameBtn.addEventListener('click', startNewGame);
+        showSolutionBtn.addEventListener('click', showSolution);
+        hintBtn.addEventListener('click', showHint);
+
+        startNewGame();
+    });
+    </script>
+</body>
+</html>

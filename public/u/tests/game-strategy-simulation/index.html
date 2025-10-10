@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전략 시뮬레이션 (INTP 라이프)</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .stats-board {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+        .stats-board div {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px dashed var(--card-border);
+        }
+        .stats-board div:last-child {
+            border-bottom: none;
+        }
+        .allocation-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+        }
+        .allocation-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .allocation-item label {
+            flex: 1;
+            font-weight: bold;
+        }
+        .allocation-input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .allocation-input-group button {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid var(--card-border);
+            background-color: var(--container-bg);
+            color: var(--text-color);
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .allocation-input-group button:hover {
+            background-color: var(--card-border);
+        }
+        .allocation-input-group span {
+            width: 40px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .controls button {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 10px;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--h-color);
+            text-align: center;
+        }
+        .event-message {
+            margin-top: 10px;
+            font-size: 1em;
+            color: #e74c3c; /* Red for events */
+            font-weight: bold;
+            text-align: center;
+        }
+        .result-details {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+    </style>
+</head>
+<body>
+    <header class="main-nav">
+        <a href="/u/tests/" class="logo">INTP.KR Tests</a>
+        <div class="nav-right-section">
+            <nav class="nav-links" id="nav-links">
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">오늘의 콘텐츠</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/today-fortune/">오늘의 운세</a>
+                        <a href="/u/tests/today-game/">오늘의 게임</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">정보</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/info-characteristics/">특징</a>
+                        <a href="/u/tests/info-careers/">커리어</a>
+                        <a href="/u/tests/info-cognitive-functions/">인지기능</a>
+                        <a href="/u/tests/info-subtypes/">하위유형</a>
+                        <a href="/u/tests/info-relationships/">인간관계</a>
+                        <a href="/u/tests/info-misconceptions/">흔한 오해</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">테스트</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/test-logic-quiz/">논리력 퀴즈</a>
+                        <a href="/u/tests/test-relationship-style/">연애 스타일 테스트</a>
+                        <a href="/u/tests/test-stress-triggers/">스트레스 테스트</a>
+                        <a href="/u/tests/test-brain-utilization/">두뇌 활용 테스트</a>
+                        <a href="/u/tests/test-bingo/">빙고 챌린지</a>
+                        <a href="/u/tests/test-empathy-quiz/">INTP 공감 퀴즈</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">게임</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/game-logic-puzzle/">논리 퍼즐</a>
+                        <a href="/u/tests/game-strategy-simulation/">전략 시뮬레이션</a>
+                        <a href="/u/tests/game-code-decryption/">기억력 게임</a>
+                        <a href="/u/tests/game-abstract-reasoning/">추상적 사고 게임</a>
+                        <a href="/u/tests/game-travel-planner/">여행 계획 챌린지</a>
+                        <a href="/u/tests/game-maze-challenge/">미로 챌린지</a>
+                        <a href="/u/tests/game-code-breaker/">암호 해독기</a>
+                        <a href="/u/tests/game-pathfinder/">경로 탐색기</a>
+                    </div>
+                </div>
+            </nav>
+            <button id="theme-switcher" class="theme-switcher">🌙</button>
+            <button id="hamburger" class="hamburger">☰</button>
+        </div>
+    </header>
+    <div class="container">
+        <h1>전략 시뮬레이션 (INTP 라이프)</h1>
+        <p style="text-align:center;">10턴 동안 INTP의 삶을 관리하여 최고의 만족도를 달성하세요!<br>매 턴 10 포인트를 지식 탐구, 현실 적응, 에너지 충전에 배분합니다.</p>
+        
+        <div class="game-container">
+            <div class="stats-board">
+                <div>턴: <span id="turn">1</span> / 10</div>
+                <div>지식: <span id="knowledge">0</span></div>
+                <div>돈: <span id="money">0</span></div>
+                <div>에너지: <span id="energy">100</span></div>
+                <div>호기심: <span id="curiosity">50</span></div>
+                <div>정신 명료도: <span id="mental-clarity">50</span></div>
+                <div>만족도: <span id="satisfaction">0</span></div>
+            </div>
+
+            <div class="allocation-controls">
+                <p>남은 포인트: <span id="remaining-points">10</span></p>
+                <div class="allocation-item">
+                    <label>지식 탐구 (지식↑, 에너지↓):</label>
+                    <div class="allocation-input-group">
+                        <button class="minus-btn" data-target="study">-</button>
+                        <span id="study-points-display">0</span>
+                        <button class="plus-btn" data-target="study">+</button>
+                    </div>
+                </div>
+                <div class="allocation-item">
+                    <label>현실 적응 (돈↑, 에너지↓):</label>
+                    <div class="allocation-input-group">
+                        <button class="minus-btn" data-target="work">-</button>
+                        <span id="work-points-display">0</span>
+                        <button class="plus-btn" data-target="work">+</button>
+                    </div>
+                </div>
+                <div class="allocation-item">
+                    <label>에너지 충전 (에너지↑):</label>
+                    <div class="allocation-input-group">
+                        <button class="minus-btn" data-target="rest">-</button>
+                        <span id="rest-points-display">0</span>
+                        <button class="plus-btn" data-target="rest">+</button>
+                    </div>
+                </div>
+                <div class="allocation-item">
+                    <label>심층 연구 (지식↑, 호기심↑, 에너지↓):</label>
+                    <div class="allocation-input-group">
+                        <button class="minus-btn" data-target="research">-</button>
+                        <span id="research-points-display">0</span>
+                        <button class="plus-btn" data-target="research">+</button>
+                    </div>
+                </div>
+                <div class="allocation-item">
+                    <label>문제 해결 (지식↑, 정신 명료도↑, 에너지↓):</label>
+                    <div class="allocation-input-group">
+                        <button class="minus-btn" data-target="problemSolving">-</button>
+                        <span id="problemSolving-points-display">0</span>
+                        <button class="plus-btn" data-target="problemSolving">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="next-turn-btn" class="btn btn-primary">다음 턴</button>
+                <button id="restart-btn" class="btn btn-primary" style="display:none;">다시 시작</button>
+            </div>
+            <div id="message" class="message"></div>
+            <div id="event-message" class="event-message"></div>
+            <div id="result-details" class="result-details" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script src="/assets/js/main.js" defer></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const turnElement = document.getElementById('turn');
+            const knowledgeElement = document.getElementById('knowledge');
+            const moneyElement = document.getElementById('money');
+            const energyElement = document.getElementById('energy');
+            const curiosityElement = document.getElementById('curiosity');
+            const mentalClarityElement = document.getElementById('mental-clarity');
+            const satisfactionElement = document.getElementById('satisfaction');
+            const remainingPointsElement = document.getElementById('remaining-points');
+            
+            const studyPointsDisplay = document.getElementById('study-points-display');
+            const workPointsDisplay = document.getElementById('work-points-display');
+            const restPointsDisplay = document.getElementById('rest-points-display');
+            const researchPointsDisplay = document.getElementById('research-points-display');
+            const problemSolvingPointsDisplay = document.getElementById('problemSolving-points-display');
+
+            const nextTurnBtn = document.getElementById('next-turn-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            const messageElement = document.getElementById('message');
+            const eventMessageElement = document.getElementById('event-message');
+            const resultDetailsElement = document.getElementById('result-details');
+
+            let turn = 1;
+            let knowledge = 0;
+            let money = 0;
+            let energy = 100;
+            let curiosity = 50;
+            let mentalClarity = 50;
+            let satisfaction = 0;
+            const MAX_TURNS = 10;
+            const MAX_POINTS_PER_TURN = 10;
+
+            const allocation = { study: 0, work: 0, rest: 0, research: 0, problemSolving: 0 };
+            const allocationDisplays = {
+                study: studyPointsDisplay,
+                work: workPointsDisplay,
+                rest: restPointsDisplay,
+                research: researchPointsDisplay,
+                problemSolving: problemSolvingPointsDisplay
+            };
+
+            const randomEvents = [
+                { type: 'positive', message: '새로운 아이디어 발견! 지식 +10, 호기심 +5', effect: (s) => { s.knowledge += 10; s.curiosity += 5; } },
+                { type: 'positive', message: '뜻밖의 수입! 돈 +15', effect: (s) => { s.money += 15; } },
+                { type: 'positive', message: '완벽한 휴식! 에너지 +20, 정신 명료도 +10', effect: (s) => { s.energy += 20; s.mentalClarity += 10; } },
+                { type: 'negative', message: '과도한 몰입으로 에너지 소모! 에너지 -15', effect: (s) => { s.energy -= 15; } },
+                { type: 'negative', message: '예상치 못한 지출! 돈 -10', effect: (s) => { s.money -= 10; } },
+                { type: 'neutral', message: '흥미로운 다큐멘터리 시청. 호기심 +5', effect: (s) => { s.curiosity += 5; } },
+                { type: 'positive', message: '오랜 고민 끝에 문제 해결! 지식 +20, 정신 명료도 +10', effect: (s) => { s.knowledge += 20; s.mentalClarity += 10; } },
+                { type: 'negative', message: '사회생활의 피로. 에너지 -10, 정신 명료도 -5', effect: (s) => { s.energy -= 10; s.mentalClarity -= 5; } },
+                { type: 'negative', message: '정보 과부하! 정신 명료도 -10', effect: (s) => { s.mentalClarity -= 10; } },
+                { type: 'positive', message: '새로운 분야에 대한 강한 호기심! 호기심 +15', effect: (s) => { s.curiosity += 15; } },
+            ];
+
+            function initGame() {
+                turn = 1;
+                knowledge = 0;
+                money = 0;
+                energy = 100;
+                curiosity = 50;
+                mentalClarity = 50;
+                satisfaction = 0;
+                allocation.study = 0;
+                allocation.work = 0;
+                allocation.rest = 0;
+                allocation.research = 0;
+                allocation.problemSolving = 0;
+                messageElement.textContent = '';
+                eventMessageElement.textContent = '';
+                resultDetailsElement.style.display = 'none';
+                nextTurnBtn.style.display = 'block';
+                restartBtn.style.display = 'none';
+                document.querySelectorAll('.minus-btn, .plus-btn').forEach(btn => btn.disabled = false);
+                updateUI();
+            }
+
+            function updateRemainingPoints() {
+                let allocated = allocation.study + allocation.work + allocation.rest + allocation.research + allocation.problemSolving;
+                remainingPointsElement.textContent = MAX_POINTS_PER_TURN - allocated;
+                messageElement.textContent = '';
+                nextTurnBtn.disabled = (allocated !== MAX_POINTS_PER_TURN);
+            }
+
+            function updateUI() {
+                turnElement.textContent = turn;
+                knowledgeElement.textContent = knowledge;
+                moneyElement.textContent = money;
+                energyElement.textContent = energy;
+                curiosityElement.textContent = curiosity;
+                mentalClarityElement.textContent = mentalClarity;
+                satisfactionElement.textContent = calculateSatisfaction();
+                studyPointsDisplay.textContent = allocation.study;
+                workPointsDisplay.textContent = allocation.work;
+                restPointsDisplay.textContent = allocation.rest;
+                researchPointsDisplay.textContent = allocation.research;
+                problemSolvingPointsDisplay.textContent = allocation.problemSolving;
+                updateRemainingPoints();
+            }
+
+            function calculateSatisfaction() {
+                // INTPs might value knowledge and curiosity more, but need money, energy, and mental clarity.
+                return Math.floor(knowledge * 0.4 + money * 0.2 + energy * 0.15 + curiosity * 0.15 + mentalClarity * 0.1);
+            }
+
+            function handleAllocationChange(type, delta) {
+                let currentAllocated = allocation.study + allocation.work + allocation.rest + allocation.research + allocation.problemSolving;
+                if (delta > 0 && currentAllocated >= MAX_POINTS_PER_TURN) {
+                    messageElement.textContent = '남은 포인트가 없습니다!';
+                    return;
+                }
+                if (delta < 0 && allocation[type] <= 0) {
+                    return;
+                }
+                allocation[type] += delta;
+                updateUI();
+            }
+
+            function triggerRandomEvent() {
+                const event = randomEvents[Math.floor(Math.random() * randomEvents.length)];
+                eventMessageElement.textContent = `[이벤트] ${event.message}`;
+                // Create a temporary state object to pass to effect function
+                let tempStats = { knowledge, money, energy, curiosity, mentalClarity };
+                event.effect(tempStats);
+                // Update actual stats from tempStats
+                knowledge = tempStats.knowledge;
+                money = tempStats.money;
+                energy = tempStats.energy;
+                curiosity = tempStats.curiosity;
+                mentalClarity = tempStats.mentalClarity;
+
+                // Ensure stats don't go below 0 or above 100 (for energy/clarity/curiosity)
+                energy = Math.max(0, Math.min(100, energy));
+                curiosity = Math.max(0, Math.min(100, curiosity));
+                mentalClarity = Math.max(0, Math.min(100, mentalClarity));
+                knowledge = Math.max(0, knowledge); 
+                money = Math.max(0, money); 
+            }
+
+            function nextTurn() {
+                let allocated = allocation.study + allocation.work + allocation.rest + allocation.research + allocation.problemSolving;
+
+                if (allocated !== MAX_POINTS_PER_TURN) {
+                    messageElement.textContent = `총 ${MAX_POINTS_PER_TURN} 포인트를 정확히 배분해야 합니다! (현재 ${allocated})`;
+                    return;
+                }
+
+                triggerRandomEvent(); // Trigger event at the start of the turn
+
+                // Apply effects with stat impacts
+                const energyFactor = (energy < 20) ? 0.5 : 1; // Actions less effective if energy is low
+                const mentalClarityFactor = (mentalClarity < 20) ? 0.5 : 1; // Knowledge gain reduced if clarity is low
+                const curiosityFactor = (curiosity > 80) ? 1.2 : 1; // Knowledge gain boosted if curiosity is high
+
+                // Study
+                knowledge += allocation.study * 5 * energyFactor * mentalClarityFactor;
+                energy -= allocation.study * 2;
+
+                // Work
+                money += allocation.work * 3 * energyFactor;
+                energy -= allocation.work * 3;
+
+                // Rest
+                energy += allocation.rest * 5;
+
+                // Research
+                knowledge += allocation.research * 7 * energyFactor * mentalClarityFactor * curiosityFactor;
+                curiosity += allocation.research * 3;
+                energy -= allocation.research * 4;
+
+                // Problem Solving
+                knowledge += allocation.problemSolving * 6 * energyFactor * mentalClarityFactor;
+                mentalClarity += allocation.problemSolving * 2;
+                energy -= allocation.problemSolving * 3;
+
+                // Ensure stats don't go below 0 or above 100 (for energy/clarity/curiosity)
+                energy = Math.max(0, Math.min(100, energy));
+                curiosity = Math.max(0, Math.min(100, curiosity));
+                mentalClarity = Math.max(0, Math.min(100, mentalClarity));
+                knowledge = Math.max(0, knowledge); 
+                money = Math.max(0, money); 
+
+                turn++;
+                if (turn > MAX_TURNS) {
+                    endGame();
+                } else {
+                    allocation.study = 0;
+                    allocation.work = 0;
+                    allocation.rest = 0;
+                    allocation.research = 0;
+                    allocation.problemSolving = 0;
+                    updateUI();
+                }
+            }
+
+            function endGame() {
+                satisfaction = calculateSatisfaction();
+                satisfactionElement.textContent = satisfaction;
+                messageElement.textContent = '게임 종료! 당신의 INTP 라이프 만족도는?';
+                eventMessageElement.textContent = '';
+                nextTurnBtn.style.display = 'none';
+                restartBtn.style.display = 'block';
+                document.querySelectorAll('.minus-btn, .plus-btn').forEach(btn => btn.disabled = true);
+
+                let resultText = `최종 지식: ${knowledge}, 최종 돈: ${money}, 최종 에너지: ${energy}, 최종 호기심: ${curiosity}, 최종 정신 명료도: ${mentalClarity}.`;
+                if (satisfaction >= 400) {
+                    resultText += `\n당신은 이상적인 INTP 라이프를 살았군요! 지적 탐구와 현실 적응의 균형이 훌륭합니다.`;
+                } else if (satisfaction >= 200) {
+                    resultText += `\n나쁘지 않은 INTP 라이프입니다. 조금 더 균형을 찾아보세요.`;
+                } else {
+                    resultText += `\nINTP 라이프는 쉽지 않죠. 다음번엔 더 나은 전략을 세워보세요.`;
+                }
+                resultDetailsElement.textContent = resultText;
+                resultDetailsElement.style.display = 'block';
+            }
+
+            nextTurnBtn.addEventListener('click', nextTurn);
+            restartBtn.addEventListener('click', initGame);
+
+            document.querySelectorAll('.plus-btn').forEach(button => {
+                button.addEventListener('click', (e) => handleAllocationChange(e.target.dataset.target, 1));
+            });
+            document.querySelectorAll('.minus-btn').forEach(button => {
+                button.addEventListener('click', (e) => handleAllocationChange(e.target.dataset.target, -1));
+            });
+
+            initGame();
+        });
+    </script>
+</body>
+</html>>

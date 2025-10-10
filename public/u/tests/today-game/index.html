@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘의 게임 - INTP</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+        .game-card-content {
+            text-align: center;
+        }
+        .game-area {
+            margin-top: 1.5em;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .game-display {
+            font-size: 2em;
+            margin-bottom: 1em;
+            font-weight: bold;
+            color: var(--text-color);
+            display: flex;
+            gap: 0.5em;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .game-display span {
+            margin: 0 0.3em;
+            padding: 0.1em 0.4em;
+            border-radius: 4px;
+            background-color: var(--primary-color-light);
+            color: var(--primary-color-dark);
+        }
+        .game-display .missing {
+            background-color: var(--accent-color);
+            color: var(--text-color-inverted);
+        }
+        .scramble-display {
+            letter-spacing: 0.1em;
+        }
+        .game-input {
+            margin-top: 1.5em;
+            margin-bottom: 1em;
+        }
+        .game-input input[type="text"], .game-input input[type="number"] {
+            padding: 0.5em;
+            font-size: 1.2em;
+            width: 150px;
+            border: 2px solid var(--border-color, #ccc);
+            border-radius: 4px;
+            background-color: var(--input-bg-color);
+            color: var(--text-color);
+            text-align: center;
+        }
+        .game-input button {
+            padding: 0.6em 1.5em;
+            font-size: 1.1em;
+            background-color: #007bff;
+            color: white;
+            border: 1px solid #0069d9;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-left: 0.5em;
+        }
+        .game-input button:hover {
+            background-color: #0069d9;
+        }
+        .feedback-message {
+            margin-top: 1em;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .feedback-message.correct {
+            color: var(--success-color);
+        }
+        .feedback-message.incorrect {
+            color: var(--error-color);
+        }
+    </style>
+</head>
+<body>
+    <header class="main-nav">
+        <a href="/u/tests/" class="logo">INTP.KR Tests</a>
+        <div class="nav-right-section">
+            <nav class="nav-links" id="nav-links">
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">오늘의 콘텐츠</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/today-fortune/">오늘의 운세</a>
+                        <a href="/u/tests/today-game/">오늘의 게임</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">정보</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/info-characteristics/">특징</a>
+                        <a href="/u/tests/info-careers/">커리어</a>
+                        <a href="/u/tests/info-cognitive-functions/">인지기능</a>
+                        <a href="/u/tests/info-subtypes/">하위유형</a>
+                        <a href="/u/tests/info-relationships/">인간관계</a>
+                        <a href="/u/tests/info-misconceptions/">흔한 오해</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">테스트</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/test-logic-quiz/">논리력 퀴즈</a>
+                        <a href="/u/tests/test-relationship-style/">연애 스타일 테스트</a>
+                        <a href="/u/tests/test-stress-triggers/">스트레스 테스트</a>
+                        <a href="/u/tests/test-brain-utilization/">두뇌 활용 테스트</a>
+                        <a href="/u/tests/test-bingo/">빙고 챌린지</a>
+                        <a href="/u/tests/test-empathy-quiz/">INTP 공감 퀴즈</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">게임</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/game-logic-puzzle/">논리 퍼즐</a>
+                        <a href="/u/tests/game-strategy-simulation/">전략 시뮬레이션</a>
+                        <a href="/u/tests/game-code-decryption/">기억력 게임</a>
+                        <a href="/u/tests/game-abstract-reasoning/">추상적 사고 게임</a>
+                        <a href="/u/tests/game-travel-planner/">여행 계획 챌린지</a>
+                        <a href="/u/tests/game-maze-challenge/">미로 챌린지</a>
+                        <a href="/u/tests/game-code-breaker/">암호 해독기</a>
+                        <a href="/u/tests/game-pathfinder/">경로 탐색기</a>
+                    </div>
+                </div>
+            </nav>
+            <button id="theme-switcher" class="theme-switcher">🌙</button>
+            <button id="hamburger" class="hamburger">☰</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>오늘의 INTP 게임</h1>
+        <div class="card info-card game-card-content">
+            <div id="game-info">
+                <div id="gameTitle" class="card-title"></div>
+                <p id="gameDescription">게임을 불러오는 중...</p>
+            </div>
+            <div id="gameArea" class="game-area">
+                <!-- Game content will be loaded here by JavaScript -->
+            </div>
+            <div class="game-input">
+                <input type="text" id="userGuess" placeholder="정답 입력" autofocus>
+                <button id="submitGuess">제출</button>
+            </div>
+            <p id="feedbackMessage" class="feedback-message"></p>
+        </div>
+    </div>
+
+    <script src="/assets/js/main.js" defer></script>
+    <script>
+    function getDailySeed() {
+        const today = new Date();
+        return today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+    }
+
+    function mulberry32(seed) {
+        return function() {
+            seed |= 0;
+            seed = seed + 0x6D2B79F5 | 0;
+            let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) | 0;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        }
+    }
+
+    let currentCorrectAnswer = null;
+    let currentRandFn = null;
+
+    // --- Game Implementations (Enhanced) ---
+
+    // Game 0: Number Sequence
+    function setupNumberSequenceGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 숫자 시퀀스";
+        document.getElementById('userGuess').type = "number";
+        document.getElementById('userGuess').placeholder = "다음 숫자";
+        const gameArea = document.getElementById('gameArea');
+        gameArea.innerHTML = '<div id="sequenceDisplay" class="game-display"></div>';
+        const { sequence, nextNum } = generateNumberSequence(currentRandFn);
+        currentCorrectAnswer = nextNum;
+        const display = document.getElementById('sequenceDisplay');
+        display.innerHTML = sequence.map(item => `<span>${item}</span>`).join('') + '<span class="missing">?</span>';
+    }
+
+    function generateNumberSequence(randFn) {
+        const type = Math.floor(randFn() * 5); // 5 types now
+        const start = Math.floor(randFn() * 20) + 1;
+        const length = 4 + Math.floor(randFn() * 3);
+        let sequence = [];
+        let nextNum = 0;
+
+        if (type === 0) { // Arithmetic
+            const diff = Math.floor(randFn() * 9) + 2;
+            for (let i = 0; i < length; i++) sequence.push(start + i * diff);
+            nextNum = start + length * diff;
+        } else if (type === 1) { // Geometric
+            const ratio = Math.floor(randFn() * 3) + 2;
+            let current = start > 10 ? Math.floor(start / 10) + 1 : start;
+            for (let i = 0; i < length; i++) { sequence.push(current); current *= ratio; }
+            nextNum = current;
+        } else if (type === 2) { // Powers
+            const power = Math.floor(randFn() * 2) + 2;
+            const add = Math.floor(randFn() * 10);
+            for (let i = 1; i <= length; i++) sequence.push(Math.pow(i, power) + add);
+            nextNum = Math.pow(length + 1, power) + add;
+        } else if (type === 3) { // Alternating series
+            const diff1 = Math.floor(randFn() * 12) + 1;
+            const diff2 = -1 * (Math.floor(randFn() * 12) + 1);
+            let current = start;
+            for (let i = 0; i < length; i++) {
+                sequence.push(current);
+                current += (i % 2 === 0) ? diff1 : diff2;
+            }
+            nextNum = current;
+        } else { // Fibonacci-like
+            let a = start;
+            let b = start + Math.floor(randFn() * 8) + 1;
+            sequence.push(a, b);
+            for (let i = 2; i < length; i++) { let c = a + b; sequence.push(c); a = b; b = c; }
+            nextNum = a + b;
+        }
+        return { sequence, nextNum };
+    }
+
+    // Game 1: Word Scramble
+    const intpWords = ["ALGORITHM", "ABSTRACTION", "ANALYTICS", "AXIOM", "BINARY", "BOOLEAN", "CALCULUS", "COGNITION", "COMPILER", "CONJECTURE", "DEDUCTION", "EMPIRICISM", "ENIGMA", "EPISTEMOLOGY", "HEURISTIC", "INFERENCE", "INTELLECT", "LOGIC", "METAPHYSICS", "ONTOLOGY", "PARADIGM", "PARADOX", "PATTERNS", "PHILOSOPHY", "QUANTUM", "RATIONALITY", "RECURSION", "SEMANTICS", "SYNTAX", "SYSTEM", "THEORY", "TOPOLOGY", "HYPOTHESIS", "FRAMEWORK", "MODELING"];
+    function setupWordScrambleGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 단어 스크램블";
+        document.getElementById('userGuess').type = "text";
+        document.getElementById('userGuess').placeholder = "정답 단어";
+        const gameArea = document.getElementById('gameArea');
+        const word = intpWords[Math.floor(currentRandFn() * intpWords.length)];
+        currentCorrectAnswer = word;
+        let shuffledWord = word.split('').sort(() => currentRandFn() - 0.5).join('');
+        if (shuffledWord === word) shuffledWord = word.split('').reverse().join('');
+        gameArea.innerHTML = `<div class="game-display scramble-display">${shuffledWord}</div>`;
+    }
+
+    // Game 2: Logic Gate
+    function setupLogicGateGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 논리 게이트";
+        document.getElementById('userGuess').type = "number";
+        document.getElementById('userGuess').placeholder = "결과";
+        const gameArea = document.getElementById('gameArea');
+        const gates = ["AND", "OR", "XOR", "NAND"];
+        const gate = gates[Math.floor(currentRandFn() * gates.length)];
+        const input1 = Math.floor(currentRandFn() * 2);
+        const input2 = Math.floor(currentRandFn() * 2);
+        let answer;
+        if (gate === "AND") answer = input1 & input2;
+        else if (gate === "OR") answer = input1 | input2;
+        else if (gate === "XOR") answer = input1 ^ input2;
+        else answer = 1 - (input1 & input2);
+        currentCorrectAnswer = answer;
+        gameArea.innerHTML = `<div class="game-display"><span>${input1}</span> <span>${gate}</span> <span>${input2}</span> <span>=</span> <span class="missing">?</span></div>`;
+    }
+
+    // Game 3: Odd One Out
+    function setupOddOneOutGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 다른 하나 찾기";
+        document.getElementById('gameDescription').innerText = "다음 중 성격이 다른 하나는 무엇일까요?";
+        document.getElementById('userGuess').type = "text";
+        document.getElementById('userGuess').placeholder = "다른 하나";
+        const gameArea = document.getElementById('gameArea');
+        const { items, answer } = generateOddOneOut(currentRandFn);
+        currentCorrectAnswer = answer;
+        gameArea.innerHTML = `<div class="game-display">${items.map(item => `<span>${item}</span>`).join('')}</div>`;
+    }
+
+    function generateOddOneOut(randFn) {
+        const types = [
+            { name: "vowels", items: ["A", "E", "I", "O", "U"], odd: ["B", "C", "D", "F", "G", "K"] },
+            { name: "evens", items: [2, 4, 6, 8, 10, 12], odd: [1, 3, 5, 7, 9, 11] },
+            { name: "primes", items: [2, 3, 5, 7, 11, 13], odd: [4, 6, 8, 9, 10, 12] },
+            { name: "shapes", items: ["■", "▲", "●", "◆"], odd: ["□", "△", "○", "◇"] }
+        ];
+        const type = types[Math.floor(randFn() * types.length)];
+        const shuffledItems = type.items.sort(() => randFn() - 0.5);
+        const oddOne = type.odd[Math.floor(randFn() * type.odd.length)];
+        let items = shuffledItems.slice(0, 4);
+        const answer = oddOne.toString();
+        const insertPos = Math.floor(randFn() * 5);
+        items.splice(insertPos, 0, oddOne);
+        return { items, answer };
+    }
+
+    // --- Game Dispatcher and Common Logic ---
+    const gameTypes = [
+        setupNumberSequenceGame,
+        setupWordScrambleGame,
+        setupLogicGateGame,
+        setupOddOneOutGame
+    ];
+
+    function getDayOfWeekText(day) {
+        const messages = [
+            "주말의 마무리, 두뇌를 말랑하게 풀어보세요.", // Sunday
+            "새로운 한 주, 논리력으로 시작해 보세요!", // Monday
+            "오늘은 분석력을 발휘하기 좋은 날입니다.", // Tuesday
+            "주 중반, 창의적인 발상으로 환기해 보세요.", // Wednesday
+            "문제 해결 능력을 시험해 볼 시간입니다.", // Thursday
+            "주말을 앞둔 금요일, 가볍게 두뇌를 자극해 보세요.", // Friday
+            "여유로운 토요일, 새로운 퍼즐은 어떠신가요?", // Saturday
+        ];
+        return messages[day];
+    }
+
+    function checkGuess() {
+        const userGuess = document.getElementById('userGuess').value.trim().toUpperCase();
+        const feedbackMessage = document.getElementById('feedbackMessage');
+        if (!userGuess) {
+            feedbackMessage.innerText = "정답을 입력해 주세요!";
+            feedbackMessage.className = "feedback-message incorrect";
+            return;
+        }
+        if (userGuess == currentCorrectAnswer) {
+            feedbackMessage.innerText = "정답입니다! 역시 INTP군요.";
+            feedbackMessage.className = "feedback-message correct";
+            document.getElementById('submitGuess').disabled = true;
+            document.getElementById('userGuess').disabled = true;
+        } else {
+            feedbackMessage.innerText = "오답입니다. 다른 관점에서 생각해 보세요.";
+            feedbackMessage.className = "feedback-message incorrect";
+        }
+    }
+
+    function initDailyGame() {
+        const today = new Date();
+        const seed = getDailySeed();
+        currentRandFn = mulberry32(seed);
+        
+        const dayOfWeek = today.getDay();
+        document.getElementById('gameDescription').innerText = getDayOfWeekText(dayOfWeek);
+
+        // Slightly influence game choice by day of week, but still random
+        const gameTypeIndex = Math.floor(currentRandFn() * gameTypes.length + dayOfWeek) % gameTypes.length;
+        gameTypes[gameTypeIndex]();
+
+        document.getElementById('userGuess').value = '';
+        document.getElementById('userGuess').disabled = false;
+        document.getElementById('submitGuess').disabled = false;
+        document.getElementById('feedbackMessage').innerText = '';
+        document.getElementById('feedbackMessage').className = "feedback-message";
+    }
+
+    window.onload = function() {
+        try {
+            initDailyGame();
+            document.getElementById('submitGuess').addEventListener('click', checkGuess);
+            document.getElementById('userGuess').addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    checkGuess();
+                }
+            });
+        } catch (e) {
+            console.error("오늘의 게임 생성 중 오류 발생:", e);
+            document.getElementById('gameDescription').innerText = "콘텐츠를 불러오는 데 실패했습니다. 페이지를 새로고침해 주세요.";
+        }
+    };
+    </script>
+</body>
+</html>

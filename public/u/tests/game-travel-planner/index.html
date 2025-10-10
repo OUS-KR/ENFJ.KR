@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>여행 계획 챌린지</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <style>
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .goal-display {
+            background-color: var(--card-bg);
+            border: 2px dashed var(--btn-primary-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+        .goal-display .goal-text { font-size: 1.2em; font-weight: bold; }
+        .goal-display .event-text { font-size: 1em; color: var(--nav-link-hover); margin-top: 5px; }
+        .goal-display .trait-text { font-size: 1em; color: #2ecc71; margin-top: 5px; }
+
+        .main-content {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 1200px;
+            flex-wrap: wrap;
+        }
+        .selection-area, .summary-area {
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .item-category h3 {
+            border-bottom: 2px solid var(--card-border);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        .item-option {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .item-option:hover {
+            background-color: var(--card-border);
+        }
+        .item-option.selected {
+            background-color: var(--btn-primary-bg);
+            color: var(--btn-primary-text);
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+        #totals {
+            font-weight: bold;
+            font-size: 1.2em;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid var(--card-border);
+        }
+        #evaluate-btn, #reset-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            margin-top: 20px;
+            border-radius: 5px;
+            background-color: var(--btn-primary-bg);
+            color: var(--btn-primary-text);
+            border: none;
+            cursor: pointer;
+        }
+        #reset-btn {
+            background-color: var(--secondary-bg);
+            margin-top: 10px;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 1.1em; /* Adjusted font size */
+            text-align: center;
+            min-height: 30px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <header class="main-nav">
+        <a href="/u/tests/" class="logo">INTP.KR Tests</a>
+        <div class="nav-right-section">
+            <nav class="nav-links" id="nav-links">
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">오늘의 콘텐츠</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/today-fortune/">오늘의 운세</a>
+                        <a href="/u/tests/today-game/">오늘의 게임</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">정보</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/info-characteristics/">특징</a>
+                        <a href="/u/tests/info-careers/">커리어</a>
+                        <a href="/u/tests/info-cognitive-functions/">인지기능</a>
+                        <a href="/u/tests/info-subtypes/">하위유형</a>
+                        <a href="/u/tests/info-relationships/">인간관계</a>
+                        <a href="/u/tests/info-misconceptions/">흔한 오해</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">테스트</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/test-logic-quiz/">논리력 퀴즈</a>
+                        <a href="/u/tests/test-relationship-style/">연애 스타일 테스트</a>
+                        <a href="/u/tests/test-stress-triggers/">스트레스 테스트</a>
+                        <a href="/u/tests/test-brain-utilization/">두뇌 활용 테스트</a>
+                        <a href="/u/tests/test-bingo/">빙고 챌린지</a>
+                        <a href="/u/tests/test-empathy-quiz/">INTP 공감 퀴즈</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">게임</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/game-logic-puzzle/">논리 퍼즐</a>
+                        <a href="/u/tests/game-strategy-simulation/">전략 시뮬레이션</a>
+                        <a href="/u/tests/game-code-decryption/">기억력 게임</a>
+                        <a href="/u/tests/game-abstract-reasoning/">추상적 사고 게임</a>
+                        <a href="/u/tests/game-travel-planner/">여행 계획 챌린지</a>
+                        <a href="/u/tests/game-maze-challenge/">미로 챌린지</a>
+                        <a href="/u/tests/game-code-breaker/">암호 해독기</a>
+                        <a href="/u/tests/game-pathfinder/">경로 탐색기</a>
+                    </div>
+                </div>
+            </nav>
+            <button id="theme-switcher" class="theme-switcher">🌙</button>
+            <button id="hamburger" class="hamburger">☰</button>
+        </div>
+    </header>
+    <div class="container">
+        <h1>여행 계획 챌린지</h1>
+        <p style="text-align:center;">주어진 목표에 맞춰 최적의 여행 계획을 세워보세요!</p>
+        
+        <div class="game-container">
+            <div id="goal-display" class="goal-display"></div>
+            
+            <div class="main-content">
+                <div class="selection-area">
+                    <h2>선택 항목</h2>
+                    <div id="items-list"></div>
+                </div>
+                <div class="summary-area">
+                    <h2>계획 요약</h2>
+                    <div id="summary-list"></div>
+                    <div id="totals">
+                        <div class="summary-item">
+                            <span>총 비용:</span>
+                            <span id="total-cost-value">0원</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>총 만족도:</span>
+                            <span id="total-satisfaction-value">0</span>
+                        </div>
+                    </div>
+                    <button id="evaluate-btn">계획 평가하기</button>
+                    <button id="reset-btn">새로운 목표로 다시하기</button>
+                    <div id="message" class="message"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/js/main.js" defer></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const goalDisplay = document.getElementById('goal-display');
+        const itemsList = document.getElementById('items-list');
+        const summaryList = document.getElementById('summary-list');
+        const totalCostValue = document.getElementById('total-cost-value');
+        const totalSatisfactionValue = document.getElementById('total-satisfaction-value');
+        const evaluateBtn = document.getElementById('evaluate-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const messageElement = document.getElementById('message');
+
+        // Data Pools
+        const itemPool = {
+            city: [
+                { name: '파리', cost: 200000, satisfaction: 90, type: 'art' },
+                { name: '도쿄', cost: 100000, satisfaction: 75, type: 'food' },
+                { name: '뉴욕', cost: 250000, satisfaction: 85, type: 'shopping' },
+                { name: '방콕', cost: 80000, satisfaction: 70, type: 'leisure' },
+                { name: '로마', cost: 180000, satisfaction: 88, type: 'art' },
+            ],
+            flight: [
+                { name: '이코노미 클래스', cost: 800000, satisfaction: 60 },
+                { name: '비즈니스 클래스', cost: 2500000, satisfaction: 95 },
+                { name: '저가 항공', cost: 500000, satisfaction: 50 },
+                { name: '프리미엄 이코노미', cost: 1200000, satisfaction: 75 },
+            ],
+            accommodation: [
+                { name: '5성급 호텔', cost: 400000, satisfaction: 95, type: 'leisure' },
+                { name: '비즈니스 호텔', cost: 150000, satisfaction: 75, type: 'shopping' },
+                { name: '에어비앤비', cost: 100000, satisfaction: 80, type: 'food' },
+                { name: '게스트하우스', cost: 50000, satisfaction: 60, type: 'food' },
+                { name: '부티크 호텔', cost: 250000, satisfaction: 85, type: 'art' },
+            ],
+            activity: [
+                { name: '파인 다이닝', cost: 200000, satisfaction: 90, type: 'food' },
+                { name: '뮤지엄 투어', cost: 50000, satisfaction: 80, type: 'art' },
+                { name: '명품 쇼핑', cost: 300000, satisfaction: 75, type: 'shopping' },
+                { name: '휴양 및 스파', cost: 250000, satisfaction: 85, type: 'leisure' },
+                { name: '로컬 맛집 탐방', cost: 80000, satisfaction: 82, type: 'food' },
+            ]
+        };
+        const goals = [
+            { type: 'max_satisfaction', budget: 3000000, text: '예산(3,000,000원) 내에서 만족도를 극대화하세요!' },
+            { type: 'min_cost', satisfaction_target: 300, text: '총 만족도 300 이상을 최소 비용으로 달성하세요!' },
+            { type: 'balanced', budget: 2000000, satisfaction_target: 280, text: '예산(2,000,000원)과 만족도(280)를 모두 만족시키세요!' },
+        ];
+        const traits = [
+            { name: '미식가', description: "모든 'food' 타입 만족도 +10", effect: (item) => { if(item.type === 'food') item.satisfaction += 10; } },
+            { name: '예술 애호가', description: "모든 'art' 타입 만족도 +10", effect: (item) => { if(item.type === 'art') item.satisfaction += 10; } },
+            { name: '쇼핑광', description: "모든 'shopping' 타입 만족도 +10", effect: (item) => { if(item.type === 'shopping') item.satisfaction += 10; } },
+            { name: '프로 절약러', description: '모든 비용 10% 감소', effect: (item) => { item.cost = Math.round(item.cost * 0.9); } },
+        ];
+        const events = [
+            { name: '항공권 특가 세일!', description: '모든 항공편 비용 20% 할인!', effect: (item, cat) => { if(cat === 'flight') item.cost = Math.round(item.cost * 0.8); } },
+            { name: '국제 푸드 페스티벌', description: "모든 'food' 타입 만족도 +15", effect: (item) => { if(item.type === 'food') item.satisfaction += 15; } },
+            { name: '블랙 프라이데이', description: "모든 'shopping' 타입 비용 20% 감소", effect: (item) => { if(item.type === 'shopping') item.cost = Math.round(item.cost * 0.8); } },
+        ];
+        const typeTranslations = {
+            food: '미식',
+            art: '예술',
+            shopping: '쇼핑',
+            leisure: '여가'
+        };
+
+        // Game State
+        let currentGoal, currentTrait, currentEvent, currentGameItems, selectedItems;
+
+        function translateDescription(desc) {
+            if (!desc) return '';
+            let translatedDesc = desc;
+            for (const key in typeTranslations) {
+                const regex = new RegExp(`'${key}'`, 'g');
+                translatedDesc = translatedDesc.replace(regex, `'${typeTranslations[key]}'`);
+            }
+            return translatedDesc;
+        }
+
+        function startNewGame() {
+            selectedItems = {};
+            messageElement.textContent = '';
+            
+            const tempItemPool = {};
+            for (const category in itemPool) {
+                tempItemPool[category] = itemPool[category].map(item => ({ ...item }));
+            }
+
+            currentEvent = Math.random() < 0.67 ? events[Math.floor(Math.random() * events.length)] : null;
+            if (currentEvent) {
+                for (const category in tempItemPool) {
+                    tempItemPool[category].forEach(item => currentEvent.effect(item, category));
+                }
+            }
+
+            currentGameItems = {};
+            for (const category in tempItemPool) {
+                const shuffled = tempItemPool[category].sort(() => 0.5 - Math.random());
+                currentGameItems[category] = shuffled.slice(0, Math.min(shuffled.length, 4));
+            }
+
+            currentGoal = goals[Math.floor(Math.random() * goals.length)];
+            currentTrait = Math.random() < 0.67 ? traits[Math.floor(Math.random() * traits.length)] : null;
+
+            renderGoal();
+            renderItems();
+            updateSummary();
+        }
+
+        function renderGoal() {
+            let goalHTML = `<div class="goal-text">${currentGoal.text}</div>`;
+            if (currentEvent) {
+                goalHTML += `<div class="event-text">이벤트: ${translateDescription(currentEvent.description)}</div>`;
+            }
+            if (currentTrait) {
+                goalHTML += `<div class="trait-text">여행가 특성: ${translateDescription(currentTrait.description)}</div>`;
+            }
+            goalDisplay.innerHTML = goalHTML;
+        }
+
+        function renderItems() {
+            itemsList.innerHTML = '';
+            for (const category in currentGameItems) {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'item-category';
+                categoryDiv.innerHTML = `<h3>${getCategoryName(category)}</h3>`;
+                currentGameItems[category].forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'item-option';
+                    itemDiv.dataset.category = category;
+                    itemDiv.dataset.name = item.name;
+                    itemDiv.innerHTML = `<span>${item.name}</span><span>${item.cost.toLocaleString()}원 / 만족도 ${item.satisfaction}</span>`;
+                    itemDiv.addEventListener('click', () => selectItem(category, item));
+                    categoryDiv.appendChild(itemDiv);
+                });
+                itemsList.appendChild(categoryDiv);
+            }
+        }
+        
+        function getCategoryName(key) {
+            const names = { city: '도시', flight: '항공편', accommodation: '숙소', activity: '활동' };
+            return names[key] || key;
+        }
+
+        function selectItem(category, item) {
+            selectedItems[category] = item;
+            updateSummary();
+            document.querySelectorAll(`.item-option[data-category="${category}"]`).forEach(el => el.classList.remove('selected'));
+            document.querySelector(`.item-option[data-name="${item.name}"]`).classList.add('selected');
+        }
+
+        function updateSummary() {
+            summaryList.innerHTML = '';
+            let totalCost = 0;
+            let totalSatisfaction = 0;
+            
+            let tempSelectedItems = {};
+            for (const key in selectedItems) {
+                tempSelectedItems[key] = { ...selectedItems[key] };
+            }
+
+            if (currentTrait) {
+                Object.values(tempSelectedItems).forEach(item => {
+                    if(item) currentTrait.effect(item);
+                });
+            }
+
+            for (const category in tempSelectedItems) {
+                const item = tempSelectedItems[category];
+                const summaryItem = document.createElement('div');
+                summaryItem.className = 'summary-item';
+                summaryItem.innerHTML = `<span>${getCategoryName(category)}: ${item.name}</span>`;
+                summaryList.appendChild(summaryItem);
+                totalCost += item.cost;
+                totalSatisfaction += item.satisfaction;
+            }
+            totalCostValue.textContent = `${totalCost.toLocaleString()}원`;
+            totalSatisfactionValue.textContent = totalSatisfaction;
+        }
+
+        evaluateBtn.addEventListener('click', () => {
+            const selectedCategories = Object.keys(selectedItems);
+            if (selectedCategories.length < Object.keys(currentGameItems).length) {
+                messageElement.textContent = '모든 종류의 항목을 선택해야 합니다.';
+                messageElement.style.color = 'var(--error-color)';
+                return;
+            }
+            
+            let tempSelectedItems = {};
+            for (const key in selectedItems) {
+                tempSelectedItems[key] = { ...selectedItems[key] };
+            }
+
+            if (currentTrait) {
+                Object.values(tempSelectedItems).forEach(item => {
+                    if(item) currentTrait.effect(item);
+                });
+            }
+
+            let totalCost = 0;
+            let totalSatisfaction = 0;
+            for (const category in tempSelectedItems) {
+                totalCost += tempSelectedItems[category].cost;
+                totalSatisfaction += tempSelectedItems[category].satisfaction;
+            }
+
+            let synergyBonus = 0;
+            let synergyText = '';
+            const city = tempSelectedItems.city;
+            const activity = tempSelectedItems.activity;
+
+            if (city && activity && city.type === activity.type) {
+                synergyBonus = 20; // Synergy bonus points
+                totalSatisfaction += synergyBonus;
+                synergyText = `<br><strong style="color: var(--nav-link-hover);">시너지 보너스!</strong> '도시'와 '활동'의 타입(${typeTranslations[city.type] || city.type})이 일치하여 만족도 +${synergyBonus}점을 얻었습니다!`;
+            }
+
+            let success = false;
+            let resultText = '';
+            const valueScore = totalCost > 0 ? Math.round((totalSatisfaction / totalCost) * 100000) : 0;
+
+            switch (currentGoal.type) {
+                case 'max_satisfaction':
+                    if (totalCost > currentGoal.budget) {
+                        resultText = `예산을 초과했습니다! (초과 금액: ${(totalCost - currentGoal.budget).toLocaleString()}원)`;
+                    } else {
+                        resultText = `계획 완료! 총 만족도 ${totalSatisfaction}점을 달성했습니다. (가성비 점수: ${valueScore}점)`;
+                        success = true;
+                    }
+                    break;
+                case 'min_cost':
+                    if (totalSatisfaction < currentGoal.satisfaction_target) {
+                        resultText = `만족도 목표 미달! (부족한 만족도: ${currentGoal.satisfaction_target - totalSatisfaction}점)`;
+                    } else {
+                        resultText = `목표 달성! 비용 ${totalCost.toLocaleString()}원으로 계획을 완성했습니다. (가성비 점수: ${valueScore}점)`;
+                        success = true;
+                    }
+                    break;
+                case 'balanced':
+                    if (totalCost > currentGoal.budget) {
+                        resultText = `예산을 초과했습니다! (초과 금액: ${(totalCost - currentGoal.budget).toLocaleString()}원)`;
+                    } else if (totalSatisfaction < currentGoal.satisfaction_target) {
+                        resultText = `만족도 목표 미달! (부족한 만족도: ${currentGoal.satisfaction_target - totalSatisfaction}점)`;
+                    } else {
+                        resultText = `완벽한 계획입니다! 예산과 만족도 목표를 모두 달성했습니다. (가성비 점수: ${valueScore}점)`;
+                        success = true;
+                    }
+                    break;
+            }
+
+            messageElement.innerHTML = resultText + synergyText;
+            messageElement.style.color = success ? 'var(--success-color)' : 'var(--error-color)';
+        });
+
+        resetBtn.addEventListener('click', startNewGame);
+
+        startNewGame();
+    });
+    </script>
+</body>
+</html>

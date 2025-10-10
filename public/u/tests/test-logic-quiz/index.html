@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INTP 논리력 퀴즈</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+    <header class="main-nav">
+        <a href="/u/tests/" class="logo">INTP.KR Tests</a>
+        <div class="nav-right-section">
+            <nav class="nav-links" id="nav-links">
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">오늘의 콘텐츠</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/today-fortune/">오늘의 운세</a>
+                        <a href="/u/tests/today-game/">오늘의 게임</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">정보</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/info-characteristics/">특징</a>
+                        <a href="/u/tests/info-careers/">커리어</a>
+                        <a href="/u/tests/info-cognitive-functions/">인지기능</a>
+                        <a href="/u/tests/info-subtypes/">하위유형</a>
+                        <a href="/u/tests/info-relationships/">인간관계</a>
+                        <a href="/u/tests/info-misconceptions/">흔한 오해</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">테스트</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/test-logic-quiz/">논리력 퀴즈</a>
+                        <a href="/u/tests/test-relationship-style/">연애 스타일 테스트</a>
+                        <a href="/u/tests/test-stress-triggers/">스트레스 테스트</a>
+                        <a href="/u/tests/test-brain-utilization/">두뇌 활용 테스트</a>
+                        <a href="/u/tests/test-bingo/">빙고 챌린지</a>
+                        <a href="/u/tests/test-empathy-quiz/">INTP 공감 퀴즈</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">게임</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/game-logic-puzzle/">논리 퍼즐</a>
+                        <a href="/u/tests/game-strategy-simulation/">전략 시뮬레이션</a>
+                        <a href="/u/tests/game-code-decryption/">기억력 게임</a>
+                        <a href="/u/tests/game-abstract-reasoning/">추상적 사고 게임</a>
+                        <a href="/u/tests/game-travel-planner/">여행 계획 챌린지</a>
+                        <a href="/u/tests/game-maze-challenge/">미로 챌린지</a>
+                        <a href="/u/tests/game-code-breaker/">암호 해독기</a>
+                        <a href="/u/tests/game-pathfinder/">경로 탐색기</a>
+                    </div>
+                </div>
+            </nav>
+            <button id="theme-switcher" class="theme-switcher">🌙</button>
+            <button id="hamburger" class="hamburger">☰</button>
+        </div>
+    </header>
+    <div id="quiz-container" class="container">
+        <div id="start-area">
+            <h1>INTP 논리력 퀴즈</h1>
+            <p>나는 얼마나 INTP 성향에 가까울까?<br>간단한 퀴즈를 통해 당신의 논리적 사고 성향을 알아보세요!</p>
+            <button id="start-btn" class="btn btn-primary">퀴즈 시작하기</button>
+        </div>
+
+        <div id="quiz-area" class="hidden">
+            <div class="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div id="question"></div>
+            <div id="answers"></div>
+        </div>
+
+        <div id="result-area" class="hidden">
+            <div class="result-card">
+                <h2 id="result-title" class="result-title"></h2>
+                <p id="result-text"></p>
+                <button id="retry-btn" class="btn btn-primary">다시하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/js/main.js" defer></script>
+    <script>
+        const quizContainer = document.getElementById('quiz-container');
+        const startArea = document.getElementById('start-area');
+        const quizArea = document.getElementById('quiz-area');
+        const resultArea = document.getElementById('result-area');
+        const startBtn = document.getElementById('start-btn');
+        const retryBtn = document.getElementById('retry-btn');
+        const questionEl = document.getElementById('question');
+        const answersEl = document.getElementById('answers');
+        const resultTitleEl = document.getElementById('result-title');
+        const resultTextEl = document.getElementById('result-text');
+        const progressBar = document.getElementById('progress-bar');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const quizData = [
+            {
+                question: '친구가 "나 우울해서 머리 잘랐어"라고 한다면 당신의 첫 반응은?',
+                answers: [
+                    { text: '머리 자르는 것과 우울한 게 무슨 논리적 상관관계야? 원인 분석이 필요해.', score: 10 },
+                    { text: '무슨 일 있었어? 너 괜찮아? 많이 힘들었구나.', score: 1 },
+                    { text: '오, 어떤 스타일로 잘랐어? 사진 보여줘! 잘 어울린다!', score: 5 }
+                ]
+            },
+            {
+                question: '새로운 프로젝트를 시작할 때 당신의 첫 단계는?',
+                answers: [
+                    { text: '일단 관련된 모든 자료와 정보를 수집하고 전체 구조부터 파악한다.', score: 10 },
+                    { text: '팀원들과 역할을 분담하고 구체적인 실행 계획과 일정을 짠다.', score: 1 },
+                    { text: '가장 흥미로워 보이는 부분부터 일단 부딪혀본다.', score: 5 }
+                ]
+            },
+            {
+                question: '당신이 생각하는 \'완벽한 휴일\'이란?',
+                answers: [
+                    { text: '아무에게도 방해받지 않고 하루종일 흥미로운 주제에 대해 파고드는 것.', score: 10 },
+                    { text: '친한 친구들이나 가족과 만나 즐거운 시간을 보내는 것.', score: 1 },
+                    { text: '새로운 장소를 여행하며 다양한 경험과 영감을 얻는 것.', score: 5 }
+                ]
+            },
+            {
+                question: '누군가 "이건 원래 이렇게 하는 거야"라고 말한다면 당신의 생각은?',
+                answers: [
+                    { text: '"왜?" 그 방법이 최선인지, 더 효율적인 방법은 없는지 의문을 가진다.', score: 10 },
+                    { text: '아, 그렇구나. 기존의 방식에는 이유가 있겠지. 하고 일단 따른다.', score: 1 },
+                    { text: '다른 방법도 시도해보면 더 재밌을 것 같은데? 라고 제안한다.', score: 5 }
+                ]
+            },
+            {
+                question: '영화나 책의 결말이 마음에 들지 않을 때 당신은?',
+                answers: [
+                    { text: '나라면 이렇게 끝냈을 텐데... 머릿속으로 대안적인 결말을 10개쯤 구상한다.', score: 10 },
+                    { text: '결말이 좀 아쉽네. 하고 그냥 넘어간다.', score: 1 },
+                    { text: '다른 사람들은 어떻게 생각하는지 인터넷 커뮤니티에 검색해본다.', score: 5 }
+                ]
+            },
+            {
+                question: '관심 없는 주제의 단체 대화가 이어질 때 당신은?',
+                answers: [
+                    { text: '조용히 대화에서 빠져나와 내 생각을 한다.', score: 10 },
+                    { text: '열심히 듣는 척하며 고개를 끄덕인다.', score: 5 },
+                    { text: '어떻게든 대화에 끼어들기 위해 노력한다.', score: 1 }
+                ]
+            },
+            {
+                question: '새로운 기술이나 프로그램이 나왔을 때 당신의 반응은?',
+                answers: [
+                    { text: '밤을 새워서라도 직접 써보고 원리를 분석해야 직성이 풀린다.', score: 10 },
+                    { text: '주변 사람들의 사용 후기를 들어보고 괜찮으면 써본다.', score: 5 },
+                    { text: '나와는 상관없는 일이라고 생각한다.', score: 1 }
+                ]
+            },
+            {
+                question: '당신에게 \'친구\'란 어떤 존재인가?',
+                answers: [
+                    { text: '지적인 자극을 주고받을 수 있는 대화 상대.', score: 10 },
+                    { text: '힘들 때 감정적으로 기댈 수 있는 사람.', score: 1 },
+                    { text: '함께 재미있는 활동을 하는 사람.', score: 5 }
+                ]
+            },
+            {
+                question: '비효율적인 규칙이나 시스템을 발견했을 때 당신은?',
+                answers: [
+                    { text: '더 나은 시스템을 머릿속으로 구상하고, 어떻게 바꿀 수 있을지 고민한다.', score: 10 },
+                    { text: '불편하지만, 규칙은 규칙이니까 그냥 따른다.', score: 1 },
+                    { text: '주변 사람들에게 불평하지만, 딱히 바꾸려 하지는 않는다.', score: 5 }
+                ]
+            },
+            {
+                question: '당신이 가장 선호하는 학습 방식은?',
+                answers: [
+                    { text: '혼자서 책이나 자료를 파고들며 원리를 완벽하게 이해하는 것.', score: 10 },
+                    { text: '스터디 그룹에 참여하여 사람들과 토론하며 배우는 것.', score: 5 },
+                    { text: '강의를 듣거나, 전문가가 요약해준 내용을 습득하는 것.', score: 1 }
+                ]
+            }
+        ];
+
+        startBtn.addEventListener('click', startQuiz);
+        retryBtn.addEventListener('click', startQuiz);
+
+        function setInitialView() {
+            startArea.style.display = 'block';
+            quizArea.style.display = 'none';
+            resultArea.style.display = 'none';
+        }
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            resultTitleEl.innerText = '';
+            resultTextEl.innerText = '';
+            
+            startArea.style.display = 'none';
+            quizArea.style.display = 'block';
+            resultArea.style.display = 'none';
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            updateProgressBar();
+            const currentQuestion = quizData[currentQuestionIndex];
+            questionEl.innerText = currentQuestion.question;
+            answersEl.innerHTML = '';
+            currentQuestion.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.innerText = answer.text;
+                button.addEventListener('click', (e) => selectAnswer(answer.score, e.target));
+                answersEl.appendChild(button);
+            });
+        }
+
+        function selectAnswer(answerScore, selectedButton) {
+            score += answerScore;
+            selectedButton.classList.add('selected');
+            
+            const answerButtons = answersEl.querySelectorAll('button');
+            answerButtons.forEach(button => button.disabled = true);
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                updateProgressBar(); // Update progress after answering
+                
+                if (currentQuestionIndex < quizData.length) {
+                    quizContainer.style.opacity = 0;
+                    setTimeout(() => {
+                        showQuestion();
+                        quizContainer.style.opacity = 1;
+                    }, 400);
+                } else {
+                    showResult();
+                }
+            }, 500);
+        }
+
+        function showResult() {
+            quizArea.style.display = 'none';
+            resultArea.style.display = 'block';
+            let resultTitle = '';
+            let resultMessage = '';
+            if (score >= 80) {
+                resultTitle = '뼛속까지 논리적인 사색가';
+                resultMessage = '당신은 INTP의 사고방식을 완벽하게 탑재했군요. 세상의 모든 것에 "왜?"를 던지는 당신은 진정한 탐구자입니다.';
+            } else if (score >= 50) {
+                resultTitle = '논리와 가능성을 탐험하는 분석가';
+                resultMessage = 'INTP 성향이 강하게 나타납니다. 합리적인 사고를 즐기지만, 때로는 현실과 타협할 줄도 아는군요.';
+            } else {
+                resultTitle = '합리적인 실용주의자';
+                resultMessage = 'INTP보다는 다른 성향에 가까워 보입니다. 당신은 논리만큼이나 사람들과의 관계, 현실적인 실행도 중요하게 생각하는군요.';
+            }
+            resultTitleEl.innerText = resultTitle;
+            resultTextEl.innerText = resultMessage;
+        }
+
+        function updateProgressBar() {
+            const progress = (currentQuestionIndex / quizData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        setInitialView();
+    </script>
+</body>
+</html>
+</body>
+</html>
