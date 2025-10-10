@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INTP 연애 스타일 테스트</title>
+    <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+    <header class="main-nav">
+        <a href="/u/tests/" class="logo">INTP.KR Tests</a>
+        <div class="nav-right-section">
+            <nav class="nav-links" id="nav-links">
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">오늘의 콘텐츠</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/today-fortune/">오늘의 운세</a>
+                        <a href="/u/tests/today-game/">오늘의 게임</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">정보</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/info-characteristics/">특징</a>
+                        <a href="/u/tests/info-careers/">커리어</a>
+                        <a href="/u/tests/info-cognitive-functions/">인지기능</a>
+                        <a href="/u/tests/info-subtypes/">하위유형</a>
+                        <a href="/u/tests/info-relationships/">인간관계</a>
+                        <a href="/u/tests/info-misconceptions/">흔한 오해</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">테스트</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/test-logic-quiz/">논리력 퀴즈</a>
+                        <a href="/u/tests/test-relationship-style/">연애 스타일 테스트</a>
+                        <a href="/u/tests/test-stress-triggers/">스트레스 테스트</a>
+                        <a href="/u/tests/test-brain-utilization/">두뇌 활용 테스트</a>
+                        <a href="/u/tests/test-bingo/">빙고 챌린지</a>
+                        <a href="/u/tests/test-empathy-quiz/">INTP 공감 퀴즈</a>
+                    </div>
+                </div>
+                <div class="nav-item dropdown">
+                    <button class="dropdown-toggle">게임</button>
+                    <div class="dropdown-menu">
+                        <a href="/u/tests/game-logic-puzzle/">논리 퍼즐</a>
+                        <a href="/u/tests/game-strategy-simulation/">전략 시뮬레이션</a>
+                        <a href="/u/tests/game-code-decryption/">기억력 게임</a>
+                        <a href="/u/tests/game-abstract-reasoning/">추상적 사고 게임</a>
+                        <a href="/u/tests/game-travel-planner/">여행 계획 챌린지</a>
+                        <a href="/u/tests/game-maze-challenge/">미로 챌린지</a>
+                        <a href="/u/tests/game-code-breaker/">암호 해독기</a>
+                        <a href="/u/tests/game-pathfinder/">경로 탐색기</a>
+                    </div>
+                </div>
+            </nav>
+            <button id="theme-switcher" class="theme-switcher">🌙</button>
+            <button id="hamburger" class="hamburger">☰</button>
+        </div>
+    </header>
+    <div id="quiz-container" class="container">
+        <div id="start-area">
+            <h1>INTP 연애 스타일 테스트</h1>
+            <p>논리적인 INTP는 사랑에 빠지면 어떤 모습일까?<br>간단한 퀴즈를 통해 당신의 연애 스타일을 알아보세요!</p>
+            <button id="start-btn" class="btn btn-primary">테스트 시작하기</button>
+        </div>
+
+        <div id="quiz-area" class="hidden">
+            <div class="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
+            <div id="question"></div>
+            <div id="answers"></div>
+        </div>
+
+        <div id="result-area" class="hidden">
+            <div class="result-card">
+                <h2 id="result-title" class="result-title"></h2>
+                <p id="result-text"></p>
+                <button id="retry-btn" class="btn btn-primary">다시하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/assets/js/main.js" defer></script>
+    <script>
+        const quizContainer = document.getElementById('quiz-container');
+        const startArea = document.getElementById('start-area');
+        const quizArea = document.getElementById('quiz-area');
+        const resultArea = document.getElementById('result-area');
+        const startBtn = document.getElementById('start-btn');
+        const retryBtn = document.getElementById('retry-btn');
+        const questionEl = document.getElementById('question');
+        const answersEl = document.getElementById('answers');
+        const resultTitleEl = document.getElementById('result-title');
+        const resultTextEl = document.getElementById('result-text');
+        const progressBar = document.getElementById('progress-bar');
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        const quizData = [
+            {
+                question: '데이트 계획을 세울 때 당신의 스타일은?',
+                answers: [
+                    { text: '상황에 따라 유연하게. 즉흥적으로 흥미로운 곳에 가는 것을 선호.', score: 10 },
+                    { text: '맛집, 카페, 동선을 고려한 최적의 코스를 미리 분석하고 계획.', score: 5 },
+                    { text: '상대방이 원하는 곳이라면 어디든 좋아.', score: 1 }
+                ]
+            },
+            {
+                question: '연인과 감정적인 갈등이 생겼을 때, 당신의 첫 반응은?',
+                answers: [
+                    { text: '문제의 원인이 무엇인지, 누가 잘못했는지 논리적으로 따져본다.', score: 10 },
+                    { text: '일단 상대방의 감정이 진정될 때까지 기다린다.', score: 5 },
+                    { text: '즉시 사과하고 상대방의 기분을 풀어주려고 노력한다.', score: 1 }
+                ]
+            },
+            {
+                question: '당신이 생각하는 최고의 애정 표현은?',
+                answers: [
+                    { text: '상대방의 문제를 해결해주거나, 지적 호기심을 채워주는 것.', score: 10 },
+                    { text: '함께 시간을 보내며, 같은 공간에 있는 것만으로도 충분.', score: 5 },
+                    { text: '사랑한다는 말을 자주 해주고, 스킨십을 통해 표현하는 것.', score: 1 }
+                ]
+            },
+            {
+                question: '연인이 당신의 개인적인 취미 시간에 대해 서운함을 표현한다면?',
+                answers: [
+                    { text: '개인의 시간은 존중받아야 함을 논리적으로 설명한다.', score: 10 },
+                    { text: '서운해하지 않도록 취미 시간을 조금 줄이고, 함께할 시간을 늘린다.', score: 5 },
+                    { text: '연인이 서운하지 않도록 내 취미를 포기할 수도 있다.', score: 1 }
+                ]
+            },
+            {
+                question: '연인에게 어떤 선물을 주는 것을 선호하는가?',
+                answers: [
+                    { text: '상대방이 평소에 필요하다고 말했던, 실용적인 기능의 제품.', score: 10 },
+                    { text: '나의 취향과 생각이 담긴, 특별한 의미가 있는 책이나 물건.', score: 5 },
+                    { text: '연인이 직접 고른 선물 또는 로맨틱한 꽃다발.', score: 1 }
+                ]
+            },
+            {
+                question: '연인과 함께하는 여행을 계획한다면?',
+                answers: [
+                    { text: '가서 뭐 할지 정하지 않고, 자유롭게 탐험하는 여행.', score: 10 },
+                    { text: '주요 명소와 맛집을 중심으로 효율적인 동선을 계획하는 여행.', score: 5 },
+                    { text: '편안한 숙소에서 함께 휴식을 취하는 여유로운 여행.', score: 1 }
+                ]
+            },
+            {
+                question: '연인이 사소한 일로 하루 종일 힘들어할 때 당신은?',
+                answers: [
+                    { text: '그것이 왜 힘든 일인지 이해하기 어려워, 논리적으로 별일 아니라고 설명한다.', score: 10 },
+                    { text: '이야기를 들어주며, 기분이 나아질 만한 다른 활동을 제안한다.', score: 5 },
+                    { text: '무조건 상대방의 편이 되어 함께 공감하고 위로해준다.', score: 1 }
+                ]
+            },
+            {
+                question: '기념일을 챙기는 것에 대한 당신의 생각은?',
+                answers: [
+                    { text: '상업적이고 형식적인 날일 뿐, 크게 의미를 두지 않는다.', score: 10 },
+                    { text: '상대방이 원한다면 챙기지만, 꼭 필요하다고 생각하지는 않는다.', score: 5 },
+                    { text: '관계를 더욱 특별하게 만들어주는 소중한 날이라고 생각한다.', score: 1 }
+                ]
+            },
+            {
+                question: '연인과 가장 하고 싶은 데이트는?',
+                answers: [
+                    { text: '서로 흥미 있는 다큐멘터리를 보고 밤새도록 토론하기.', score: 10 },
+                    { text: '조용한 카페에 앉아 각자 책을 읽거나 작업하기.', score: 5 },
+                    { text: '사람들이 많은 핫플레이스에 가서 맛있는 음식을 먹기.', score: 1 }
+                ]
+            },
+            {
+                question: '당신은 연인에게 당신의 모든 것을 공유하는 편인가?',
+                answers: [
+                    { text: '아니, 아무리 가까워도 나만의 생각과 공간은 반드시 필요하다.', score: 10 },
+                    { text: '대부분 공유하지만, 굳이 말할 필요가 없는 부분은 남겨둔다.', score: 5 },
+                    { text: '모든 것을 공유하고, 상대방의 모든 것도 알고 싶다.', score: 1 }
+                ]
+            }
+        ];
+
+        startBtn.addEventListener('click', startQuiz);
+        retryBtn.addEventListener('click', startQuiz);
+
+        function setInitialView() {
+            startArea.style.display = 'block';
+            quizArea.style.display = 'none';
+            resultArea.style.display = 'none';
+        }
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            
+            resultTitleEl.innerText = '';
+            resultTextEl.innerText = '';
+            
+            startArea.style.display = 'none';
+            quizArea.style.display = 'block';
+            resultArea.style.display = 'none';
+            
+            showQuestion();
+        }
+
+        function showQuestion() {
+            updateProgressBar();
+            const currentQuestion = quizData[currentQuestionIndex];
+            questionEl.innerText = currentQuestion.question;
+            answersEl.innerHTML = '';
+            currentQuestion.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.innerText = answer.text;
+                button.addEventListener('click', (e) => selectAnswer(answer.score, e.target));
+                answersEl.appendChild(button);
+            });
+        }
+
+        function selectAnswer(answerScore, selectedButton) {
+            score += answerScore;
+            selectedButton.classList.add('selected');
+            
+            const answerButtons = answersEl.querySelectorAll('button');
+            answerButtons.forEach(button => button.disabled = true);
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                updateProgressBar();
+
+                if (currentQuestionIndex < quizData.length) {
+                    quizContainer.style.opacity = 0;
+                    setTimeout(() => {
+                        showQuestion();
+                        quizContainer.style.opacity = 1;
+                    }, 400);
+                } else {
+                    showResult();
+                }
+            }, 500);
+        }
+
+        function showResult() {
+            quizArea.style.display = 'none';
+            resultArea.style.display = 'block';
+            let resultTitle = '';
+            let resultMessage = '';
+            if (score >= 80) {
+                resultTitle = '독립적인 탐험가';
+                resultMessage = '당신은 연애에서도 자유로운 영혼입니다. 상대방을 존중하고 개인의 시간을 중시하지만, 때로는 감정 표현에 서툴러 오해를 살 수 있습니다. 당신의 지적인 매력과 솔직함이 최고의 무기입니다.';
+            } else if (score >= 50) {
+                resultTitle = '논리적인 동반자';
+                resultMessage = '당신은 연인에게 헌신적인 해결사입니다. 감정적인 위로보다는 실질적인 도움을 주는 것을 선호하며, 안정적인 관계 속에서 지적인 교감을 나눌 때 가장 큰 행복을 느낍니다.';
+            } else {
+                resultTitle = '따뜻한 분석가';
+                resultMessage = '당신은 INTP의 논리력과 따뜻한 마음을 동시에 가졌습니다. 상대방의 감정을 고려하여 행동하고, 사랑을 표현하는 데에도 노력하는 로맨틱한 면모를 가지고 있습니다.';
+            }
+            resultTitleEl.innerText = resultTitle;
+            resultTextEl.innerText = resultMessage;
+        }
+
+        function updateProgressBar() {
+            const progress = (currentQuestionIndex / quizData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        setInitialView();
+    </script>
+</body>
+</html>
