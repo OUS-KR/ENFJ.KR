@@ -16,5 +16,16 @@
         "description": "오늘의 추천 게임"
       }
     ]
+  },
+  {
+    "mainTitle": "정보",
+    "items": [
+      {
+        "title": "ENFJ 특징 분석: 정의로운 사회운동가",
+        "url": "/u/tests/info-characteristics/",
+        "type": "정보",
+        "description": "ENFJ의 핵심 특징, 장단점, 성장 방법"
+      }
+    ]
   }
 ]
