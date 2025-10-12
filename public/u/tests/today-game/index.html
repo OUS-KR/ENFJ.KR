@@ -165,121 +165,297 @@
 
     // --- Game Implementations for ENFJ ---
 
-    // Game 0: Today's Leadership Dilemma
-    function setupLeadershipDilemmaGame() {
-        document.getElementById('gameTitle').innerText = "오늘의 게임: 리더십 딜레마";
-        const gameArea = document.getElementById('gameArea');
-        const dilemmas = [
-            { q: "팀원들 사이에 의견 충돌이 심해 프로젝트 진행이 어렵습니다. 당신은 어떻게 하시겠습니까?", a: ["각자의 의견을 경청하고 공통의 목표를 상기시키며 중재한다.", "가장 합리적인 의견을 가진 팀원의 편을 들어준다.", "갈등이 해결될 때까지 잠시 프로젝트를 중단시킨다."], correct: 0 },
-            { q: "새로운 프로젝트를 시작해야 하지만 팀원들이 동기 부여가 부족해 보입니다. 어떻게 하시겠습니까?", a: ["프로젝트의 비전과 개인의 성장을 연결시켜 열정을 불어넣는다.", "성과에 따른 보상을 약속하여 참여를 유도한다.", "강력한 리더십으로 목표 달성을 지시한다."], correct: 0 },
-            { q: "팀원이 개인적인 어려움으로 업무 성과가 저조합니다. 어떻게 접근하시겠습니까?", a: ["개인적인 대화를 통해 어려움을 공감하고 필요한 지원을 모색한다.", "업무에 집중하도록 경고하고 성과 개선을 요구한다.", "다른 팀원에게 업무를 재분배하여 공백을 메운다."], correct: 0 },
-            { q: "팀의 중요한 결정에 대해 소수의 팀원이 강하게 반대하고 있습니다. 어떻게 하시겠습니까?", a: ["반대 의견을 경청하고 모두가 동의할 수 있는 대안을 함께 찾는다.", "다수결의 원칙에 따라 결정을 강행한다.", "반대하는 팀원들을 설득하여 동의를 얻어낸다."], correct: 0 }
-        ];
-        const dilemma = dilemmas[Math.floor(currentRandFn() * dilemmas.length)];
-        currentCorrectAnswer = dilemma.correct;
-        gameArea.innerHTML = `
-            <div class="game-display question">${dilemma.q}</div>
-            <div class="choices">
-                ${dilemma.a.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice}</button>`).join('')}
-            </div>
-        `;
-        document.getElementById('game-input-area').innerHTML = '';
-        gameInProgress = true;
-    }
-
-    // Game 1: Empathy Challenge
-    function setupEmpathyChallengeGame() {
-        document.getElementById('gameTitle').innerText = "오늘의 게임: 공감 능력 챌린지";
-        const gameArea = document.getElementById('gameArea');
-        const scenarios = [
-            { q: "친구가 최근 승진에서 누락되어 실망하고 있습니다. 어떤 위로의 말을 건네시겠습니까?", a: [""정말 속상하겠다. 네 노력을 내가 잘 아는데..." (공감)", ""다음 기회에 더 잘하면 돼! 힘내!" (격려)", ""원래 승진은 운도 따라야 하는 법이야." (현실적 조언)"], correct: 0 },
-            { q: "팀원이 중요한 발표를 앞두고 극도로 긴장하고 있습니다. 어떻게 도와주시겠습니까?", a: [""많이 긴장되는구나. 내가 옆에서 도와줄 수 있는 게 있을까?" (공감 및 지원)", ""긴장하지 마! 넌 잘할 수 있어!" (단순 격려)", ""발표 자료는 다 외웠어? 실수하면 안 돼." (압박)"], correct: 0 },
-            { q: "지인이 최근 반려동물을 잃어 슬픔에 잠겨 있습니다. 어떻게 반응하시겠습니까?", a: [""얼마나 마음이 아플까. 옆에 있어 줄게." (공감과 위로)", ""새로운 반려동물을 입양하는 건 어때?" (해결책 제시)", ""시간이 약이야. 곧 괜찮아질 거야." (성급한 위로)"], correct: 0 },
-            { q: "동료가 업무 과중으로 힘들어하며 불평합니다. 어떻게 대응하시겠습니까?", a: [""정말 힘들겠구나. 내가 보기에도 일이 너무 많은 것 같아." (공감)", ""다들 힘들어. 너만 힘든 거 아니야." (일반화)", ""그럼 일을 좀 줄여달라고 말해봐." (직접적 해결책)"], correct: 0 }
-        ];
-        const scenario = scenarios[Math.floor(currentRandFn() * scenarios.length)];
-        currentCorrectAnswer = scenario.correct;
-        gameArea.innerHTML = `
-            <div class="game-display question">${scenario.q}</div>
-            <div class="choices">
-                ${scenario.a.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice}</button>`).join('')}
-            </div>
-        `;
-        document.getElementById('game-input-area').innerHTML = '';
-        gameInProgress = true;
-    }
-
-    // Game 2: Vision Sharing Puzzle
-    function setupVisionSharingPuzzleGame() {
-        document.getElementById('gameTitle').innerText = "오늘의 게임: 비전 공유 퍼즐";
+    // Game 0: Emotional Harmony Puzzle
+    function setupEmotionalHarmonyPuzzleGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 감정 조화 퍼즐";
         const gameArea = document.getElementById('gameArea');
         const puzzles = [
-            { q: "우리의 목표는 단순히 제품을 만드는 것이 아니라, 사람들의 삶에 ______을 불어넣는 것입니다.", a: ["긍정적인 변화", "새로운 기술", "경제적 이득"], correct: 0 },
-            { q: "진정한 리더십은 타인을 ______하고, 그들이 잠재력을 최대한 발휘하도록 돕는 데 있습니다.", a: ["영감을 주고", "지시하고", "평가하고"], correct: 0 },
-            { q: "우리는 함께 더 나은 미래를 ______하고, 모든 구성원이 자신의 역할을 통해 성장할 수 있도록 지원합니다.", a: ["구축하고", "예측하고", "경쟁하고"], correct: 0 },
-            { q: "가장 큰 성취는 개인의 성공이 아닌, 공동체의 ______을 통해 이루어집니다.", a: ["조화로운 협력", "치열한 경쟁", "개별적 노력"], correct: 0 }
-        ];
-        const puzzle = puzzles[Math.floor(currentRandFn() * puzzles.length)];
-        currentCorrectAnswer = puzzle.correct;
-        gameArea.innerHTML = `
-            <div class="game-display question">${puzzle.q}</div>
-            <div class="choices">
-                ${puzzle.a.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice}</button>`).join('')}
-            </div>
-        `;
-        document.getElementById('game-input-area').innerHTML = '';
-        gameInProgress = true;
-    }
-
-    // Game 3: Connect the Relationships
-    function setupConnectRelationshipsGame() {
-        document.getElementById('gameTitle').innerText = "오늘의 게임: 관계 연결하기";
-        const gameArea = document.getElementById('gameArea');
-        const relationships = [
             {
-                people: ["멘토", "멘티"],
-                type: "성장 지원 관계",
-                options: ["성장 지원 관계", "경쟁 관계", "단순 업무 관계"],
-                correct: 0
+                core: "슬픔",
+                emotions: ["이해", "희망", "분노", "좌절", "위로", "기쁨"],
+                correct: ["이해", "희망", "위로"],
+                feedback: "슬픔은 이해와 희망, 위로를 통해 조화롭게 극복될 수 있습니다."
             },
             {
-                people: ["팀 리더", "팀원"],
-                type: "협력적 리더십 관계",
-                options: ["협력적 리더십 관계", "수직적 지시 관계", "개인주의적 관계"],
-                correct: 0
+                core: "갈등",
+                emotions: ["소통", "협력", "고집", "회피", "경청", "공감"],
+                correct: ["소통", "협력", "경청", "공감"],
+                feedback: "갈등은 소통, 협력, 경청, 공감을 통해 해결될 수 있습니다."
             },
             {
-                people: ["친구 A", "친구 B"],
-                type: "상호 이해 관계",
-                options: ["상호 이해 관계", "일방적 의존 관계", "표면적 친분 관계"],
-                correct: 0
+                core: "불안",
+                emotions: ["준비", "수용", "부정", "과장", "용기", "평온"],
+                correct: ["준비", "수용", "용기", "평온"],
+                feedback: "불안은 준비와 수용, 용기를 통해 평온으로 나아갈 수 있습니다."
             },
             {
-                people: ["봉사자", "수혜자"],
-                type: "나눔과 배려 관계",
-                options: ["나눔과 배려 관계", "거래 관계", "의무적 관계"],
-                correct: 0
+                core: "무기력",
+                emotions: ["목표", "휴식", "비난", "포기", "성취", "격려"],
+                correct: ["목표", "휴식", "성취", "격려"],
+                feedback: "무기력은 명확한 목표, 충분한 휴식, 작은 성취, 그리고 격려를 통해 극복됩니다."
             }
         ];
-        const relationship = relationships[Math.floor(currentRandFn() * relationships.length)];
-        currentCorrectAnswer = relationship.correct;
+        const puzzle = puzzles[Math.floor(currentRandFn() * puzzles.length)];
+        
+        let selectedEmotions = [];
+        currentCorrectAnswer = puzzle.correct; // Store correct answers for validation
+
         gameArea.innerHTML = `
-            <div class="game-display question">다음 인물들은 어떤 관계 유형에 가장 가깝습니까?</div>
-            <div class="game-display"><b>${relationship.people[0]}</b>와 <b>${relationship.people[1]}</b></div>
-            <div class="choices">
-                ${relationship.options.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice}</button>`).join('')}
+            <div class="game-display question">핵심 감정 <b>'${puzzle.core}'</b>을(를) 조화롭게 만들 감정들을 선택하세요.</div>
+            <div class="choices emotion-choices" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+                ${puzzle.emotions.map((emotion, index) => `<button class="choice-btn emotion-btn" data-emotion="${emotion}">${emotion}</button>`).join('')}
+            </div>
+            <button id="submitEmotionChoices" class="choice-btn" style="margin-top: 20px; max-width: 200px;">선택 완료</button>
+        `;
+        document.getElementById('game-input-area').innerHTML = '';
+        gameInProgress = true;
+
+        document.querySelectorAll('.emotion-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.classList.toggle('selected');
+                selectedEmotions = Array.from(document.querySelectorAll('.emotion-btn.selected')).map(b => b.dataset.emotion);
+            });
+        });
+
+        document.getElementById('submitEmotionChoices').addEventListener('click', function() {
+            if (!gameInProgress) return;
+            const isCorrect = currentCorrectAnswer.every(val => selectedEmotions.includes(val)) && selectedEmotions.length === currentCorrectAnswer.length;
+            showFeedback(isCorrect, isCorrect ? puzzle.feedback : "다시 한번 감정의 조화를 찾아보세요.");
+            document.querySelectorAll('.emotion-btn').forEach(btn => btn.disabled = true);
+            this.disabled = true;
+        });
+    }
+
+    // Game 1: Vision Link Arcade
+    let visionLinkSequence = [];
+    let currentVisionLinkIndex = 0;
+    let visionLinkScore = 0;
+    let visionLinkTimer = null;
+    let visionLinkTimeLeft = 10; // seconds per step
+
+    function startVisionLinkTimer() {
+        clearInterval(visionLinkTimer);
+        visionLinkTimeLeft = 10;
+        document.getElementById('visionLinkTimerDisplay').innerText = `남은 시간: ${visionLinkTimeLeft}초`;
+        visionLinkTimer = setInterval(() => {
+            visionLinkTimeLeft--;
+            document.getElementById('visionLinkTimerDisplay').innerText = `남은 시간: ${visionLinkTimeLeft}초`;
+            if (visionLinkTimeLeft <= 0) {
+                clearInterval(visionLinkTimer);
+                showFeedback(false, `시간 초과! ${visionLinkScore}단계까지 연결했습니다.`);
+                gameInProgress = false;
+                document.querySelectorAll('.vision-link-btn').forEach(btn => btn.disabled = true);
+            }
+        }, 1000);
+    }
+
+    function setupVisionLinkArcadeGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 비전 연결 아케이드";
+        const gameArea = document.getElementById('gameArea');
+        const visions = [
+            { start: "공동체", sequence: ["성장", "협력", "조화", "번영"], distractors: ["경쟁", "고립", "정체"] },
+            { start: "혁신", sequence: ["도전", "창의", "변화", "미래"], distractors: ["안정", "전통", "모방"] },
+            { start: "행복", sequence: ["나눔", "감사", "연결", "만족"], distractors: ["소유", "비교", "불평"] },
+            { start: "리더십", sequence: ["영향력", "책임", "솔선수범", "성장"], distractors: ["권위", "지배", "방관"] }
+        ];
+        const vision = visions[Math.floor(currentRandFn() * visions.length)];
+        
+        visionLinkSequence = vision.sequence;
+        currentVisionLinkIndex = 0;
+        visionLinkScore = 0;
+
+        gameArea.innerHTML = `
+            <div class="game-display question"><b>'${vision.start}'</b> 비전을 완성할 다음 키워드를 선택하세요.</div>
+            <div id="visionLinkCurrentWord" class="game-display" style="font-size: 1.5em; font-weight: bold; margin-bottom: 15px;">${vision.start}</div>
+            <div id="visionLinkTimerDisplay" class="game-display" style="font-size: 1em; color: var(--secondary-text-color);">남은 시간: 10초</div>
+            <div id="visionLinkChoices" class="choices" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+                <!-- Choices will be loaded here -->
             </div>
         `;
         document.getElementById('game-input-area').innerHTML = '';
         gameInProgress = true;
+        
+        renderVisionLinkChoices(vision);
+        startVisionLinkTimer();
+    }
+
+    function renderVisionLinkChoices(vision) {
+        const choicesContainer = document.getElementById('visionLinkChoices');
+        choicesContainer.innerHTML = '';
+        
+        const currentCorrect = visionLinkSequence[currentVisionLinkIndex];
+        let availableChoices = [currentCorrect];
+        
+        // Add distractors, ensuring no duplicates and random selection
+        const shuffledDistractors = vision.distractors.sort(() => currentRandFn() - 0.5);
+        for (let i = 0; i < 2; i++) { // Add 2 distractors
+            if (shuffledDistractors[i] && !availableChoices.includes(shuffledDistractors[i])) {
+                availableChoices.push(shuffledDistractors[i]);
+            }
+        }
+        
+        availableChoices = availableChoices.sort(() => currentRandFn() - 0.5); // Shuffle all choices
+
+        availableChoices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn vision-link-btn';
+            btn.innerText = choice;
+            btn.dataset.choice = choice;
+            btn.addEventListener('click', handleVisionLinkChoice);
+            choicesContainer.appendChild(btn);
+        });
+    }
+
+    function handleVisionLinkChoice(event) {
+        if (!gameInProgress) return;
+        clearInterval(visionLinkTimer); // Stop timer for current step
+
+        const selectedChoice = event.target.dataset.choice;
+        const currentCorrect = visionLinkSequence[currentVisionLinkIndex];
+
+        if (selectedChoice === currentCorrect) {
+            visionLinkScore++;
+            currentVisionLinkIndex++;
+            document.getElementById('visionLinkCurrentWord').innerText = selectedChoice;
+
+            if (currentVisionLinkIndex < visionLinkSequence.length) {
+                const currentVisionData = visions[Math.floor(currentRandFn() * visions.length)]; // Re-select vision data for distractors
+                renderVisionLinkChoices(currentVisionData);
+                startVisionLinkTimer(); // Start timer for next step
+            } else {
+                showFeedback(true, `비전 연결 성공! ${visionLinkScore}단계 모두 연결했습니다!`);
+                gameInProgress = false;
+                document.querySelectorAll('.vision-link-btn').forEach(btn => btn.disabled = true);
+            }
+        } else {
+            showFeedback(false, `잘못된 연결! ${visionLinkScore}단계까지 연결했습니다.`);
+            gameInProgress = false;
+            document.querySelectorAll('.vision-link-btn').forEach(btn => btn.disabled = true);
+        }
+    }
+
+    // Game 2: Relationship Web Builder
+    let relationshipWebSelectedActions = [];
+    let relationshipWebCorrectActions = [];
+
+    function setupRelationshipWebBuilderGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 관계망 구축";
+        const gameArea = document.getElementById('gameArea');
+        const scenarios = [
+            {
+                role: "팀 리더",
+                relationships: [
+                    { type: "멘토", actions: ["성장 지원", "경험 공유", "피드백 제공"] },
+                    { type: "협력자", actions: ["목표 공유", "역할 분담", "아이디어 교환"] },
+                    { type: "지지자", actions: ["격려", "신뢰 표현", "어려움 경청"] }
+                ],
+                actionPool: ["성장 지원", "경험 공유", "피드백 제공", "목표 공유", "역할 분담", "아이디어 교환", "격려", "신뢰 표현", "어려움 경청", "지시", "비판", "경쟁 유도", "방관"]
+            },
+            {
+                role: "친구",
+                relationships: [
+                    { type: "경청자", actions: ["이야기 듣기", "공감 표현", "조언 제공"] },
+                    { type: "활동 파트너", actions: ["함께 취미 즐기기", "새로운 경험", "추억 만들기"] },
+                    { type: "정서적 지지자", actions: ["위로", "곁에 있어주기", "비밀 공유"] }
+                ],
+                actionPool: ["이야기 듣기", "공감 표현", "조언 제공", "함께 취미 즐기기", "새로운 경험", "추억 만들기", "위로", "곁에 있어주기", "비밀 공유", "판단", "무시", "경쟁"]
+            }
+        ];
+        const scenario = scenarios[Math.floor(currentRandFn() * scenarios.length)];
+        
+        relationshipWebCorrectActions = [];
+        scenario.relationships.forEach(rel => relationshipWebCorrectActions.push(...rel.actions));
+        relationshipWebSelectedActions = [];
+
+        gameArea.innerHTML = `
+            <div class="game-display question"><b>'${scenario.role}'</b>로서 각 관계 유형에 필요한 행동들을 연결하세요.</div>
+            <div class="relationship-web-container" style="display: flex; flex-direction: column; gap: 20px; margin-top: 20px;">
+                ${scenario.relationships.map(rel => `
+                    <div class="relationship-type-box" style="border: 1px solid var(--border-color); padding: 15px; border-radius: 8px;">
+                        <h3 style="margin-top: 0;">${rel.type}</h3>
+                        <div class="assigned-actions" id="assigned-actions-${rel.type.replace(/\s/g, '')}" style="min-height: 50px; border: 1px dashed var(--secondary-text-color); padding: 10px; border-radius: 4px; display: flex; flex-wrap: wrap; gap: 5px;">
+                            <!-- Actions will be dropped here -->
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="action-pool" style="margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+                ${scenario.actionPool.map(action => `<button class="choice-btn action-btn" draggable="true" data-action="${action}">${action}</button>`).join('')}
+            </div>
+            <button id="submitRelationshipWeb" class="choice-btn" style="margin-top: 20px; max-width: 200px;">완료</button>
+        `;
+        document.getElementById('game-input-area').innerHTML = '';
+        gameInProgress = true;
+
+        // Drag and Drop Logic
+        let draggedItem = null;
+
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('dragstart', (e) => {
+                draggedItem = e.target;
+                setTimeout(() => e.target.style.display = 'none', 0);
+            });
+            btn.addEventListener('dragend', (e) => {
+                setTimeout(() => e.target.style.display = 'block', 0);
+                draggedItem = null;
+            });
+        });
+
+        document.querySelectorAll('.assigned-actions').forEach(box => {
+            box.addEventListener('dragover', (e) => {
+                e.preventDefault(); // Allow drop
+            });
+            box.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                box.style.background = 'var(--hover-bg-color)';
+            });
+            box.addEventListener('dragleave', (e) => {
+                box.style.background = 'transparent';
+            });
+            box.addEventListener('drop', (e) => {
+                e.preventDefault();
+                box.style.background = 'transparent';
+                if (draggedItem) {
+                    const action = draggedItem.dataset.action;
+                    const relationshipType = box.id.replace('assigned-actions-', '');
+                    
+                    // Check if this action is correct for this relationship type
+                    const targetRelationship = scenario.relationships.find(rel => rel.type.replace(/\s/g, '') === relationshipType);
+                    if (targetRelationship && targetRelationship.actions.includes(action)) {
+                        const newActionBtn = document.createElement('button');
+                        newActionBtn.className = 'choice-btn assigned-action-btn';
+                        newActionBtn.innerText = action;
+                        newActionBtn.dataset.action = action;
+                        newActionBtn.disabled = true; // Disable assigned action
+                        box.appendChild(newActionBtn);
+                        draggedItem.remove(); // Remove from pool
+                        relationshipWebSelectedActions.push(action);
+                    } else {
+                        // Optionally provide feedback for incorrect drop
+                        showFeedback(false, "이 행동은 해당 관계 유형에 적합하지 않습니다.");
+                        setTimeout(() => {
+                            draggedItem.style.display = 'block'; // Return to pool if incorrect
+                        }, 100);
+                    }
+                }
+            });
+        });
+
+        document.getElementById('submitRelationshipWeb').addEventListener('click', function() {
+            if (!gameInProgress) return;
+            const isCorrect = relationshipWebCorrectActions.every(val => relationshipWebSelectedActions.includes(val)) && relationshipWebSelectedActions.length === relationshipWebCorrectActions.length;
+            showFeedback(isCorrect, isCorrect ? "관계망을 성공적으로 구축했습니다!" : "다시 한번 관계의 본질을 파악해 보세요.");
+            document.querySelectorAll('.action-btn').forEach(btn => btn.disabled = true);
+            document.querySelectorAll('.assigned-action-btn').forEach(btn => btn.disabled = true);
+            this.disabled = true;
+        });
     }
 
     // --- Game Dispatcher and Common Logic ---
     const gameTypes = [
-        setupLeadershipDilemmaGame,
-        setupEmpathyChallengeGame,
-        setupVisionSharingPuzzleGame,
-        setupConnectRelationshipsGame
+        setupEmotionalHarmonyPuzzleGame,
+        setupVisionLinkArcadeGame,
+        setupRelationshipWebBuilderGame
     ];
 
     function getDayOfWeekText(day) {
@@ -307,13 +483,6 @@
         gameInProgress = false;
     }
 
-    function handleChoiceClick(event) {
-        if (!gameInProgress) return;
-        const selectedIndex = parseInt(event.target.getAttribute('data-index'));
-        showFeedback(selectedIndex === currentCorrectAnswer);
-        document.querySelectorAll('.choice-btn').forEach(btn => btn.disabled = true);
-    }
-
     function initDailyGame() {
         const today = new Date();
         const seed = getDailySeed();
@@ -328,10 +497,8 @@
         document.getElementById('feedbackMessage').innerText = '';
         document.getElementById('feedbackMessage').className = "feedback-message";
         
-        // Add event listeners after creating the elements
-        document.querySelectorAll('.choice-btn').forEach(btn => {
-            btn.addEventListener('click', handleChoiceClick);
-        });
+        // Event listeners are now added within each game setup function
+        // or specific handlers like handleVisionLinkChoice
     }
 
     window.onload = function() {
