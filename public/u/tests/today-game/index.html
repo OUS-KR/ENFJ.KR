@@ -325,6 +325,7 @@
                 // Invalid move, reset path
                 showFeedback(false, "잘못된 연결입니다. 경로가 초기화됩니다.");
                 resetEmotionalWebPath();
+                // gameInProgress = false; // Removed
                 return;
             }
         }
@@ -458,6 +459,7 @@
             document.getElementById('visionBuilderScoreDisplay').innerText = `점수: ${visionBuilderScore}`;
             clickedFragment.classList.add('incorrect'); // Visual feedback for incorrect
             setTimeout(() => clickedFragment.remove(), 300); // Remove incorrect fragment quickly
+            // gameInProgress = false; // Removed
         }
     }
 
@@ -686,7 +688,7 @@
             feedbackMessage.innerText = message || "다시 한번 도전해 보세요! 당신의 잠재력을 믿습니다.";
             feedbackMessage.className = "feedback-message incorrect";
         }
-        gameInProgress = false;
+        // gameInProgress = false; // Removed: Game state should be managed by individual game logic
     }
 
     function initDailyGame() {
@@ -1007,6 +1009,7 @@
                     } else {
                         // Optionally provide feedback for incorrect drop
                         showFeedback(false, "이 행동은 해당 관계 유형에 적합하지 않습니다.");
+                        // gameInProgress = false; // Removed
                         setTimeout(() => {
                             draggedItem.style.display = 'block'; // Return to pool if incorrect
                         }, 100);
