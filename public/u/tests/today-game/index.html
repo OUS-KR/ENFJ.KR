@@ -165,71 +165,6 @@
 
     // --- Game Implementations for ENFJ ---
 
-    // Game 0: Ethical Dilemma Quiz
-    function setupEthicalDilemmaQuiz() {
-        document.getElementById('gameTitle').innerText = "오늘의 게임: 윤리 딜레마 퀴즈";
-        const gameArea = document.getElementById('gameArea');
-        const dilemmas = [
-            { q: "친구가 프로젝트에서 작은 실수를 한 것을 발견했습니다. 어떻게 하시겠습니까?", a: ["직접 말해준다", "아무도 모르게 수정해준다", "스스로 알아챌 때까지 기다린다"], correct: 1 },
-            { q: "두 동료가 의견 충돌로 언쟁을 벌이고 있습니다. 당신의 행동은?", a: ["둘 사이를 적극적으로 중재한다", "각자의 의견을 따로 들어본다", "상황이 진정되길 기다린다"], correct: 0 },
-            { q: "당신만 아는 회사의 사소한 비리가 있습니다. 어떻게 하시겠습니까?", a: ["즉시 문제를 제기한다", "신뢰할 수 있는 상사에게만 알린다", "조직의 조화를 위해 침묵한다"], correct: 1 }
-        ];
-        const dilemma = dilemmas[Math.floor(currentRandFn() * dilemmas.length)];
-        currentCorrectAnswer = dilemma.correct;
-        gameArea.innerHTML = `
-            <div class="game-display question">${dilemma.q}</div>
-            <div class="choices">
-                ${dilemma.a.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice}</button>`).join('')}
-            </div>
-        `;
-        document.getElementById('game-input-area').innerHTML = '';
-        gameInProgress = true;
-    }
-
-    // Game 1: Motivational Message Quiz
-    function setupMotivationalMessageQuiz() {
-        document.getElementById('gameTitle').innerText = "오늘의 게임: 동기부여 메시지 고르기";
-        const gameArea = document.getElementById('gameArea');
-        const scenarios = [
-            { q: "친구가 새로운 도전에 망설이고 있습니다. 가장 ENFJ다운 메시지는?", a: ["네 안의 잠재력을 믿어! 함께라면 뭐든지 할 수 있어!", "현실적으로 생각해. 실패할 수도 있잖아.", "일단 한번 해봐. 나쁘지 않을 거야."], correct: 0 },
-            { q: "팀원이 작은 실수로 자책하고 있습니다. 어떻게 격려하시겠습니까?", a: ["괜찮아, 누구나 실수할 수 있어. 이걸 통해 배우면 돼.", "다음부턴 좀 더 신경 써줘.", "왜 그런 실수를 했는지 분석해보자."], correct: 0 },
-            { q: "아이디어가 있지만 발표를 두려워하는 동료가 있습니다. 뭐라고 말해줄까요?", a: ["네 생각은 정말 훌륭해! 다른 사람들도 좋아할 거야.", "준비가 더 필요할 것 같아.", "내가 대신 발표해줄까?"], correct: 0 }
-        ];
-        const scenario = scenarios[Math.floor(currentRandFn() * scenarios.length)];
-        currentCorrectAnswer = scenario.correct;
-        gameArea.innerHTML = `
-            <div class="game-display question">${scenario.q}</div>
-            <div class="choices">
-                ${scenario.a.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice}</button>`).join('')}
-            </div>
-        `;
-        document.getElementById('game-input-area').innerHTML = '';
-        gameInProgress = true;
-    }
-
-    // Game 2: Social Scenario Quiz
-    function setupSocialScenarioQuiz() {
-        document.getElementById('gameTitle').innerText = "오늘의 게임: 소셜 시나리오 퀴즈";
-        const gameArea = document.getElementById('gameArea');
-        const scenarios = [
-            { q: "두 친구가 저녁 메뉴로 다투고 있습니다. 어떻게 제안하시겠습니까?", a: ["모두가 만족할 만한 타협안을 제시한다", "내가 장소를 정해버린다", "둘이 해결하도록 놔둔다"], correct: 0 },
-            { q: "내성적인 친구가 파티에 어울리지 못하고 있습니다. 당신의 행동은?", a: ["다른 친구들에게 소개시켜준다", "조용한 곳에서 둘이 대화한다", "혼자 있을 시간을 존중해준다"], correct: 0 },
-            { q: "팀의 사기가 떨어져 보입니다. 어떻게 하시겠습니까?", a: ["팀원들을 격려하고 칭찬한다", "원인을 분석해서 해결책을 찾는다", "재미있는 활동을 제안한다"], correct: 0 }
-        ];
-        const scenario = scenarios[Math.floor(currentRandFn() * scenarios.length)];
-        currentCorrectAnswer = scenario.correct;
-        gameArea.innerHTML = `
-            <div class="game-display question">${scenario.q}</div>
-            <div class="choices">
-                ${scenario.a.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice}</button>`).join('')}
-            </div>
-        `;
-        document.getElementById('game-input-area').innerHTML = '';
-        gameInProgress = true;
-    }
-    
-    // --- Game Implementations for ENFJ ---
-
     // Game 0: Today's Leadership Dilemma
     function setupLeadershipDilemmaGame() {
         document.getElementById('gameTitle').innerText = "오늘의 게임: 리더십 딜레마";
@@ -277,67 +212,6 @@
             feedbackMessage.className = "feedback-message correct";
         } else {
             feedbackMessage.innerText = message || "아쉽네요. 다른 사람의 입장에서는 어떻게 생각할까요?";
-            feedbackMessage.className = "feedback-message incorrect";
-        }
-        gameInProgress = false;
-    }
-
-    function handleChoiceClick(event) {
-        if (!gameInProgress) return;
-        const selectedIndex = parseInt(event.target.getAttribute('data-index'));
-        showFeedback(selectedIndex === currentCorrectAnswer);
-        document.querySelectorAll('.choice-btn').forEach(btn => btn.disabled = true);
-    }
-
-    function initDailyGame() {
-        const today = new Date();
-        const seed = getDailySeed();
-        currentRandFn = mulberry32(seed);
-        
-        const dayOfWeek = today.getDay();
-        document.getElementById('gameDescription').innerText = getDayOfWeekText(dayOfWeek);
-
-        const gameTypeIndex = Math.floor(currentRandFn() * gameTypes.length + dayOfWeek) % gameTypes.length;
-        gameTypes[gameTypeIndex]();
-
-        document.getElementById('feedbackMessage').innerText = '';
-        document.getElementById('feedbackMessage').className = "feedback-message";
-        
-        // Add event listeners after creating the elements
-        document.querySelectorAll('.choice-btn').forEach(btn => {
-            btn.addEventListener('click', handleChoiceClick);
-        });
-    }
-
-
-    // --- Game Dispatcher and Common Logic ---
-    const gameTypes = [
-        setupEthicalDilemmaQuiz,
-        setupMotivationalMessageQuiz,
-        setupSocialScenarioQuiz,
-        setupGuessTheEmotionGame
-    ];
-
-    function getDayOfWeekText(day) {
-        const messages = [
-            "한 주를 마무리하며, 따뜻한 감성으로 문제를 해결해 보세요.", // Sunday
-            "새로운 한 주, 긍정적인 영향력으로 시작해 보세요!", // Monday
-            "오늘은 당신의 통찰력으로 사람들을 도울 수 있는 날입니다.", // Tuesday
-            "주 중반, 조화로운 해결책으로 모두를 행복하게 만들어 보세요.", // Wednesday
-            "당신의 리더십을 발휘하여 문제를 해결해 볼 시간입니다.", // Thursday
-            "주말을 앞둔 금요일, 가볍게 공감 능력을 발휘해 보세요.", // Friday
-            "여유로운 토요일, 다른 사람의 마음을 맞춰보는 건 어떠신가요?", // Saturday
-        ];
-        return messages[day];
-    }
-
-    function showFeedback(isCorrect) {
-        const feedbackMessage = document.getElementById('feedbackMessage');
-        if (isCorrect) {
-            feedbackMessage.innerText = "정답입니다! 역시 ENFJ, 사람들의 마음을 잘 아는군요.";
-            feedbackMessage.className = "feedback-message correct";
-        } else {
-            feedbackMessage.innerText = "아쉽네요. 다른 사람의 입장에서는 어떻게 생각할까요?";
             feedbackMessage.className = "feedback-message incorrect";
         }
         gameInProgress = false;
