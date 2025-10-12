@@ -165,6 +165,498 @@
 
     // --- Game Implementations for ENFJ ---
 
+    // Game 0: Emotional Web Weaver
+    let emotionalWebSelectedPath = [];
+    let emotionalWebScore = 0;
+    let emotionalWebTimeLeft = 60; // seconds
+    let emotionalWebTimer = null;
+    let emotionalWebGrid = [];
+    let emotionalWebCoreEmotion = '';
+
+    function startEmotionalWebTimer() {
+        clearInterval(emotionalWebTimer);
+        emotionalWebTimeLeft = 60;
+        document.getElementById('emotionalWebTimerDisplay').innerText = `남은 시간: ${emotionalWebTimeLeft}초`;
+        emotionalWebTimer = setInterval(() => {
+            emotionalWebTimeLeft--;
+            document.getElementById('emotionalWebTimerDisplay').innerText = `남은 시간: ${emotionalWebTimeLeft}초`;
+            if (emotionalWebTimeLeft <= 0) {
+                clearInterval(emotionalWebTimer);
+                showFeedback(false, `시간 초과! ${emotionalWebScore}점 획득.`);
+                gameInProgress = false;
+                document.querySelectorAll('.emotion-cell').forEach(cell => cell.disabled = true);
+            }
+        }, 1000);
+    }
+
+    function setupEmotionalWebWeaverGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 감정 연결망";
+        const gameArea = document.getElementById('gameArea');
+        
+        const emotionsPool = ["기쁨", "슬픔", "분노", "사랑", "평온", "불안", "희망", "좌절", "용기", "공감", "연결", "이해", "조화", "갈등", "성장", "수용"];
+        const coreEmotions = ["기쁨", "사랑", "평온", "희망", "성장"];
+        
+        emotionalWebCoreEmotion = coreEmotions[Math.floor(currentRandFn() * coreEmotions.length)];
+        emotionalWebSelectedPath = [];
+        emotionalWebScore = 0;
+
+        // Generate a 4x4 grid of emotions
+        emotionalWebGrid = [];
+        for (let i = 0; i < 4; i++) {
+            emotionalWebGrid.push([]);
+            for (let j = 0; j < 4; j++) {
+                emotionalWebGrid[i].push(emotionsPool[Math.floor(currentRandFn() * emotionsPool.length)]);
+            }
+        }
+
+        gameArea.innerHTML = `
+            <div class="game-display question">핵심 감정 <b>'${emotionalWebCoreEmotion}'</b>을(를) 향해 감정들을 연결하세요!</div>
+            <div id="emotionalWebTimerDisplay" class="game-display" style="font-size: 1em; color: var(--secondary-text-color);">남은 시간: 60초</div>
+            <div id="emotionalWebScoreDisplay" class="game-display" style="font-size: 1em; color: var(--secondary-text-color);">점수: 0</div>
+            <div class="emotion-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; max-width: 300px; margin: 20px auto;">
+                ${emotionalWebGrid.map((row, rIdx) => row.map((emotion, cIdx) => `
+                    <button class="choice-btn emotion-cell" data-row="${rIdx}" data-col="${cIdx}" data-emotion="${emotion}">${emotion}</button>
+                `).join('')).join('')}
+            </div>
+            <button id="resetEmotionalWeb" class="choice-btn" style="margin-top: 20px; max-width: 150px;">초기화</button>
+        `;
+        document.getElementById('game-input-area').innerHTML = '';
+        gameInProgress = true;
+
+        document.querySelectorAll('.emotion-cell').forEach(cell => {
+            cell.addEventListener('click', handleEmotionalWebCellClick);
+        });
+        document.getElementById('resetEmotionalWeb').addEventListener('click', setupEmotionalWebWeaverGame); // Reset game
+
+        startEmotionalWebTimer();
+    }
+
+    function handleEmotionalWebCellClick(event) {
+        if (!gameInProgress) return;
+
+        const clickedCell = event.target;
+        const row = parseInt(clickedCell.dataset.row);
+        const col = parseInt(clickedCell.dataset.col);
+        const emotion = clickedCell.dataset.emotion;
+
+        if (emotionalWebSelectedPath.length === 0) {
+            // First click, always valid
+            emotionalWebSelectedPath.push({row, col, emotion});
+            clickedCell.classList.add('selected');
+            emotionalWebScore = 1;
+        } else {
+            const lastCell = emotionalWebSelectedPath[emotionalWebSelectedPath.length - 1];
+            // Check if adjacent and not already in path
+            if (
+                (Math.abs(row - lastCell.row) <= 1 && Math.abs(col - lastCell.col) <= 1) && // Adjacent (including diagonals)
+                !emotionalWebSelectedPath.some(c => c.row === row && c.col === col) // Not already in path
+            ) {
+                emotionalWebSelectedPath.push({row, col, emotion});
+                clickedCell.classList.add('selected');
+                emotionalWebScore++;
+            } else {
+                // Invalid move, reset path
+                showFeedback(false, "잘못된 연결입니다. 경로가 초기화됩니다.");
+                resetEmotionalWebPath();
+                return;
+            }
+        }
+        document.getElementById('emotionalWebScoreDisplay').innerText = `점수: ${emotionalWebScore}`;
+
+        // Check if the current emotion is the core emotion and path is long enough
+        if (emotion === emotionalWebCoreEmotion && emotionalWebSelectedPath.length >= 3) {
+            clearInterval(emotionalWebTimer);
+            showFeedback(true, `핵심 감정 '${emotionalWebCoreEmotion}'에 도달했습니다! 최종 점수: ${emotionalWebScore}`);
+            gameInProgress = false;
+            document.querySelectorAll('.emotion-cell').forEach(cell => cell.disabled = true);
+        }
+    }
+
+    function resetEmotionalWebPath() {
+        emotionalWebSelectedPath = [];
+        emotionalWebScore = 0;
+        document.getElementById('emotionalWebScoreDisplay').innerText = `점수: 0`;
+        document.querySelectorAll('.emotion-cell').forEach(cell => cell.classList.remove('selected'));
+    }
+
+
+    // Game 1: Vision Builder
+    let visionBuilderTarget = [];
+    let visionBuilderCollected = [];
+    let visionBuilderScore = 0;
+    let visionBuilderTimeLeft = 45; // seconds
+    let visionBuilderTimer = null;
+    let visionBuilderFragmentsInterval = null;
+
+    const visionStatements = [
+        { target: ["모두가", "서로를", "이해하고", "성장하는", "공동체"], fragments: ["모두가", "서로를", "이해하고", "성장하는", "공동체", "경쟁하는", "고립된", "무관심한", "개인적인", "정체된"] },
+        { target: ["긍정적인", "영향력으로", "세상을", "변화시키는", "리더십"], fragments: ["긍정적인", "영향력으로", "세상을", "변화시키는", "리더십", "강압적인", "수동적인", "개인적인", "지배하는", "현상유지"] },
+        { target: ["조화로운", "협력을", "통해", "새로운", "가치를", "창조한다"], fragments: ["조화로운", "협력을", "통해", "새로운", "가치를", "창조한다", "분열된", "갈등하는", "모방하는", "파괴하는", "정체된"] }
+    ];
+
+    function startVisionBuilderTimer() {
+        clearInterval(visionBuilderTimer);
+        visionBuilderTimeLeft = 45;
+        document.getElementById('visionBuilderTimerDisplay').innerText = `남은 시간: ${visionBuilderTimeLeft}초`;
+        visionBuilderTimer = setInterval(() => {
+            visionBuilderTimeLeft--;
+            document.getElementById('visionBuilderTimerDisplay').innerText = `남은 시간: ${visionBuilderTimeLeft}초`;
+            if (visionBuilderTimeLeft <= 0) {
+                clearInterval(visionBuilderTimer);
+                clearInterval(visionBuilderFragmentsInterval);
+                showFeedback(false, `시간 초과! ${visionBuilderScore}점 획득.`);
+                gameInProgress = false;
+                document.querySelectorAll('.vision-fragment').forEach(frag => frag.remove());
+            }
+        }, 1000);
+    }
+
+    function setupVisionBuilderGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 비전 빌더";
+        const gameArea = document.getElementById('gameArea');
+        
+        const visionData = visionStatements[Math.floor(currentRandFn() * visionStatements.length)];
+        visionBuilderTarget = visionData.target;
+        visionBuilderCollected = [];
+        visionBuilderScore = 0;
+
+        gameArea.innerHTML = `
+            <div class="game-display question">아래에서 올바른 비전 조각을 순서대로 클릭하여 목표 비전 문구를 완성하세요!</div>
+            <div id="visionBuilderTargetDisplay" class="game-display" style="font-size: 1.2em; font-weight: bold; color: var(--primary-color);">목표: ${visionBuilderTarget.join(' ')}</div>
+            <div id="visionBuilderCollectedDisplay" class="game-display" style="font-size: 1em; color: var(--secondary-text-color);">수집: </div>
+            <div id="visionBuilderTimerDisplay" class="game-display" style="font-size: 1em; color: var(--secondary-text-color);">남은 시간: 45초</div>
+            <div id="visionFragmentsContainer" style="min-height: 150px; border: 1px dashed var(--border-color); margin-top: 10px; position: relative; overflow: hidden;">
+                <!-- Vision fragments will appear here -->
+            </div>
+            <div id="visionBuilderScoreDisplay" class="game-display" style="font-size: 1em; color: var(--secondary-text-color);">점수: 0</div>
+        `;
+        document.getElementById('game-input-area').innerHTML = '';
+        gameInProgress = true;
+
+        startVisionBuilderTimer();
+        visionBuilderFragmentsInterval = setInterval(() => {
+            generateVisionFragment(visionData.fragments);
+        }, 1500); // Generate a new fragment every 1.5 seconds
+    }
+
+    function generateVisionFragment(fragmentsPool) {
+        const container = document.getElementById('visionFragmentsContainer');
+        const fragmentText = fragmentsPool[Math.floor(currentRandFn() * fragmentsPool.length)];
+        
+        const fragmentDiv = document.createElement('button');
+        fragmentDiv.className = 'vision-fragment choice-btn';
+        fragmentDiv.innerText = fragmentText;
+        fragmentDiv.style.position = 'absolute';
+        fragmentDiv.style.left = `${Math.floor(currentRandFn() * (container.offsetWidth - 100))}px`; // Random horizontal position
+        fragmentDiv.style.bottom = '0px'; // Start from bottom
+        fragmentDiv.style.transition = 'bottom 1.5s linear'; // Animation for moving up
+        fragmentDiv.addEventListener('click', handleVisionFragmentClick);
+        
+        container.appendChild(fragmentDiv);
+
+        // Animate fragment moving up
+        setTimeout(() => {
+            fragmentDiv.style.bottom = `${container.offsetHeight}px`;
+        }, 50);
+
+        // Remove fragment after it goes out of view
+        setTimeout(() => {
+            if (fragmentDiv.parentNode === container) {
+                fragmentDiv.remove();
+            }
+        }, 1600); // Should be slightly longer than transition duration
+    }
+
+    function handleVisionFragmentClick(event) {
+        if (!gameInProgress) return;
+
+        const clickedFragment = event.target;
+        const fragmentText = clickedFragment.innerText;
+
+        if (visionBuilderCollected.length < visionBuilderTarget.length && fragmentText === visionBuilderTarget[visionBuilderCollected.length]) {
+            visionBuilderCollected.push(fragmentText);
+            document.getElementById('visionBuilderCollectedDisplay').innerText = `수집: ${visionBuilderCollected.join(' ')}`;
+            visionBuilderScore += 10;
+            document.getElementById('visionBuilderScoreDisplay').innerText = `점수: ${visionBuilderScore}`;
+            clickedFragment.remove(); // Remove collected fragment
+
+            if (visionBuilderCollected.length === visionBuilderTarget.length) {
+                clearInterval(visionBuilderTimer);
+                clearInterval(visionBuilderFragmentsInterval);
+                showFeedback(true, `비전 완성! 최종 점수: ${visionBuilderScore}`);
+                gameInProgress = false;
+            }
+        } else {
+            visionBuilderScore = Math.max(0, visionBuilderScore - 5); // Penalty for wrong click
+            document.getElementById('visionBuilderScoreDisplay').innerText = `점수: ${visionBuilderScore}`;
+            clickedFragment.classList.add('incorrect'); // Visual feedback for incorrect
+            setTimeout(() => clickedFragment.remove(), 300); // Remove incorrect fragment quickly
+        }
+    }
+
+    // Game 2: Relationship Harmony Maze
+    let mazeGrid = [];
+    let mediatorPosition = { row: 0, col: 0 };
+    let mazeScore = 0;
+    let mazeTimeLeft = 90; // seconds
+    let mazeTimer = null;
+    let collectedActions = [];
+    let resolvedIssues = [];
+
+    const mazeItems = {
+        'A': { type: 'action', name: '적극적 경청', color: '#4CAF50' },
+        'B': { type: 'action', name: '공감 표현', color: '#8BC34A' },
+        'C': { type: 'action', name: '타협 제안', color: '#FFC107' },
+        'D': { type: 'action', name: '피드백 제공', color: '#2196F3' },
+        'E': { type: 'action', name: '격려', color: '#00BCD4' },
+        'I': { type: 'issue', name: '오해', color: '#F44336' },
+        'J': { type: 'issue', name: '갈등', color: '#E91E63' },
+        'K': { type: 'issue', name: '불신', color: '#9C27B0' }
+    };
+
+    function startMazeTimer() {
+        clearInterval(mazeTimer);
+        mazeTimeLeft = 90;
+        document.getElementById('mazeTimerDisplay').innerText = `남은 시간: ${mazeTimeLeft}초`;
+        mazeTimer = setInterval(() => {
+            mazeTimeLeft--;
+            document.getElementById('mazeTimerDisplay').innerText = `남은 시간: ${mazeTimeLeft}초`;
+            if (mazeTimeLeft <= 0) {
+                clearInterval(mazeTimer);
+                showFeedback(false, `시간 초과! 최종 점수: ${mazeScore}`);
+                gameInProgress = false;
+                document.removeEventListener('keydown', handleMazeKeydown);
+            }
+        }, 1000);
+    }
+
+    function setupRelationshipHarmonyMazeGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 관계 조율 미로";
+        const gameArea = document.getElementById('gameArea');
+        
+        mazeGrid = generateMaze(5, 5); // Generate a 5x5 maze
+        mediatorPosition = { row: 0, col: 0 };
+        mazeScore = 0;
+        collectedActions = [];
+        resolvedIssues = [];
+
+        gameArea.innerHTML = `
+            <div class="game-display question">중재자를 움직여 모든 조화 행동을 수집하고 관계 문제를 해결하세요!</div>
+            <div id="mazeTimerDisplay" class="game-display" style="font-size: 1em; color: var(--secondary-text-color);">남은 시간: 90초</div>
+            <div id="mazeScoreDisplay" class="game-display" style="font-size: 1em; color: var(--secondary-text-color);">점수: 0</div>
+            <div id="mazeContainer" style="display: grid; grid-template-columns: repeat(5, 40px); grid-template-rows: repeat(5, 40px); gap: 2px; margin: 20px auto; border: 2px solid var(--border-color); width: fit-content;">
+                <!-- Maze cells will be rendered here -->
+            </div>
+            <div id="mazeCollectedActions" class="game-display" style="font-size: 0.9em; color: var(--secondary-text-color);">수집한 행동: </div>
+            <div id="mazeResolvedIssues" class="game-display" style="font-size: 0.9em; color: var(--secondary-text-color);">해결한 문제: </div>
+            <div class="maze-controls" style="margin-top: 20px;">
+                <button class="choice-btn maze-control-btn" data-direction="up">▲</button><br>
+                <button class="choice-btn maze-control-btn" data-direction="left">◀</button>
+                <button class="choice-btn maze-control-btn" data-direction="right">▶</button><br>
+                <button class="choice-btn maze-control-btn" data-direction="down">▼</button>
+            </div>
+        `;
+        document.getElementById('game-input-area').innerHTML = '';
+        gameInProgress = true;
+
+        renderMaze();
+        startMazeTimer();
+        document.addEventListener('keydown', handleMazeKeydown);
+        document.querySelectorAll('.maze-control-btn').forEach(btn => {
+            btn.addEventListener('click', handleMazeControlClick);
+        });
+    }
+
+    function generateMaze(rows, cols) {
+        let grid = Array(rows).fill(0).map(() => Array(cols).fill(' '));
+        const itemsToPlace = ['A', 'B', 'C', 'D', 'E', 'I', 'J', 'K']; // Actions and Issues
+        
+        // Place items randomly
+        itemsToPlace.forEach(item => {
+            let placed = false;
+            while (!placed) {
+                const r = Math.floor(currentRandFn() * rows);
+                const c = Math.floor(currentRandFn() * cols);
+                if (grid[r][c] === ' ' && !(r === 0 && c === 0)) { // Don't place on start
+                    grid[r][c] = item;
+                    placed = true;
+                }
+            }
+        });
+        return grid;
+    }
+
+    function renderMaze() {
+        const mazeContainer = document.getElementById('mazeContainer');
+        mazeContainer.innerHTML = '';
+        mazeGrid.forEach((row, rIdx) => {
+            row.forEach((cellContent, cIdx) => {
+                const cell = document.createElement('div');
+                cell.className = 'maze-cell';
+                cell.style.width = '40px';
+                cell.style.height = '40px';
+                cell.style.display = 'flex';
+                cell.style.justifyContent = 'center';
+                cell.style.alignItems = 'center';
+                cell.style.border = '1px solid var(--border-color)';
+                cell.style.backgroundColor = 'var(--background-color)';
+
+                if (rIdx === mediatorPosition.row && cIdx === mediatorPosition.col) {
+                    cell.style.backgroundColor = 'var(--primary-color)'; // Mediator
+                    cell.innerText = '👤';
+                } else if (cellContent !== ' ') {
+                    const item = mazeItems[cellContent];
+                    cell.innerText = item.name;
+                    cell.style.backgroundColor = item.color;
+                    cell.style.color = 'white';
+                    cell.style.fontSize = '0.7em';
+                    cell.style.fontWeight = 'bold';
+                }
+                mazeContainer.appendChild(cell);
+            });
+        });
+        document.getElementById('mazeCollectedActions').innerText = `수집한 행동: ${collectedActions.join(', ')}`;
+        document.getElementById('mazeResolvedIssues').innerText = `해결한 문제: ${resolvedIssues.join(', ')}`;
+        document.getElementById('mazeScoreDisplay').innerText = `점수: ${mazeScore}`;
+    }
+
+    function handleMazeKeydown(event) {
+        if (!gameInProgress) return;
+        let newRow = mediatorPosition.row;
+        let newCol = mediatorPosition.col;
+
+        switch (event.key) {
+            case 'ArrowUp': newRow--; break;
+            case 'ArrowDown': newRow++; break;
+            case 'ArrowLeft': newCol--; break;
+            case 'ArrowRight': newCol++; break;
+            default: return;
+        }
+        event.preventDefault(); // Prevent scrolling
+
+        moveMediator(newRow, newCol);
+    }
+
+    function handleMazeControlClick(event) {
+        if (!gameInProgress) return;
+        const direction = event.target.dataset.direction;
+        let newRow = mediatorPosition.row;
+        let newCol = mediatorPosition.col;
+
+        switch (direction) {
+            case 'up': newRow--; break;
+            case 'down': newRow++; break;
+            case 'left': newCol--; break;
+            case 'right': newCol++; break;
+        }
+        moveMediator(newRow, newCol);
+    }
+
+    function moveMediator(newRow, newCol) {
+        if (newRow >= 0 && newRow < mazeGrid.length && newCol >= 0 && newCol < mazeGrid[0].length) {
+            mediatorPosition = { row: newRow, col: newCol };
+            const cellContent = mazeGrid[newRow][newCol];
+
+            if (cellContent !== ' ') {
+                const item = mazeItems[cellContent];
+                if (item.type === 'action') {
+                    if (!collectedActions.includes(item.name)) {
+                        collectedActions.push(item.name);
+                        mazeScore += 10;
+                    }
+                } else if (item.type === 'issue') {
+                    if (!resolvedIssues.includes(item.name)) {
+                        resolvedIssues.push(item.name);
+                        mazeScore += 5; // Score for resolving issues
+                    }
+                }
+                mazeGrid[newRow][newCol] = ' '; // Clear item after interaction
+            }
+            renderMaze();
+
+            // Check for win condition (e.g., collect all actions)
+            const allActions = ['적극적 경청', '공감 표현', '타협 제안', '피드백 제공', '격려']; // All possible actions
+            const allIssues = ['오해', '갈등', '불신']; // All possible issues
+            const allActionsCollected = allActions.every(action => collectedActions.includes(action));
+            const allIssuesResolved = allIssues.every(issue => resolvedIssues.includes(issue));
+
+            if (allActionsCollected && allIssuesResolved) {
+                clearInterval(mazeTimer);
+                showFeedback(true, `모든 관계 문제를 해결하고 행동을 수집했습니다! 최종 점수: ${mazeScore}`);
+                gameInProgress = false;
+                document.removeEventListener('keydown', handleMazeKeydown);
+            }
+        }
+    }
+
+
+    // --- Game Dispatcher and Common Logic ---
+    const gameTypes = [
+        setupEmotionalWebWeaverGame,
+        setupVisionBuilderGame,
+        setupRelationshipHarmonyMazeGame
+    ];
+
+    function getDayOfWeekText(day) {
+        const messages = [
+            "한 주를 마무리하며, 따뜻한 감성으로 문제를 해결해 보세요.", // Sunday
+            "새로운 한 주, 긍정적인 영향력으로 시작해 보세요!", // Monday
+            "오늘은 당신의 통찰력으로 사람들을 도울 수 있는 날입니다.", // Tuesday
+            "주 중반, 조화로운 해결책으로 모두를 행복하게 만들어 보세요.", // Wednesday
+            "당신의 리더십을 발휘하여 문제를 해결해 볼 시간입니다.", // Thursday
+            "주말을 앞둔 금요일, 가볍게 공감 능력을 발휘해 보세요.", // Friday
+            "여유로운 토요일, 다른 사람의 마음을 맞춰보는 건 어떠신가요?", // Saturday
+        ];
+        return messages[day];
+    }
+
+    function showFeedback(isCorrect, message) {
+        const feedbackMessage = document.getElementById('feedbackMessage');
+        if (isCorrect) {
+            feedbackMessage.innerText = message || "훌륭합니다! ENFJ의 능력을 보여주셨군요.";
+            feedbackMessage.className = "feedback-message correct";
+        } else {
+            feedbackMessage.innerText = message || "다시 한번 도전해 보세요! 당신의 잠재력을 믿습니다.";
+            feedbackMessage.className = "feedback-message incorrect";
+        }
+        gameInProgress = false;
+    }
+
+    function initDailyGame() {
+        const today = new Date();
+        const seed = getDailySeed();
+        currentRandFn = mulberry32(seed);
+        
+        const dayOfWeek = today.getDay();
+        document.getElementById('gameDescription').innerText = getDayOfWeekText(dayOfWeek);
+
+        const gameTypeIndex = Math.floor(currentRandFn() * gameTypes.length);
+        gameTypes[gameTypeIndex]();
+
+        document.getElementById('feedbackMessage').innerText = '';
+        document.getElementById('feedbackMessage').className = "feedback-message";
+        
+        // Event listeners are now added within each game setup function
+    }
+
+    window.onload = function() {
+        try {
+            initDailyGame();
+        } catch (e) {
+            console.error("오늘의 게임 생성 중 오류 발생:", e);
+            document.getElementById('gameDescription').innerText = "콘텐츠를 불러오는 데 실패했습니다. 페이지를 새로고침해 주세요.";
+        }
+    };
+    
+    // Basic CSS for new game elements (add to main.css or inline if small)
+    // .emotion-cell.selected { background-color: var(--accent-color); }
+    // .vision-fragment { animation: fragment-move 1.5s linear forwards; }
+    // @keyframes fragment-move { from { bottom: 0; } to { bottom: 100%; } }
+    // .vision-fragment.incorrect { background-color: var(--error-color); }
+    // .maze-cell { border: 1px solid #ccc; }
+    // .maze-cell.mediator { background-color: #007bff; color: white; }
+    // .maze-control-btn { width: 50px; height: 50px; margin: 5px; }
+
     // Game 0: Emotional Harmony Puzzle
     function setupEmotionalHarmonyPuzzleGame() {
         document.getElementById('gameTitle').innerText = "오늘의 게임: 감정 조화 퍼즐";
