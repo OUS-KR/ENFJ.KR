@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>오늘의 게임 - ENFJ</title>
-    <link rel="stylesheet" href="/u/tests/assets/css/main.css?20251011000000">
+    <link rel="stylesheet" href="/u/tests/assets/css/main.css?20251012000000">
     <style>
         .game-card-content {
             text-align: center;
@@ -141,7 +141,7 @@
         </div>
     </div>
 
-    <script src="/u/tests/assets/js/main.js?20251011000000" defer></script>
+    <script src="/u/tests/assets/js/main.js?20251012000000" defer></script>
     <script src="/u/tests/assets/js/dynamic-menu.js" defer></script>
     <script>
     function getDailySeed() {
@@ -187,9 +187,99 @@
         gameInProgress = true;
     }
 
+    // Game 1: Empathy Challenge
+    function setupEmpathyChallengeGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 공감 능력 챌린지";
+        const gameArea = document.getElementById('gameArea');
+        const scenarios = [
+            { q: "친구가 최근 승진에서 누락되어 실망하고 있습니다. 어떤 위로의 말을 건네시겠습니까?", a: [""정말 속상하겠다. 네 노력을 내가 잘 아는데..." (공감)", ""다음 기회에 더 잘하면 돼! 힘내!" (격려)", ""원래 승진은 운도 따라야 하는 법이야." (현실적 조언)"], correct: 0 },
+            { q: "팀원이 중요한 발표를 앞두고 극도로 긴장하고 있습니다. 어떻게 도와주시겠습니까?", a: [""많이 긴장되는구나. 내가 옆에서 도와줄 수 있는 게 있을까?" (공감 및 지원)", ""긴장하지 마! 넌 잘할 수 있어!" (단순 격려)", ""발표 자료는 다 외웠어? 실수하면 안 돼." (압박)"], correct: 0 },
+            { q: "지인이 최근 반려동물을 잃어 슬픔에 잠겨 있습니다. 어떻게 반응하시겠습니까?", a: [""얼마나 마음이 아플까. 옆에 있어 줄게." (공감과 위로)", ""새로운 반려동물을 입양하는 건 어때?" (해결책 제시)", ""시간이 약이야. 곧 괜찮아질 거야." (성급한 위로)"], correct: 0 },
+            { q: "동료가 업무 과중으로 힘들어하며 불평합니다. 어떻게 대응하시겠습니까?", a: [""정말 힘들겠구나. 내가 보기에도 일이 너무 많은 것 같아." (공감)", ""다들 힘들어. 너만 힘든 거 아니야." (일반화)", ""그럼 일을 좀 줄여달라고 말해봐." (직접적 해결책)"], correct: 0 }
+        ];
+        const scenario = scenarios[Math.floor(currentRandFn() * scenarios.length)];
+        currentCorrectAnswer = scenario.correct;
+        gameArea.innerHTML = `
+            <div class="game-display question">${scenario.q}</div>
+            <div class="choices">
+                ${scenario.a.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice}</button>`).join('')}
+            </div>
+        `;
+        document.getElementById('game-input-area').innerHTML = '';
+        gameInProgress = true;
+    }
+
+    // Game 2: Vision Sharing Puzzle
+    function setupVisionSharingPuzzleGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 비전 공유 퍼즐";
+        const gameArea = document.getElementById('gameArea');
+        const puzzles = [
+            { q: "우리의 목표는 단순히 제품을 만드는 것이 아니라, 사람들의 삶에 ______을 불어넣는 것입니다.", a: ["긍정적인 변화", "새로운 기술", "경제적 이득"], correct: 0 },
+            { q: "진정한 리더십은 타인을 ______하고, 그들이 잠재력을 최대한 발휘하도록 돕는 데 있습니다.", a: ["영감을 주고", "지시하고", "평가하고"], correct: 0 },
+            { q: "우리는 함께 더 나은 미래를 ______하고, 모든 구성원이 자신의 역할을 통해 성장할 수 있도록 지원합니다.", a: ["구축하고", "예측하고", "경쟁하고"], correct: 0 },
+            { q: "가장 큰 성취는 개인의 성공이 아닌, 공동체의 ______을 통해 이루어집니다.", a: ["조화로운 협력", "치열한 경쟁", "개별적 노력"], correct: 0 }
+        ];
+        const puzzle = puzzles[Math.floor(currentRandFn() * puzzles.length)];
+        currentCorrectAnswer = puzzle.correct;
+        gameArea.innerHTML = `
+            <div class="game-display question">${puzzle.q}</div>
+            <div class="choices">
+                ${puzzle.a.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice}</button>`).join('')}
+            </div>
+        `;
+        document.getElementById('game-input-area').innerHTML = '';
+        gameInProgress = true;
+    }
+
+    // Game 3: Connect the Relationships
+    function setupConnectRelationshipsGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 관계 연결하기";
+        const gameArea = document.getElementById('gameArea');
+        const relationships = [
+            {
+                people: ["멘토", "멘티"],
+                type: "성장 지원 관계",
+                options: ["성장 지원 관계", "경쟁 관계", "단순 업무 관계"],
+                correct: 0
+            },
+            {
+                people: ["팀 리더", "팀원"],
+                type: "협력적 리더십 관계",
+                options: ["협력적 리더십 관계", "수직적 지시 관계", "개인주의적 관계"],
+                correct: 0
+            },
+            {
+                people: ["친구 A", "친구 B"],
+                type: "상호 이해 관계",
+                options: ["상호 이해 관계", "일방적 의존 관계", "표면적 친분 관계"],
+                correct: 0
+            },
+            {
+                people: ["봉사자", "수혜자"],
+                type: "나눔과 배려 관계",
+                options: ["나눔과 배려 관계", "거래 관계", "의무적 관계"],
+                correct: 0
+            }
+        ];
+        const relationship = relationships[Math.floor(currentRandFn() * relationships.length)];
+        currentCorrectAnswer = relationship.correct;
+        gameArea.innerHTML = `
+            <div class="game-display question">다음 인물들은 어떤 관계 유형에 가장 가깝습니까?</div>
+            <div class="game-display"><b>${relationship.people[0]}</b>와 <b>${relationship.people[1]}</b></div>
+            <div class="choices">
+                ${relationship.options.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice}</button>`).join('')}
+            </div>
+        `;
+        document.getElementById('game-input-area').innerHTML = '';
+        gameInProgress = true;
+    }
+
     // --- Game Dispatcher and Common Logic ---
     const gameTypes = [
-        setupLeadershipDilemmaGame
+        setupLeadershipDilemmaGame,
+        setupEmpathyChallengeGame,
+        setupVisionSharingPuzzleGame,
+        setupConnectRelationshipsGame
     ];
 
     function getDayOfWeekText(day) {
@@ -232,7 +322,7 @@
         const dayOfWeek = today.getDay();
         document.getElementById('gameDescription').innerText = getDayOfWeekText(dayOfWeek);
 
-        const gameTypeIndex = Math.floor(currentRandFn() * gameTypes.length + dayOfWeek) % gameTypes.length;
+        const gameTypeIndex = Math.floor(currentRandFn() * gameTypes.length);
         gameTypes[gameTypeIndex]();
 
         document.getElementById('feedbackMessage').innerText = '';
