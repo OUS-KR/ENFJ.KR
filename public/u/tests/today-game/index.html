@@ -228,25 +228,85 @@
         gameInProgress = true;
     }
     
-    // Game 3: Guess the Emotion
-    function setupGuessTheEmotionGame() {
-        document.getElementById('gameTitle').innerText = "오늘의 게임: 감정 맞추기";
+    // --- Game Implementations for ENFJ ---
+
+    // Game 0: Today's Leadership Dilemma
+    function setupLeadershipDilemmaGame() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 리더십 딜레마";
         const gameArea = document.getElementById('gameArea');
-        const situations = [
-            { q: "그는 아이스크림을 사자마자 땅에 떨어뜨렸다.", a: ["슬픔", "분노", "놀람"], correct: 0 },
-            { q: "친구가 깜짝 생일 파티를 열어주었다.", a: ["기쁨", "당황", "감동"], correct: 2 },
-            { q: "열심히 준비한 발표에 아무도 질문하지 않았다.", a: ["실망", "안도", "자신감"], correct: 0 }
+        const dilemmas = [
+            { q: "팀원들 사이에 의견 충돌이 심해 프로젝트 진행이 어렵습니다. 당신은 어떻게 하시겠습니까?", a: ["각자의 의견을 경청하고 공통의 목표를 상기시키며 중재한다.", "가장 합리적인 의견을 가진 팀원의 편을 들어준다.", "갈등이 해결될 때까지 잠시 프로젝트를 중단시킨다."], correct: 0 },
+            { q: "새로운 프로젝트를 시작해야 하지만 팀원들이 동기 부여가 부족해 보입니다. 어떻게 하시겠습니까?", a: ["프로젝트의 비전과 개인의 성장을 연결시켜 열정을 불어넣는다.", "성과에 따른 보상을 약속하여 참여를 유도한다.", "강력한 리더십으로 목표 달성을 지시한다."], correct: 0 },
+            { q: "팀원이 개인적인 어려움으로 업무 성과가 저조합니다. 어떻게 접근하시겠습니까?", a: ["개인적인 대화를 통해 어려움을 공감하고 필요한 지원을 모색한다.", "업무에 집중하도록 경고하고 성과 개선을 요구한다.", "다른 팀원에게 업무를 재분배하여 공백을 메운다."], correct: 0 },
+            { q: "팀의 중요한 결정에 대해 소수의 팀원이 강하게 반대하고 있습니다. 어떻게 하시겠습니까?", a: ["반대 의견을 경청하고 모두가 동의할 수 있는 대안을 함께 찾는다.", "다수결의 원칙에 따라 결정을 강행한다.", "반대하는 팀원들을 설득하여 동의를 얻어낸다."], correct: 0 }
         ];
-        const situation = situations[Math.floor(currentRandFn() * situations.length)];
-        currentCorrectAnswer = situation.correct;
+        const dilemma = dilemmas[Math.floor(currentRandFn() * dilemmas.length)];
+        currentCorrectAnswer = dilemma.correct;
         gameArea.innerHTML = `
-            <div class="game-display question">다음 상황에서 가장 가능성이 높은 감정은 무엇일까요?<br><i>"${situation.q}"</i></div>
+            <div class="game-display question">${dilemma.q}</div>
             <div class="choices">
-                ${situation.a.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice}</button>`).join('')}
+                ${dilemma.a.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice}</button>`).join('')}
             </div>
         `;
         document.getElementById('game-input-area').innerHTML = '';
         gameInProgress = true;
+    }
+
+    // --- Game Dispatcher and Common Logic ---
+    const gameTypes = [
+        setupLeadershipDilemmaGame
+    ];
+
+    function getDayOfWeekText(day) {
+        const messages = [
+            "한 주를 마무리하며, 따뜻한 감성으로 문제를 해결해 보세요.", // Sunday
+            "새로운 한 주, 긍정적인 영향력으로 시작해 보세요!", // Monday
+            "오늘은 당신의 통찰력으로 사람들을 도울 수 있는 날입니다.", // Tuesday
+            "주 중반, 조화로운 해결책으로 모두를 행복하게 만들어 보세요.", // Wednesday
+            "당신의 리더십을 발휘하여 문제를 해결해 볼 시간입니다.", // Thursday
+            "주말을 앞둔 금요일, 가볍게 공감 능력을 발휘해 보세요.", // Friday
+            "여유로운 토요일, 다른 사람의 마음을 맞춰보는 건 어떠신가요?", // Saturday
+        ];
+        return messages[day];
+    }
+
+    function showFeedback(isCorrect, message) {
+        const feedbackMessage = document.getElementById('feedbackMessage');
+        if (isCorrect) {
+            feedbackMessage.innerText = message || "정답입니다! 역시 ENFJ, 사람들의 마음을 잘 아는군요.";
+            feedbackMessage.className = "feedback-message correct";
+        } else {
+            feedbackMessage.innerText = message || "아쉽네요. 다른 사람의 입장에서는 어떻게 생각할까요?";
+            feedbackMessage.className = "feedback-message incorrect";
+        }
+        gameInProgress = false;
+    }
+
+    function handleChoiceClick(event) {
+        if (!gameInProgress) return;
+        const selectedIndex = parseInt(event.target.getAttribute('data-index'));
+        showFeedback(selectedIndex === currentCorrectAnswer);
+        document.querySelectorAll('.choice-btn').forEach(btn => btn.disabled = true);
+    }
+
+    function initDailyGame() {
+        const today = new Date();
+        const seed = getDailySeed();
+        currentRandFn = mulberry32(seed);
+        
+        const dayOfWeek = today.getDay();
+        document.getElementById('gameDescription').innerText = getDayOfWeekText(dayOfWeek);
+
+        const gameTypeIndex = Math.floor(currentRandFn() * gameTypes.length + dayOfWeek) % gameTypes.length;
+        gameTypes[gameTypeIndex]();
+
+        document.getElementById('feedbackMessage').innerText = '';
+        document.getElementById('feedbackMessage').className = "feedback-message";
+        
+        // Add event listeners after creating the elements
+        document.querySelectorAll('.choice-btn').forEach(btn => {
+            btn.addEventListener('click', handleChoiceClick);
+        });
     }
 
 
