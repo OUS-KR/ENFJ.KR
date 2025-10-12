@@ -186,28 +186,24 @@
         gameInProgress = true;
     }
 
-    // Game 1: Story Starter
-    function setupStoryStarterGame() {
-        document.getElementById('gameTitle').innerText = "오늘의 게임: 스토리 스타터";
+    // Game 1: Motivational Message Quiz
+    function setupMotivationalMessageQuiz() {
+        document.getElementById('gameTitle').innerText = "오늘의 게임: 동기부여 메시지 고르기";
         const gameArea = document.getElementById('gameArea');
-        const starters = [
-            { s: "모두가 길을 잃었을 때, 그녀에게 아이디어가 떠올랐다...", k: ["공감", "리더", "미래"] },
-            { s: "작은 다툼으로 팀의 분위기가 싸늘해졌다. 그는 결심했다...", k: ["조화", "용기", "우리"] },
-            { s: "모두가 반대하는 일이었지만, 그는 모두를 위해 꼭 필요하다고 믿었다...", k: ["신념", "설득", "영향력"] }
+        const scenarios = [
+            { q: "친구가 새로운 도전에 망설이고 있습니다. 가장 ENFJ다운 메시지는?", a: ["네 안의 잠재력을 믿어! 함께라면 뭐든지 할 수 있어!", "현실적으로 생각해. 실패할 수도 있잖아.", "일단 한번 해봐. 나쁘지 않을 거야."], correct: 0 },
+            { q: "팀원이 작은 실수로 자책하고 있습니다. 어떻게 격려하시겠습니까?", a: ["괜찮아, 누구나 실수할 수 있어. 이걸 통해 배우면 돼.", "다음부턴 좀 더 신경 써줘.", "왜 그런 실수를 했는지 분석해보자."], correct: 0 },
+            { q: "아이디어가 있지만 발표를 두려워하는 동료가 있습니다. 뭐라고 말해줄까요?", a: ["네 생각은 정말 훌륭해! 다른 사람들도 좋아할 거야.", "준비가 더 필요할 것 같아.", "내가 대신 발표해줄까?"], correct: 0 }
         ];
-        const starter = starters[Math.floor(currentRandFn() * starters.length)];
-        currentCorrectAnswer = starter.k; // Array of keywords
+        const scenario = scenarios[Math.floor(currentRandFn() * scenarios.length)];
+        currentCorrectAnswer = scenario.correct;
         gameArea.innerHTML = `
-            <div class="game-display question">다음 문장과 키워드를 사용해 짧은 이야기를 완성해 보세요.</div>
-            <p style="font-style: italic;">"${starter.s}"</p>
-            <p><strong>키워드: ${starter.k.join(', ')}</strong></p>
-        `;
-        document.getElementById('game-input-area').innerHTML = `
-            <div class="game-input">
-                <textarea id="userStory" placeholder="여기에 이야기를 작성하세요..."></textarea>
-                <button id="submitStory">제출</button>
+            <div class="game-display question">${scenario.q}</div>
+            <div class="choices">
+                ${scenario.a.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice}</button>`).join('')}
             </div>
         `;
+        document.getElementById('game-input-area').innerHTML = '';
         gameInProgress = true;
     }
 
@@ -257,7 +253,7 @@
     // --- Game Dispatcher and Common Logic ---
     const gameTypes = [
         setupEthicalDilemmaQuiz,
-        setupStoryStarterGame,
+        setupMotivationalMessageQuiz,
         setupSocialScenarioQuiz,
         setupGuessTheEmotionGame
     ];
@@ -294,29 +290,6 @@
         document.querySelectorAll('.choice-btn').forEach(btn => btn.disabled = true);
     }
 
-    function handleStorySubmit() {
-        if (!gameInProgress) return;
-        const story = document.getElementById('userStory').value.toUpperCase();
-        const keywords = currentCorrectAnswer;
-        let missingKeywords = [];
-        for(let keyword of keywords) {
-            if (!story.includes(keyword.toUpperCase())) {
-                missingKeywords.push(keyword);
-            }
-        }
-
-        if (missingKeywords.length === 0) {
-            showFeedback(true);
-        } else {
-            const feedbackMessage = document.getElementById('feedbackMessage');
-            feedbackMessage.innerText = `아쉽네요! 키워드(${missingKeywords.join(', ')})를 모두 사용해서 다시 시도해 보세요.`;
-            feedbackMessage.className = "feedback-message incorrect";
-        }
-        if (missingKeywords.length === 0) {
-            document.getElementById('submitStory').disabled = true;
-        }
-    }
-
     function initDailyGame() {
         const today = new Date();
         const seed = getDailySeed();
@@ -332,13 +305,9 @@
         document.getElementById('feedbackMessage').className = "feedback-message";
         
         // Add event listeners after creating the elements
-        if (gameTypes[gameTypeIndex] === setupStoryStarterGame) {
-            document.getElementById('submitStory').addEventListener('click', handleStorySubmit);
-        } else {
-            document.querySelectorAll('.choice-btn').forEach(btn => {
-                btn.addEventListener('click', handleChoiceClick);
-            });
-        }
+        document.querySelectorAll('.choice-btn').forEach(btn => {
+            btn.addEventListener('click', handleChoiceClick);
+        });
     }
 
     window.onload = function() {
