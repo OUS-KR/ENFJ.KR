@@ -59,7 +59,12 @@ let gameState = {
     ],
     currentScenarioId: "intro",
     lastPlayedDate: null,
-    eventHistory: []
+    eventHistory: [],
+    dailyActions: {
+        explored: false,
+        meetingHeld: false,
+        talkedTo: [] // Array of villager IDs talked to today
+    }
 };
 
 // Game Data (scenarios, events, choices)
@@ -144,6 +149,12 @@ const gameScenarios = {
 // Game Actions
 const gameActions = {
     explore: () => {
+        if (gameState.dailyActions.explored) {
+            updateGameDisplay("오늘은 더 이상 새로운 것을 발견하지 못했습니다. 다른 활동을 해보세요.");
+            renderChoices(gameScenarios["intro"].choices);
+            return;
+        }
+        gameState.dailyActions.explored = true;
         const rand = currentRandFn();
         let message = "마을을 둘러보니 평화롭습니다.";
         if (rand < 0.3) {
@@ -161,6 +172,14 @@ const gameActions = {
     talk_to_villagers: () => {
         const rand = currentRandFn();
         const villager = gameState.villagers[Math.floor(rand * gameState.villagers.length)];
+
+        if (gameState.dailyActions.talkedTo.includes(villager.id)) {
+            updateGameDisplay(`${villager.name}와(과) 이미 충분히 대화했습니다. 오늘은 다른 주민과 이야기하거나 다른 활동을 해보세요.`);
+            renderChoices(gameScenarios["intro"].choices);
+            return;
+        }
+        gameState.dailyActions.talkedTo.push(villager.id);
+
         let message = `${villager.name}와(과) 대화했습니다. `;
         if (villager.trust > 80) {
             message += `${villager.name}는 당신에게 깊은 신뢰를 보이며 마을의 발전에 대한 아이디어를 공유했습니다. (+5 공동체 정신)`;
@@ -177,6 +196,14 @@ const gameActions = {
         renderChoices(gameScenarios["intro"].choices);
     },
     hold_meeting: () => {
+        if (gameState.dailyActions.meetingHeld) {
+            updateGameDisplay("오늘은 이미 마을 회의를 개최했습니다. 주민들이 회의에 지쳐 보입니다. (-5 행복도)");
+            updateState({ happiness: gameState.happiness - 5 });
+            renderChoices(gameScenarios["intro"].choices);
+            return;
+        }
+        gameState.dailyActions.meetingHeld = true;
+
         const rand = currentRandFn();
         let message = "마을 회의를 개최했습니다. ";
         if (rand < 0.5) {
@@ -442,6 +469,13 @@ function processDailyEvents() {
     const dayOfWeek = today.getDay();
     document.getElementById('gameDescription').innerText = getDayOfWeekText(dayOfWeek);
 
+    // Reset daily actions
+    gameState.dailyActions = {
+        explored: false,
+        meetingHeld: false,
+        talkedTo: []
+    };
+
     // Daily resource consumption
     gameState.resources.food -= gameState.villagers.length * 1; // Each villager consumes 1 food
     if (gameState.resources.food < 0) {
@@ -464,6 +498,10 @@ function processDailyEvents() {
         eventId = "daily_event_new_villager";
     } else if (rand < 0.8 && gameState.day % 7 === 0) { // Festival request every 7 days
         eventId = "daily_event_festival_request";
+    } else if (rand < 0.9 && gameState.communitySpirit < 60) { // Rumor event if community spirit is low
+        eventId = "daily_event_rumor";
+    } else if (rand < 0.95 && gameState.day > 5) { // Natural disaster after some days
+        eventId = "daily_event_natural_disaster";
     }
 
     gameState.currentScenarioId = eventId;
