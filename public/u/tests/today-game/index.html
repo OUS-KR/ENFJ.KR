@@ -410,18 +410,21 @@
 
     function generateVisionFragment(fragmentsPool) {
         const container = document.getElementById('visionFragmentsContainer');
+        console.log(`visionFragmentsContainer offsetWidth: ${container.offsetWidth}`);
         const fragmentText = fragmentsPool[Math.floor(currentRandFn() * fragmentsPool.length)];
         
         const fragmentDiv = document.createElement('button');
         fragmentDiv.className = 'vision-fragment choice-btn';
         fragmentDiv.innerText = fragmentText;
         fragmentDiv.style.position = 'absolute';
-        fragmentDiv.style.left = `${Math.floor(currentRandFn() * (container.offsetWidth - 100))}px`; // Random horizontal position
+        const leftPos = Math.floor(currentRandFn() * (container.offsetWidth - 100));
+        fragmentDiv.style.left = `${leftPos}px`; // Random horizontal position
         fragmentDiv.style.bottom = '0px'; // Start from bottom
         fragmentDiv.style.transition = 'bottom 1.5s linear'; // Animation for moving up
         fragmentDiv.addEventListener('click', handleVisionFragmentClick);
         
         container.appendChild(fragmentDiv);
+        console.log(`Generated fragment: ${fragmentText} at left: ${leftPos}px`);
 
         // Animate fragment moving up
         setTimeout(() => {
@@ -693,6 +696,7 @@
     }
 
     function initDailyGame() {
+        console.log("initDailyGame called.");
         const today = new Date();
         const seed = getDailySeed();
         currentRandFn = mulberry32(seed);
@@ -703,9 +707,11 @@
         let gameTypeIndex;
         const urlParams = new URLSearchParams(window.location.search);
         const gameParam = urlParams.get('game');
+        console.log(`gameParam: ${gameParam}`);
 
         if (gameParam !== null) {
             const requestedIndex = parseInt(gameParam, 10);
+            console.log(`requestedIndex: ${requestedIndex}`);
             if (!isNaN(requestedIndex) && requestedIndex >= 0 && requestedIndex < gameTypes.length) {
                 gameTypeIndex = requestedIndex;
             } else {
@@ -715,6 +721,8 @@
         } else {
             gameTypeIndex = Math.floor(currentRandFn() * gameTypes.length);
         }
+        console.log(`Selected gameTypeIndex: ${gameTypeIndex}`);
+        console.log(`Calling game function: ${gameTypes[gameTypeIndex].name}`);
         
         gameTypes[gameTypeIndex]();
 
