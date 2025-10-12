@@ -630,7 +630,22 @@
         const dayOfWeek = today.getDay();
         document.getElementById('gameDescription').innerText = getDayOfWeekText(dayOfWeek);
 
-        const gameTypeIndex = Math.floor(currentRandFn() * gameTypes.length);
+        let gameTypeIndex;
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameParam = urlParams.get('game');
+
+        if (gameParam !== null) {
+            const requestedIndex = parseInt(gameParam, 10);
+            if (!isNaN(requestedIndex) && requestedIndex >= 0 && requestedIndex < gameTypes.length) {
+                gameTypeIndex = requestedIndex;
+            } else {
+                console.warn(`Invalid game index '${gameParam}'. Falling back to random selection.`);
+                gameTypeIndex = Math.floor(currentRandFn() * gameTypes.length);
+            }
+        } else {
+            gameTypeIndex = Math.floor(currentRandFn() * gameTypes.length);
+        }
+        
         gameTypes[gameTypeIndex]();
 
         document.getElementById('feedbackMessage').innerText = '';
