@@ -121,6 +121,7 @@
         #visionFragmentsContainer {
             position: relative;
             height: 200px; /* Ensure container has height for animation */
+            width: 100%; /* Added to ensure offsetWidth is not 0 */
             overflow: hidden;
         }
 
@@ -258,8 +259,10 @@
     }
 
     function setupEmotionalWebWeaverGame() {
+        console.log("setupEmotionalWebWeaverGame called.");
         document.getElementById('gameTitle').innerText = "오늘의 게임: 감정 연결망";
         const gameArea = document.getElementById('gameArea');
+        console.log(`Emotional Web Weaver gameArea offsetWidth: ${gameArea.offsetWidth}`);
         
         const emotionsPool = ["기쁨", "슬픔", "분노", "사랑", "평온", "불안", "희망", "좌절", "용기", "공감", "연결", "이해", "조화", "갈등", "성장", "수용"];
         const coreEmotions = ["기쁨", "사랑", "평온", "희망", "성장"];
@@ -504,8 +507,10 @@
     }
 
     function setupRelationshipHarmonyMazeGame() {
+        console.log("setupRelationshipHarmonyMazeGame called.");
         document.getElementById('gameTitle').innerText = "오늘의 게임: 관계 조율 미로";
         const gameArea = document.getElementById('gameArea');
+        console.log(`Relationship Harmony Maze gameArea offsetWidth: ${gameArea.offsetWidth}`);
         
         mazeGrid = generateMaze(5, 5); // Generate a 5x5 maze
         mediatorPosition = { row: 0, col: 0 };
