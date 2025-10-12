@@ -46,541 +46,482 @@ function showFeedback(isCorrect, message) {
     gameInProgress = false;
 }
 
-// --- Game Implementations for ENFJ (5 New Games) ---
+// --- Game Implementations for ENFJ (5 New Games based on classics) ---
 
-// Game 1: 감정 공감 챌린지 (Empathy Challenge)
-function setupEmpathyChallengeGame() {
-    document.getElementById('gameTitle').innerText = "오늘의 게임: 감정 공감 챌린지";
+// Game 1: 협력 팩맨 챌린지 (Cooperative Pac-Man Challenge - Arcade/Puzzle)
+function setupCooperativePacManChallengeGame() {
+    document.getElementById('gameTitle').innerText = "오늘의 게임: 협력 팩맨 챌린지";
     const gameArea = document.getElementById('gameArea');
-    const scenarios = [
-        {
-            situation: "친구가 중요한 발표를 망치고 낙담해 있습니다.",
-            emotion: "좌절감",
-            responses: [
-                { text: "괜찮아, 다음엔 잘할 거야!", correct: false, feedback: "격려도 좋지만, 먼저 친구의 감정을 인정해 주는 것이 중요해요." },
-                { text: "얼마나 속상할까... 정말 힘들었겠다.", correct: true, feedback: "정말 잘하셨어요! 친구의 감정을 깊이 공감해 주었네요." },
-                { text: "발표 준비를 더 열심히 했어야지.", correct: false, feedback: "비판보다는 공감이 필요할 때입니다." },
-                { text: "나도 그런 적 있어. 힘내!", correct: false, feedback: "자신의 경험을 나누는 것도 좋지만, 지금은 친구에게 집중할 때입니다." }
-            ]
-        },
-        {
-            situation: "동료가 맡은 프로젝트가 예상치 못한 문제로 지연되고 있어 초조해합니다.",
-            emotion: "초조함",
-            responses: [
-                { text: "왜 이렇게 늦어지는 거야? 빨리 해결해야지.", correct: false, feedback: "압박보다는 이해와 지지가 필요합니다." },
-                { text: "많이 불안하고 걱정되겠어요. 제가 도울 일이 있을까요?", correct: true, feedback: "훌륭해요! 동료의 불안감을 이해하고 도움을 제안했네요." },
-                { text: "원래 프로젝트는 다 그래요. 너무 걱정 마세요.", correct: false, feedback: "가볍게 넘기기보다는 상대의 감정을 인정해 주세요." },
-                { text: "이런 문제는 흔해요. 침착하게 대응하면 돼요.", correct: false, feedback: "조언보다는 먼저 공감하는 것이 중요합니다." }
-            ]
-        },
-        {
-            situation: "가족 구성원이 최근 스트레스로 인해 예민해져 작은 일에도 짜증을 냅니다.",
-            emotion: "예민함/짜증",
-            responses: [
-                { text: "왜 자꾸 짜증을 내? 나한테 화풀이하지 마.", correct: false, feedback: "상대방의 감정을 이해하려는 노력이 필요합니다." },
-                { text: "요즘 많이 힘들었구나. 혹시 내가 불편하게 한 건 없을까?", correct: true, feedback: "최고예요! 상대의 예민함을 이해하고 자신을 돌아보는 모습이 진정한 공감입니다." },
-                { text: "그냥 무시하는 게 상책이야.", correct: false, feedback: "회피는 관계 개선에 도움이 되지 않습니다." },
-                { text: "스트레스 받으면 운동이라도 해봐.", correct: false, feedback: "조언은 나중에, 지금은 공감이 먼저입니다." }
-            ]
+    const description = "유령을 피해 모든 친구(●)를 구출하세요! 벽(■)에 부딪히지 않도록 조심하세요.";
+    document.getElementById('gameDescription').innerText = description;
+
+    const mazeWidth = 10;
+    const mazeHeight = 10;
+    let maze = [];
+    let playerPos = { x: 1, y: 1 };
+    let score = 0;
+    let totalFriends = 0;
+
+    function generateMaze(seed) {
+        const rand = mulberry32(seed);
+        let newMaze = Array(mazeHeight).fill(0).map(() => Array(mazeWidth).fill(' '));
+
+        // Create border walls
+        for (let i = 0; i < mazeWidth; i++) {
+            newMaze[0][i] = '■';
+            newMaze[mazeHeight - 1][i] = '■';
         }
-    ];
+        for (let i = 0; i < mazeHeight; i++) {
+            newMaze[i][0] = '■';
+            newMaze[i][mazeWidth - 1] = '■';
+        }
 
-    const scenario = scenarios[Math.floor(currentRandFn() * scenarios.length)];
-    let shuffledResponses = scenario.responses.sort(() => currentRandFn() - 0.5);
+        // Place internal walls randomly
+        for (let i = 0; i < mazeHeight * mazeWidth / 5; i++) {
+            let x, y;
+            do {
+                x = Math.floor(rand() * mazeWidth);
+                y = Math.floor(rand() * mazeHeight);
+            } while (newMaze[y][x] !== ' ');
+            newMaze[y][x] = '■';
+        }
 
-    gameArea.innerHTML = `
-        <div class="game-display question"><b>상황:</b> ${scenario.situation}</div>
-        <div class="game-display"><b>상대방의 감정:</b> <span style="color: var(--primary-color); font-weight: bold;">${scenario.emotion}</span></div>
-        <div class="game-display">당신이라면 어떻게 반응하시겠습니까?</div>
-        <div class="choices" id="empathyChoices">
-            ${shuffledResponses.map((res, index) => `<button class="choice-btn" data-index="${index}">${res.text}</button>`).join('')}
-        </div>
-    `;
+        // Place friends (dots)
+        totalFriends = 0;
+        for (let i = 0; i < mazeHeight * mazeWidth / 8; i++) {
+            let x, y;
+            do {
+                x = Math.floor(rand() * mazeWidth);
+                y = Math.floor(rand() * mazeHeight);
+            } while (newMaze[y][x] !== ' ');
+            newMaze[y][x] = '●';
+            totalFriends++;
+        }
+
+        // Place player (ensure not on wall or friend initially)
+        do {
+            playerPos = { x: Math.floor(rand() * mazeWidth), y: Math.floor(rand() * mazeHeight) };
+        } while (newMaze[playerPos.y][playerPos.x] !== ' ');
+        
+        return newMaze;
+    }
+
+    function renderMaze() {
+        gameArea.innerHTML = '';
+        const mazeDiv = document.createElement('div');
+        mazeDiv.style.display = 'grid';
+        mazeDiv.style.gridTemplateColumns = `repeat(${mazeWidth}, 25px)`
+        mazeDiv.style.gridTemplateRows = `repeat(${mazeHeight}, 25px)`
+        mazeDiv.style.border = '2px solid var(--border-color)';
+        mazeDiv.style.margin = '20px auto';
+        mazeDiv.style.backgroundColor = 'var(--background-color-light)';
+
+        for (let y = 0; y < mazeHeight; y++) {
+            for (let x = 0; x < mazeWidth; x++) {
+                const cell = document.createElement('div');
+                cell.style.width = '25px';
+                cell.style.height = '25px';
+                cell.style.display = 'flex';
+                cell.style.justifyContent = 'center';
+                cell.style.alignItems = 'center';
+                cell.style.fontSize = '1.2em';
+                cell.style.fontWeight = 'bold';
+                cell.style.color = 'var(--text-color)';
+
+                if (playerPos.x === x && playerPos.y === y) {
+                    cell.innerText = '😀'; // Player
+                    cell.style.backgroundColor = 'var(--accent-color)';
+                } else if (maze[y][x] === '■') {
+                    cell.innerText = '■'; // Wall
+                    cell.style.backgroundColor = 'var(--secondary-color)';
+                    cell.style.color = 'var(--text-color-inverted)';
+                } else if (maze[y][x] === '●') {
+                    cell.innerText = '●'; // Friend (dot)
+                    cell.style.color = 'var(--success-color)';
+                } else {
+                    cell.innerText = '';
+                }
+                mazeDiv.appendChild(cell);
+            }
+        }
+        gameArea.appendChild(mazeDiv);
+        const scoreDisplay = document.createElement('p');
+        scoreDisplay.id = 'pacmanScore';
+        scoreDisplay.innerText = `구출한 친구: ${score} / ${totalFriends}`;
+        gameArea.appendChild(scoreDisplay);
+    }
+
+    function movePlayer(dx, dy) {
+        if (!gameInProgress) return;
+
+        const newX = playerPos.x + dx;
+        const newY = playerPos.y + dy;
+
+        if (newX >= 0 && newX < mazeWidth && newY >= 0 && newY < mazeHeight) {
+            if (maze[newY][newX] === '■') {
+                // Hit a wall, do nothing
+                return;
+            }
+
+            playerPos.x = newX;
+            playerPos.y = newY;
+
+            if (maze[newY][newX] === '●') {
+                maze[newY][newX] = ' '; // Eat friend
+                score++;
+                document.getElementById('pacmanScore').innerText = `구출한 친구: ${score} / ${totalFriends}`;
+            }
+
+            renderMaze();
+
+            if (score === totalFriends) {
+                showFeedback(true, "모든 친구를 성공적으로 구출했습니다! 훌륭한 협력 정신!");
+                gameInProgress = false;
+                document.removeEventListener('keydown', handleKeyDown);
+            }
+        }
+    }
+
+    function handleKeyDown(event) {
+        switch (event.key) {
+            case 'ArrowUp': movePlayer(0, -1); break;
+            case 'ArrowDown': movePlayer(0, 1); break;
+            case 'ArrowLeft': movePlayer(-1, 0); break;
+            case 'ArrowRight': movePlayer(1, 0); break;
+        }
+    }
+
+    maze = generateMaze(getDailySeed());
+    renderMaze();
     document.getElementById('game-input-area').innerHTML = '';
     gameInProgress = true;
-
-    document.querySelectorAll('#empathyChoices .choice-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            if (!gameInProgress) return;
-            const selectedIndex = parseInt(this.dataset.index);
-            const isCorrect = shuffledResponses[selectedIndex].correct;
-            const feedback = shuffledResponses[selectedIndex].feedback;
-            showFeedback(isCorrect, feedback);
-            document.querySelectorAll('#empathyChoices .choice-btn').forEach(btn => btn.disabled = true);
-        });
-    });
+    document.addEventListener('keydown', handleKeyDown);
 }
 
-// Game 2: 관계 조율 퍼즐 (Relationship Harmony Puzzle)
-function setupRelationshipHarmonyPuzzleGame() {
-    document.getElementById('gameTitle').innerText = "오늘의 게임: 관계 조율 퍼즐";
+// Game 2: 관계의 체스 퍼즐 (Relationship Chess Puzzle - Board Game/Puzzle)
+function setupRelationshipChessPuzzleGame() {
+    document.getElementById('gameTitle').innerText = "오늘의 게임: 관계의 체스 퍼즐";
     const gameArea = document.getElementById('gameArea');
+    const description = "주어진 상황에서 가장 조화로운 관계를 만들 수 있는 한 수를 찾아보세요.";
+    document.getElementById('gameDescription').innerText = description;
+
     const puzzles = [
         {
-            scenario: "새로운 팀 프로젝트. '아이디어 뱅크', '꼼꼼한 실무자', '분위기 메이커'가 모였습니다. 이들의 강점을 살려 조화로운 팀을 만드세요.",
-            roles: ["아이디어 뱅크", "꼼꼼한 실무자", "분위기 메이커"],
-            actions: {
-                "아이디어 뱅크": ["자유로운 발상 유도", "새로운 관점 제시"],
-                "꼼꼼한 실무자": ["세부 계획 수립", "진행 상황 점검"],
-                "분위기 메이커": ["팀원 사기 진작", "갈등 중재"]
-            },
-            pool: ["자유로운 발상 유도", "세부 계획 수립", "팀원 사기 진작", "새로운 관점 제시", "진행 상황 점검", "갈등 중재", "개인 작업만 집중", "지시만 내리기"]
+            board: [
+                "R N B Q K B N R",
+                "P P P P P P P P",
+                "               ",
+                "               ",
+                "               ",
+                "               ",
+                "p p p p p p p p",
+                "r n b q k b n r"
+            ],
+            goal: "백 폰을 안전하게 전진시켜 흑 룩을 위협하세요.",
+            correctMove: "P-P4" // Example: Pawn from P2 to P4
         },
         {
-            scenario: "가족 모임에서 의견 충돌이 발생했습니다. '원칙주의자', '감성주의자', '중재자'가 있습니다. 각자의 역할을 통해 갈등을 해결하세요.",
-            roles: ["원칙주의자", "감성주의자", "중재자"],
-            actions: {
-                "원칙주의자": ["명확한 기준 제시", "공정한 규칙 적용"],
-                "감성주의자": ["감정적 지지 제공", "개인의 감정 존중"],
-                "중재자": ["양측 의견 경청", "타협점 모색"]
-            },
-            pool: ["명확한 기준 제시", "감정적 지지 제공", "양측 의견 경청", "공정한 규칙 적용", "개인의 감정 존중", "타협점 모색", "한쪽 편들기", "자기주장만 내세우기"]
+            board: [
+                "R N B Q K B N R",
+                "P P P P P P P P",
+                "               ",
+                "               ",
+                "               ",
+                "               ",
+                "p p p p p p p p",
+                "r n b q k b n r"
+            ],
+            goal: "흑 나이트를 움직여 백 퀸을 보호하세요.",
+            correctMove: "N-N6" // Example: Knight from N8 to N6
         }
     ];
 
     const puzzle = puzzles[Math.floor(currentRandFn() * puzzles.length)];
-    let assignedActions = {}; // { "아이디어 뱅크": ["액션1", "액션2"], ... }
-    let correctAssignments = 0;
+    currentCorrectAnswer = puzzle.correctMove.toLowerCase(); // Store correct answer for validation
 
     gameArea.innerHTML = `
-        <div class="game-display question"><b>상황:</b> ${puzzle.scenario}</div>
-        <div class="relationship-web-container" style="display: flex; flex-direction: column; gap: 20px; margin-top: 20px;">
-            ${puzzle.roles.map(role => `
-                <div class="relationship-type-box" style="border: 1px solid var(--border-color); padding: 15px; border-radius: 8px;">
-                    <h3 style="margin-top: 0;">${role}</h3>
-                    <div class="assigned-actions" id="assigned-actions-${role.replace(/\s/g, '')}" data-role="${role}" style="min-height: 50px; border: 1px dashed var(--secondary-text-color); padding: 10px; border-radius: 4px; display: flex; flex-wrap: wrap; gap: 5px;">
-                        <!-- Actions will be dropped here -->
-                    </div>
-                </div>
-            `).join('')}
+        <div class="game-display question">${puzzle.goal}</div>
+        <div id="chessBoard" style="display: grid; grid-template-columns: repeat(8, 40px); grid-template-rows: repeat(8, 40px); border: 2px solid var(--border-color); margin: 20px auto;">
+            <!-- Chess board will be rendered here -->
         </div>
-        <div class="action-pool" style="margin-top: 30px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
-            ${puzzle.pool.sort(() => currentRandFn() - 0.5).map(action => `<button class="choice-btn action-btn" draggable="true" data-action="${action}">${action}</button>`).join('')}
-        </div>
-        <button id="submitHarmonyPuzzle" class="choice-btn" style="margin-top: 20px; max-width: 200px;">완료</button>
-    `;
-    document.getElementById('game-input-area').innerHTML = '';
-    gameInProgress = true;
-
-    let draggedItem = null;
-
-    document.querySelectorAll('.action-btn').forEach(btn => {
-        btn.addEventListener('dragstart', (e) => {
-            draggedItem = e.target;
-            setTimeout(() => e.target.style.display = 'none', 0);
-        });
-        btn.addEventListener('dragend', (e) => {
-            setTimeout(() => e.target.style.display = 'block', 0);
-            draggedItem = null;
-        });
-    });
-
-    document.querySelectorAll('.assigned-actions').forEach(box => {
-        box.addEventListener('dragover', (e) => {
-            e.preventDefault();
-        });
-        box.addEventListener('dragenter', (e) => {
-            e.preventDefault();
-            box.style.background = 'var(--hover-bg-color)';
-        });
-        box.addEventListener('dragleave', (e) => {
-            box.style.background = 'transparent';
-        });
-        box.addEventListener('drop', (e) => {
-            e.preventDefault();
-            box.style.background = 'transparent';
-            if (draggedItem) {
-                const action = draggedItem.dataset.action;
-                const role = box.dataset.role;
-
-                if (!assignedActions[role]) {
-                    assignedActions[role] = [];
-                }
-                assignedActions[role].push(action);
-
-                const newActionBtn = document.createElement('button');
-                newActionBtn.className = 'choice-btn assigned-action-btn';
-                newActionBtn.innerText = action;
-                newActionBtn.dataset.action = action;
-                newActionBtn.disabled = true;
-                box.appendChild(newActionBtn);
-                draggedItem.remove();
-            }
-        });
-    });
-
-    document.getElementById('submitHarmonyPuzzle').addEventListener('click', function() {
-        if (!gameInProgress) return;
-        correctAssignments = 0;
-        let totalCorrectActions = 0;
-        let userCorrectlyAssigned = 0;
-
-        puzzle.roles.forEach(role => {
-            const expectedActions = puzzle.actions[role];
-            const actualActions = assignedActions[role] || [];
-            totalCorrectActions += expectedActions.length;
-
-            const roleCorrect = expectedActions.every(action => actualActions.includes(action));
-            if (roleCorrect && actualActions.length === expectedActions.length) {
-                correctAssignments++;
-                userCorrectlyAssigned += expectedActions.length;
-            }
-        });
-
-        const isCorrect = (correctAssignments === puzzle.roles.length) && (userCorrectlyAssigned === totalCorrectActions);
-        showFeedback(isCorrect, isCorrect ? "모든 관계를 조화롭게 조율했습니다! 훌륭해요!" : "일부 관계 조율이 필요해 보입니다. 다시 시도해 보세요.");
-        document.querySelectorAll('.action-btn, .assigned-action-btn').forEach(btn => btn.disabled = true);
-        this.disabled = true;
-    });
-}
-
-// Game 3: 비전 공유 스토리 (Vision Sharing Story)
-function setupVisionSharingStoryGame() {
-    document.getElementById('gameTitle').innerText = "오늘의 게임: 비전 공유 스토리";
-    const gameArea = document.getElementById('gameArea');
-    const stories = [
-        {
-            start: "우리의 비전은 '모두가 행복한 세상'입니다.",
-            sequence: ["이를 위해", "우리는 서로를", "존중하고", "협력하며", "함께 성장할 것입니다."],
-            distractors: ["경쟁하고", "무시하며", "개인만 생각할 것입니다."],
-            feedback: "모두가 행복한 세상을 위한 비전을 성공적으로 공유했습니다!"
-        },
-        {
-            start: "우리는 '지속 가능한 미래'를 꿈꿉니다.",
-            sequence: ["따라서", "환경 보호에", "앞장서고", "혁신적인 기술로", "새로운 가치를 창출할 것입니다."],
-            distractors: ["이윤만 추구하고", "환경을 파괴하며", "현상 유지에만 급급할 것입니다."],
-            feedback: "지속 가능한 미래를 위한 비전을 성공적으로 공유했습니다!"
-        }
-    ];
-
-    const story = stories[Math.floor(currentRandFn() * stories.length)];
-    let currentSequenceIndex = 0;
-    let score = 0;
-
-    gameArea.innerHTML = `
-        <div class="game-display question">다음 비전 문장을 완성할 올바른 조각을 순서대로 선택하세요.</div>
-        <div id="visionStoryDisplay" class="game-display" style="font-size: 1.2em; font-weight: bold; color: var(--primary-color);">
-            ${story.start} <span id="currentVisionFragment"></span>
-        </div>
-        <div class="choices" id="storyChoices" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px;">
-            <!-- Choices will be loaded here -->
+        <div class="game-input">
+            <input type="text" id="chessMoveInput" placeholder="예: P-P4 (말-칸)"/>
+            <button id="submitChessMove">확인</button>
         </div>
     `;
     document.getElementById('game-input-area').innerHTML = '';
     gameInProgress = true;
 
-    function renderChoices() {
-        const choicesContainer = document.getElementById('storyChoices');
-        choicesContainer.innerHTML = '';
+    function renderBoard() {
+        const boardDiv = document.getElementById('chessBoard');
+        boardDiv.innerHTML = '';
+        const pieceMap = {
+            'R': '♜', 'N': '♞', 'B': '♝', 'Q': '♛', 'K': '♚', 'P': '♟',
+            'r': '♖', 'n': '♘', 'b': '♗', 'q': '♕', 'k': '♔', 'p': '♙'
+        };
 
-        if (currentSequenceIndex < story.sequence.length) {
-            const correctFragment = story.sequence[currentSequenceIndex];
-            let availableFragments = [correctFragment];
-
-            const shuffledDistractors = story.distractors.sort(() => currentRandFn() - 0.5);
-            for (let i = 0; i < 2; i++) { // Add 2 distractors
-                if (shuffledDistractors[i] && !availableFragments.includes(shuffledDistractors[i])) {
-                    availableFragments.push(shuffledDistractors[i]);
-                }
-            }
-            availableFragments = availableFragments.sort(() => currentRandFn() - 0.5);
-
-            availableFragments.forEach(fragment => {
-                const btn = document.createElement('button');
-                btn.className = 'choice-btn';
-                btn.innerText = fragment;
-                btn.addEventListener('click', handleFragmentClick);
-                choicesContainer.appendChild(btn);
-            });
-        } else {
-            // Game finished
-            showFeedback(true, story.feedback);
-            document.querySelectorAll('#storyChoices .choice-btn').forEach(btn => btn.disabled = true);
-        }
-    }
-
-    function handleFragmentClick(event) {
-        if (!gameInProgress) return;
-
-        const clickedFragment = event.target.innerText;
-        const correctFragment = story.sequence[currentSequenceIndex];
-
-        if (clickedFragment === correctFragment) {
-            document.getElementById('currentVisionFragment').innerText += ` ${clickedFragment}`;
-            currentSequenceIndex++;
-            score++;
-            if (currentSequenceIndex === story.sequence.length) {
-                showFeedback(true, story.feedback);
-                gameInProgress = false;
-                document.querySelectorAll('#storyChoices .choice-btn').forEach(btn => btn.disabled = true);
-            } else {
-                renderChoices();
-            }
-        } else {
-            showFeedback(false, "올바른 비전 조각이 아닙니다. 다시 시도해 보세요.");
-            gameInProgress = false;
-            document.querySelectorAll('#storyChoices .choice-btn').forEach(btn => btn.disabled = true);
-        }
-    }
-
-    renderChoices();
-}
-
-// Game 4: 긍정 영향력 미로 (Positive Influence Maze)
-function setupPositiveInfluenceMazeGame() {
-    document.getElementById('gameTitle').innerText = "오늘의 게임: 긍정 영향력 미로";
-    const gameArea = document.getElementById('gameArea');
-    const mazeSize = 5; // 5x5 maze
-    let mazeGrid = [];
-    let playerPosition = { row: 0, col: 0 };
-    let score = 0;
-    let influenceCount = 0;
-    let totalPositiveInfluences = 0;
-
-    const influenceTypes = {
-        'P': { name: '긍정 영향', color: 'var(--success-color)' },
-        'N': { name: '부정 영향', color: 'var(--error-color)' },
-        'E': { name: '출구', color: 'var(--primary-color)' }
-    };
-
-    function generateMaze() {
-        let grid = Array(mazeSize).fill(0).map(() => Array(mazeSize).fill(' '));
-        playerPosition = { row: 0, col: 0 }; // Start at top-left
-
-        // Place exit
-        let exitRow, exitCol;
-        do {
-            exitRow = Math.floor(currentRandFn() * mazeSize);
-            exitCol = Math.floor(currentRandFn() * mazeSize);
-        } while (exitRow === 0 && exitCol === 0); // Exit not at start
-        grid[exitRow][exitCol] = 'E';
-
-        // Place positive influences
-        totalPositiveInfluences = 0;
-        for (let i = 0; i < mazeSize + 1; i++) { // More positive influences than negative
-            let r, c;
-            do {
-                r = Math.floor(currentRandFn() * mazeSize);
-                c = Math.floor(currentRandFn() * mazeSize);
-            } while (grid[r][c] !== ' ');
-            grid[r][c] = 'P';
-            totalPositiveInfluences++;
-        }
-
-        // Place negative influences
-        for (let i = 0; i < mazeSize - 2; i++) {
-            let r, c;
-            do {
-                r = Math.floor(currentRandFn() * mazeSize);
-                c = Math.floor(currentRandFn() * mazeSize);
-            } while (grid[r][c] !== ' ');
-            grid[r][c] = 'N';
-        }
-        return grid;
-    }
-
-    function renderMaze() {
-        const mazeContainer = document.getElementById('mazeContainer');
-        mazeContainer.innerHTML = '';
-        mazeGrid.forEach((row, rIdx) => {
+        puzzle.board.forEach((rowStr, rIdx) => {
+            const row = rowStr.split(' ');
             row.forEach((cellContent, cIdx) => {
                 const cell = document.createElement('div');
-                cell.className = 'maze-cell';
                 cell.style.width = '40px';
                 cell.style.height = '40px';
                 cell.style.display = 'flex';
                 cell.style.justifyContent = 'center';
                 cell.style.alignItems = 'center';
-                cell.style.border = '1px solid var(--border-color)';
-                cell.style.backgroundColor = 'var(--background-color)';
+                cell.style.fontSize = '1.5em';
+                cell.style.backgroundColor = (rIdx + cIdx) % 2 === 0 ? 'var(--background-color-light)' : 'var(--background-color)';
                 cell.style.color = 'var(--text-color)';
-                cell.style.fontSize = '0.8em';
-
-                if (rIdx === playerPosition.row && cIdx === playerPosition.col) {
-                    cell.style.backgroundColor = 'var(--accent-color)'; // Player
-                    cell.innerText = '👤';
-                } else if (cellContent !== ' ') {
-                    const type = influenceTypes[cellContent];
-                    cell.innerText = type.name === '출구' ? '🏁' : (type.name === '긍정 영향' ? '✨' : '❌');
-                    cell.style.backgroundColor = type.color;
-                    cell.style.color = 'white';
-                }
-                mazeContainer.appendChild(cell);
+                cell.innerText = pieceMap[cellContent] || '';
+                boardDiv.appendChild(cell);
             });
         });
-        document.getElementById('mazeScoreDisplay').innerText = `점수: ${score} / ${totalPositiveInfluences}`;
     }
 
-    function movePlayer(newRow, newCol) {
-        if (newRow >= 0 && newRow < mazeSize && newCol >= 0 && newCol < mazeSize) {
-            playerPosition = { row: newRow, col: newCol };
-            const cellContent = mazeGrid[newRow][newCol];
+    renderBoard();
 
-            if (cellContent === 'P') {
-                score++;
-                influenceCount++;
-                mazeGrid[newRow][newCol] = ' '; // Clear influence after collecting
-                document.getElementById('mazeScoreDisplay').innerText = `점수: ${score} / ${totalPositiveInfluences}`;
-            } else if (cellContent === 'N') {
-                score = Math.max(0, score - 1); // Penalty for negative influence
-                document.getElementById('mazeScoreDisplay').innerText = `점수: ${score} / ${totalPositiveInfluences}`;
-            } else if (cellContent === 'E') {
-                if (influenceCount === totalPositiveInfluences) {
-                    showFeedback(true, `모든 긍정 영향을 모으고 출구에 도달했습니다! 최종 점수: ${score}`);
-                } else {
-                    showFeedback(false, `아직 모든 긍정 영향을 모으지 못했습니다. 다시 시도해 보세요.`);
-                }
-                gameInProgress = false;
-                document.removeEventListener('keydown', handleMazeKeydown);
-                return;
-            }
-            renderMaze();
-        }
-    }
-
-    function handleMazeKeydown(event) {
+    document.getElementById('submitChessMove').addEventListener('click', function() {
         if (!gameInProgress) return;
-        let newRow = playerPosition.row;
-        let newCol = playerPosition.col;
-
-        switch (event.key) {
-            case 'ArrowUp': newRow--; break;
-            case 'ArrowDown': newRow++; break;
-            case 'ArrowLeft': newCol--; break;
-            case 'ArrowRight': newCol++; break;
-            default: return;
+        const input = document.getElementById('chessMoveInput').value.trim().toLowerCase();
+        if (input === currentCorrectAnswer) {
+            showFeedback(true, "정답입니다! 훌륭한 전략으로 관계의 조화를 이끌어냈군요!");
+        } else {
+            showFeedback(false, `아쉽네요. 정답은 ${puzzle.correctMove} 입니다. 다시 시도해 보세요.`);
         }
-        event.preventDefault();
-        movePlayer(newRow, newCol);
-    }
-
-    function handleMazeControlClick(event) {
-        if (!gameInProgress) return;
-        const direction = event.target.dataset.direction;
-        let newRow = playerPosition.row;
-        let newCol = playerPosition.col;
-
-        switch (direction) {
-            case 'up': newRow--; break;
-            case 'down': newRow++; break;
-            case 'left': newCol--; break;
-            case 'right': newCol++; break;
-        }
-        movePlayer(newRow, newCol);
-    }
-
-    mazeGrid = generateMaze();
-    gameArea.innerHTML = `
-        <div class="game-display question">긍정 영향을 모두 모아 출구(🏁)로 이동하세요! 부정 영향(❌)은 피하세요.</div>
-        <div id="mazeScoreDisplay" class="game-display" style="font-size: 1em; color: var(--secondary-text-color);">점수: 0 / ${totalPositiveInfluences}</div>
-        <div id="mazeContainer" style="display: grid; grid-template-columns: repeat(${mazeSize}, 40px); grid-template-rows: repeat(${mazeSize}, 40px); gap: 2px; margin: 20px auto; border: 2px solid var(--border-color); width: fit-content;">
-            <!-- Maze cells will be rendered here -->
-        </div>
-        <div class="maze-controls" style="margin-top: 20px;">
-            <button class="choice-btn maze-control-btn" data-direction="up">▲</button><br>
-            <button class="choice-btn maze-control-btn" data-direction="left">◀</button>
-            <button class="choice-btn maze-control-btn" data-direction="right">▶</button><br>
-            <button class="choice-btn maze-control-btn" data-direction="down">▼</button>
-        </div>
-    `;
-    document.getElementById('game-input-area').innerHTML = '';
-    gameInProgress = true;
-
-    renderMaze();
-    document.addEventListener('keydown', handleMazeKeydown);
-    document.querySelectorAll('.maze-control-btn').forEach(btn => {
-        btn.addEventListener('click', handleMazeControlClick);
+        document.getElementById('chessMoveInput').disabled = true;
+        this.disabled = true;
     });
 }
 
-// Game 5: 소통의 다리 놓기 (Building Bridges of Communication)
-function setupBuildingBridgesGame() {
-    document.getElementById('gameTitle').innerText = "오늘의 게임: 소통의 다리 놓기";
+// Game 3: 공감의 TRPG 스토리 (Empathy TRPG Story - TRPG-lite)
+function setupEmpathyTRPGStoryGame() {
+    document.getElementById('gameTitle').innerText = "오늘의 게임: 공감의 TRPG 스토리";
     const gameArea = document.getElementById('gameArea');
-    const scenarios = [
+    const description = "당신은 모험가입니다. 주어진 상황에서 가장 공감적이고 긍정적인 결과를 이끌어낼 선택을 하세요.";
+    document.getElementById('gameDescription').innerText = description;
+
+    const stories = [
         {
-            parties: ["개발팀", "기획팀"],
-            breakdown: "개발팀은 '기획이 너무 자주 바뀌어 힘들다'고 하고, 기획팀은 '시장이 빠르게 변하니 어쩔 수 없다'고 합니다.",
-            keywords: [
-                { text: "기획 변경의 배경 설명", correct: true, feedback: "기획팀이 개발팀의 어려움을 이해하고 배경을 설명하는 것은 소통의 첫걸음입니다." },
-                { text: "개발팀의 고충 경청", correct: true, feedback: "개발팀의 어려움을 경청하는 것은 신뢰를 쌓는 데 중요합니다." },
-                { text: "변경 사항 최소화 노력", correct: true, feedback: "기획팀이 변경 사항을 최소화하려는 노력은 개발팀에 큰 위로가 됩니다." },
-                { text: "개발팀의 의견 무시", correct: false, feedback: "상대방의 의견을 무시하는 것은 소통의 다리를 끊는 행위입니다." },
-                { text: "기획팀의 결정 강요", correct: false, feedback: "일방적인 강요는 갈등을 심화시킬 뿐입니다." },
-                { text: "서로 비난하기", correct: false, feedback: "비난은 문제 해결에 전혀 도움이 되지 않습니다." }
-            ],
-            correctCount: 3,
-            successMessage: "개발팀과 기획팀 사이에 소통의 다리가 놓였습니다!"
+            scenario: "마을 외곽에서 울고 있는 아이를 발견했습니다. 아이는 잃어버린 강아지를 찾고 있습니다.",
+            choices: [
+                { text: "아이의 손을 잡고 함께 강아지를 찾아 나선다.", outcome: "아이에게 큰 위로가 되었고, 함께 강아지를 찾았습니다. 아이는 당신에게 깊이 감사했습니다.", correct: true },
+                { text: "마을 사람들에게 강아지를 찾아달라고 부탁한다.", outcome: "마을 사람들이 강아지를 찾았지만, 아이는 당신이 직접 도와주지 않아 조금 서운해했습니다.", correct: false },
+                { text: "아이에게 새 강아지를 사주겠다고 약속한다.", outcome: "아이는 잠시 기뻐했지만, 잃어버린 강아지에 대한 슬픔은 여전했습니다.", correct: false },
+                { text: "강아지는 스스로 돌아올 것이라고 말하며 지나간다.", outcome: "아이는 더욱 슬퍼하며 당신을 외면했습니다.", correct: false }
+            ]
         },
         {
-            parties: ["부모님", "자녀"],
-            breakdown: "부모님은 '자녀가 너무 게임만 한다'고 걱정하고, 자녀는 '스트레스 해소용인데 간섭이 심하다'고 불만입니다.",
-            keywords: [
-                { text: "자녀의 스트레스 이해", correct: true, feedback: "자녀의 입장을 이해하려는 부모님의 노력은 소통의 문을 엽니다." },
-                { text: "게임 시간 규칙 함께 정하기", correct: true, feedback: "함께 규칙을 정하는 것은 자녀의 자율성을 존중하는 좋은 방법입니다." },
-                { text: "부모님의 걱정 솔직히 표현", correct: true, feedback: "부모님의 진심 어린 걱정은 자녀에게 전달될 것입니다." },
-                { text: "무조건 게임 금지", correct: false, feedback: "일방적인 금지는 반발심만 키울 수 있습니다." },
-                { text: "잔소리만 반복하기", correct: false, feedback: "잔소리보다는 대화가 필요합니다." },
-                { text: "자녀의 불만 무시", correct: false, feedback: "자녀의 불만을 무시하면 관계가 멀어질 수 있습니다." }
-            ],
-            correctCount: 3,
-            successMessage: "부모님과 자녀 사이에 소통의 다리가 놓였습니다!"
+            scenario: "동료 모험가가 전투 중 큰 부상을 입고 절망에 빠져 있습니다. 그는 자신이 짐이 된다고 생각합니다.",
+            choices: [
+                { text: "그의 손을 잡고 '우리는 함께이며, 당신은 짐이 아니다'라고 말한다.", outcome: "동료는 당신의 진심에 감동하여 다시 일어설 용기를 얻었습니다.", correct: true },
+                { text: "치료 마법을 걸어주고 '빨리 회복하라'고 독려한다.", outcome: "동료는 치료에 감사했지만, 마음속의 절망감은 완전히 사라지지 않았습니다.", correct: false },
+                { text: "다른 동료들에게 그를 부축해달라고 지시한다.", outcome: "동료는 도움에 감사했지만, 여전히 자신이 짐이 된다는 생각에 사로잡혔습니다.", correct: false },
+                { text: "그를 남겨두고 먼저 전진한다.", outcome: "동료는 버려졌다고 느끼며 깊은 상처를 받았습니다.", correct: false }
+            ]
         }
     ];
 
-    const scenario = scenarios[Math.floor(currentRandFn() * scenarios.length)];
-    let selectedKeywords = [];
-    let shuffledKeywords = scenario.keywords.sort(() => currentRandFn() - 0.5);
+    const story = stories[Math.floor(currentRandFn() * stories.length)];
 
     gameArea.innerHTML = `
-        <div class="game-display question"><b>상황:</b> ${scenario.parties[0]}과 ${scenario.parties[1]} 사이에 소통의 단절이 있습니다.</div>
-        <div class="game-display"><b>문제:</b> ${scenario.breakdown}</div>
-        <div class="game-display">소통의 다리를 놓기 위한 키워드를 ${scenario.correctCount}개 선택하세요.</div>
-        <div class="choices" id="communicationKeywords" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px;">
-            ${shuffledKeywords.map((kw, index) => `<button class="choice-btn" data-index="${index}">${kw.text}</button>`).join('')}
+        <div class="game-display question"><b>상황:</b> ${story.scenario}</div>
+        <div class="game-display">당신의 선택은?</div>
+        <div class="choices" id="trpgChoices">
+            ${story.choices.map((choice, index) => `<button class="choice-btn" data-index="${index}">${choice.text}</button>`).join('')}
         </div>
-        <button id="submitBridgesGame" class="choice-btn" style="margin-top: 20px; max-width: 200px;">선택 완료</button>
     `;
     document.getElementById('game-input-area').innerHTML = '';
     gameInProgress = true;
 
-    document.querySelectorAll('#communicationKeywords .choice-btn').forEach(button => {
+    document.querySelectorAll('#trpgChoices .choice-btn').forEach(button => {
         button.addEventListener('click', function() {
             if (!gameInProgress) return;
-            this.classList.toggle('selected');
-            selectedKeywords = Array.from(document.querySelectorAll('#communicationKeywords .choice-btn.selected')).map(b => shuffledKeywords[parseInt(b.dataset.index)]);
+            const selectedIndex = parseInt(this.dataset.index);
+            const selectedChoice = story.choices[selectedIndex];
+            showFeedback(selectedChoice.correct, selectedChoice.outcome);
+            document.querySelectorAll('#trpgChoices .choice-btn').forEach(btn => btn.disabled = true);
         });
     });
+}
 
-    document.getElementById('submitBridgesGame').addEventListener('click', function() {
-        if (!gameInProgress) return;
-        const correctSelections = selectedKeywords.filter(kw => kw.correct).length;
-        const isCorrect = correctSelections === scenario.correctCount && selectedKeywords.length === scenario.correctCount;
+// Game 4: 긍정 에너지 슈팅 (Positive Energy Shooting - Shooting/Reaction)
+function setupPositiveEnergyShootingGame() {
+    document.getElementById('gameTitle').innerText = "오늘의 게임: 긍정 에너지 슈팅";
+    const gameArea = document.getElementById('gameArea');
+    const description = "화면에 나타나는 부정적인 생각(❌)을 클릭하여 긍정 에너지(✨)로 바꾸세요! 긍정적인 생각(✨)은 그대로 두세요.";
+    document.getElementById('gameDescription').innerText = description;
 
-        if (isCorrect) {
-            showFeedback(true, scenario.successMessage);
-        } else {
-            let feedbackMsg = "아쉽네요. 소통의 다리를 놓기 위한 키워드를 다시 생각해 보세요.";
-            if (selectedKeywords.length > scenario.correctCount) {
-                feedbackMsg = `키워드를 ${scenario.correctCount}개만 선택해야 합니다.`;
-            } else if (correctSelections < scenario.correctCount) {
-                feedbackMsg = `선택한 키워드 중 ${scenario.correctCount - correctSelections}개가 올바르지 않습니다.`;
+    const gameDuration = 15000; // 15 seconds
+    let score = 0;
+    let timer = gameDuration / 1000;
+    let gameInterval;
+    let spawnInterval;
+
+    gameArea.innerHTML = `
+        <div class="game-display">점수: <span id="energyScore">0</span></div>
+        <div class="game-display">남은 시간: <span id="energyTimer">${timer}</span>초</div>
+        <div id="shootingArea" style="width: 100%; height: 300px; border: 2px solid var(--border-color); margin: 20px auto; position: relative; overflow: hidden; cursor: crosshair; background-color: var(--background-color-light);">
+            <!-- Targets will appear here -->
+        </div>
+        <button id="startGameBtn" class="choice-btn" style="margin-top: 20px;">게임 시작</button>
+    `;
+    document.getElementById('game-input-area').innerHTML = '';
+    gameInProgress = false;
+
+    const shootingArea = document.getElementById('shootingArea');
+    const energyScoreDisplay = document.getElementById('energyScore');
+    const energyTimerDisplay = document.getElementById('energyTimer');
+    const startGameBtn = document.getElementById('startGameBtn');
+
+    function spawnTarget(seed) {
+        const rand = mulberry32(seed + Date.now()); // Use current time for more dynamic spawning
+        const type = rand() < 0.7 ? 'negative' : 'positive'; // More negative targets to convert
+        const target = document.createElement('div');
+        target.className = 'energy-target';
+        target.innerText = type === 'negative' ? '❌' : '✨';
+        target.dataset.type = type;
+        target.style.position = 'absolute';
+        target.style.left = `${rand() * (shootingArea.offsetWidth - 30)}px`;
+        target.style.top = `${rand() * (shootingArea.offsetHeight - 30)}px`;
+        target.style.fontSize = '1.5em';
+        target.style.cursor = 'pointer';
+        target.style.transition = 'opacity 0.5s ease-out';
+
+        target.addEventListener('click', () => {
+            if (!gameInProgress) return;
+            if (target.dataset.type === 'negative') {
+                score++;
+                energyScoreDisplay.innerText = score;
+                target.innerText = '✨'; // Transform to positive
+                target.style.color = 'var(--success-color)';
+                target.style.pointerEvents = 'none'; // Can't click again
+            } else {
+                score = Math.max(0, score - 1); // Penalty for clicking positive
+                energyScoreDisplay.innerText = score;
             }
-            showFeedback(false, feedbackMsg);
+        });
+
+        shootingArea.appendChild(target);
+
+        // Remove target after some time
+        setTimeout(() => {
+            if (target.parentNode === shootingArea) {
+                shootingArea.removeChild(target);
+            }
+        }, 2000);
+    }
+
+    function startGame() {
+        score = 0;
+        timer = gameDuration / 1000;
+        energyScoreDisplay.innerText = score;
+        energyTimerDisplay.innerText = timer;
+        shootingArea.innerHTML = '';
+        gameInProgress = true;
+        startGameBtn.disabled = true;
+
+        gameInterval = setInterval(() => {
+            timer--;
+            energyTimerDisplay.innerText = timer;
+            if (timer <= 0) {
+                clearInterval(gameInterval);
+                clearInterval(spawnInterval);
+                gameInProgress = false;
+                showFeedback(true, `게임 종료! 최종 긍정 에너지 점수: ${score}점. 당신의 긍정적인 영향력은 대단하네요!`);
+                startGameBtn.disabled = false;
+            }
+        }, 1000);
+
+        spawnInterval = setInterval(() => {
+            if (gameInProgress) {
+                spawnTarget(getDailySeed());
+            }
+        }, 700 - (currentRandFn() * 300)); // Faster spawning with randomization
+    }
+
+    startGameBtn.addEventListener('click', startGame);
+}
+
+// Game 5: 소통의 암호 해독 (Communication Cipher Decryption - Puzzle/Logic)
+function setupCommunicationCipherDecryptionGame() {
+    document.getElementById('gameTitle').innerText = "오늘의 게임: 소통의 암호 해독";
+    const gameArea = document.getElementById('gameArea');
+    const description = "주어진 암호를 해독하여 숨겨진 소통 메시지를 찾아내세요! (힌트: 시저 암호)";
+    document.getElementById('gameDescription').innerText = description;
+
+    const messages = [
+        {
+            encoded: "ENIJT QEBJ", // SHIFT +1: FOCUS TEAM
+            decoded: "FOCUS TEAM",
+            hint: "팀워크에 집중하세요."
+        },
+        {
+            encoded: "HPPEJOH", // SHIFT +2: LISTENING
+            decoded: "LISTENING",
+            hint: "경청은 중요합니다."
+        },
+        {
+            encoded: "DPNNVOJDBUJPO", // SHIFT +1: COMMUNICATION
+            decoded: "COMMUNICATION",
+            hint: "소통이 핵심입니다."
         }
-        document.querySelectorAll('#communicationKeywords .choice-btn').forEach(btn => btn.disabled = true);
+    ];
+
+    const message = messages[Math.floor(currentRandFn() * messages.length)];
+    const shift = Math.floor(currentRandFn() * 5) + 1; // Random shift 1-5
+    const encodedMessage = caesarCipher(message.decoded, shift); // Re-encode with random shift
+    currentCorrectAnswer = message.decoded.toLowerCase();
+
+    gameArea.innerHTML = `
+        <div class="game-display question">다음 암호를 해독하세요: <span style="color: var(--primary-color); font-weight: bold;">${encodedMessage}</span></div>
+        <div class="game-display">힌트: 시저 암호 (알파벳을 ${shift}칸 밀어서 해독)</div>
+        <div class="game-input">
+            <input type="text" id="cipherInput" placeholder="해독된 메시지 입력"/>
+            <button id="submitCipher">확인</button>
+        </div>
+    `;
+    document.getElementById('game-input-area').innerHTML = '';
+    gameInProgress = true;
+
+    function caesarCipher(str, shift, encode = true) {
+        return str.split('').map(char => {
+            if (char.match(/[a-z]/i)) {
+                const code = char.charCodeAt(0);
+                let offset = char === char.toLowerCase() ? 97 : 65; // 'a' or 'A'
+                let newCode;
+                if (encode) {
+                    newCode = ((code - offset + shift) % 26) + offset;
+                } else {
+                    newCode = ((code - offset - shift + 26) % 26) + offset;
+                }
+                return String.fromCharCode(newCode);
+            }
+            return char;
+        }).join('');
+    }
+
+    document.getElementById('submitCipher').addEventListener('click', function() {
+        if (!gameInProgress) return;
+        const input = document.getElementById('cipherInput').value.trim().toLowerCase();
+        if (input === currentCorrectAnswer.toLowerCase()) {
+            showFeedback(true, `정답입니다! 숨겨진 메시지: "${message.decoded}". 당신은 소통의 달인이군요!`);
+        } else {
+            showFeedback(false, `아쉽네요. 다시 시도해 보세요. (정답: ${message.decoded})`);
+        }
+        document.getElementById('cipherInput').disabled = true;
         this.disabled = true;
     });
 }
 
 
+
 // --- Game Dispatcher and Initialization ---
 const gameTypes = [
-    setupEmpathyChallengeGame,          // Game 1: 감정 공감 챌린지
-    setupRelationshipHarmonyPuzzleGame, // Game 2: 관계 조율 퍼즐
-    setupVisionSharingStoryGame,        // Game 3: 비전 공유 스토리
-    setupPositiveInfluenceMazeGame,     // Game 4: 긍정 영향력 미로
-    setupBuildingBridgesGame            // Game 5: 소통의 다리 놓기
+    setupCooperativePacManChallengeGame,      // Game 1: 협력 팩맨 챌린지
+    setupRelationshipChessPuzzleGame,         // Game 2: 관계의 체스 퍼즐
+    setupEmpathyTRPGStoryGame,                // Game 3: 공감의 TRPG 스토리
+    setupPositiveEnergyShootingGame,          // Game 4: 긍정 에너지 슈팅
+    setupCommunicationCipherDecryptionGame    // Game 5: 소통의 암호 해독
 ];
 
 function initDailyGame() {
