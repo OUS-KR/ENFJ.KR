@@ -642,8 +642,8 @@
             renderMaze();
 
             // Check for win condition (e.g., collect all actions)
-            const allActions = ['적극적 경청', '공감 표현', '타협 제안', '피드백 제공', '격려']; // All possible actions
-            const allIssues = ['오해', '갈등', '불신']; // All possible issues
+            const allActions = Object.values(mazeItems).filter(item => item.type === 'action').map(item => item.name);
+            const allIssues = Object.values(mazeItems).filter(item => item.type === 'issue').map(item => item.name);
             const allActionsCollected = allActions.every(action => collectedActions.includes(action));
             const allIssuesResolved = allIssues.every(issue => resolvedIssues.includes(issue));
 
@@ -893,7 +893,7 @@
             document.getElementById('visionLinkCurrentWord').innerText = selectedChoice;
 
             if (currentVisionLinkIndex < visionLinkSequence.length) {
-                const currentVisionData = visions[Math.floor(currentRandFn() * visions.length)]; // Re-select vision data for distractors
+                const currentVisionData = visionStatements[Math.floor(currentRandFn() * visionStatements.length)]; // Use global visionStatements
                 renderVisionLinkChoices(currentVisionData);
                 startVisionLinkTimer(); // Start timer for next step
             } else {
