@@ -155,6 +155,7 @@
             color: var(--text-color-inverted);
             cursor: default;
         }
+    </style>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4262871645049971" crossorigin="anonymous"></script>
 </head>
 <body>
@@ -187,7 +188,6 @@
                 <div id="gameTitle" class="card-title"></div>
                 <p id="gameDescription">게임을 불러오는 중...</p>
             </div>
-            <div id="test-static-content" style="background-color: yellow; padding: 10px; margin: 10px;">Static Test Content Here!</div>
             <div id="gameArea" class="game-area">
                 <!-- Game content will be loaded here by JavaScript -->
             </div>
@@ -1030,11 +1030,11 @@
     }
 
     // --- Game Dispatcher and Common Logic ---
-    const gameTypes = [
-        setupEmotionalHarmonyPuzzleGame,
-        setupVisionLinkArcadeGame,
-        setupRelationshipWebBuilderGame
-    ];
+    // const gameTypes = [
+    //     setupEmotionalHarmonyPuzzleGame,
+    //     setupVisionLinkArcadeGame,
+    //     setupRelationshipWebBuilderGame
+    // ];
 
     function getDayOfWeekText(day) {
         const messages = [
