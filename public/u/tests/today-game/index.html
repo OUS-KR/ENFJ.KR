@@ -4,25 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>오늘의 게임 - ENFJ</title>
-    <link rel="stylesheet" href="/u/tests/assets/css/main.css?20251013030000">
+    <link rel="stylesheet" href="/u/tests/assets/css/main.css?20251013033000">
     <style>
         .game-card-content {
             text-align: center;
+            padding: 20px;
+            background: linear-gradient(145deg, var(--background-color-light), var(--background-color));
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
         }
         .game-area {
             margin-top: 1.5em;
-            min-height: 150px;
+            min-height: 200px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .game-display {
-            margin-bottom: 1em;
+            justify-content: flex-start;
+            align-items: flex-start;
+            text-align: left;
+            padding: 1.5em;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background-color: var(--background-color-light);
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+            line-height: 1.8;
             color: var(--text-color);
         }
-        .game-display.question {
-            font-size: 1.2em;
+        .game-area p {
+            margin-bottom: 0.8em;
+            line-height: 1.6;
+        }
+        #gameStats {
+            background-color: var(--secondary-color);
+            color: var(--text-color-inverted);
+            padding: 1em 1.5em;
+            border-radius: 10px;
+            margin-bottom: 1.5em;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            text-align: left;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        #gameStats p {
+            margin: 0.3em 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #gameStats p b {
+            font-size: 1.1em;
+            color: var(--accent-color);
+        }
+        #gameStats span {
             font-weight: bold;
         }
         .choices {
@@ -30,131 +63,47 @@
             flex-direction: column;
             gap: 0.8em;
             width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
+            max-width: 450px;
+            margin: 1.5em auto 0 auto;
         }
         .choice-btn {
-            padding: 0.8em 1em;
-            font-size: 1em;
+            padding: 1em 1.2em;
+            font-size: 1.05em;
             background-color: var(--primary-color);
             color: var(--text-color-inverted);
-            border: 1px solid var(--primary-color-dark);
-            border-radius: 4px;
+            border: none;
+            border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: all 0.3s ease;
             width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: left;
         }
         .choice-btn:hover {
             background-color: var(--primary-color-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
         }
-        .game-input {
-            margin-top: 1.5em;
-            margin-bottom: 1em;
-        }
-        .game-input textarea {
-            padding: 0.5em;
-            font-size: 1em;
-            width: 100%;
-            max-width: 400px;
-            min-height: 80px;
-            border: 2px solid var(--border-color, #ccc);
-            border-radius: 4px;
-            background-color: var(--input-bg-color);
-            color: var(--text-color);
-        }
-        .game-input button {
-            padding: 0.6em 1.5em;
-            font-size: 1.1em;
-            background-color: #007bff;
-            color: white;
-            border: 1px solid #0069d9;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 0.5em;
-        }
-        .game-input button:hover {
-            background-color: #0069d9;
+        .choice-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .feedback-message {
-            margin-top: 1em;
-            font-size: 1.2em;
+            margin-top: 1.5em;
+            font-size: 1.3em;
             font-weight: bold;
+            padding: 0.8em;
+            border-radius: 8px;
+            background-color: var(--background-color-light);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         .feedback-message.correct {
             color: var(--success-color);
+            border: 1px solid var(--success-color);
         }
         .feedback-message.incorrect {
             color: var(--error-color);
-        }
-
-        /* New Game Specific Styles */
-        .emotion-cell.selected {
-            background-color: var(--accent-color);
-            border-color: var(--accent-color-dark);
-            color: var(--text-color-inverted);
-        }
-        .emotion-grid button {
-            min-width: 60px;
-            height: 60px;
-            font-size: 0.9em;
-        }
-
-        .vision-fragment {
-            animation: fragment-move 1.5s linear forwards;
-            padding: 0.5em 0.8em;
-            border-radius: 20px;
-            background-color: var(--secondary-color);
-            color: var(--text-color-inverted);
-            border: none;
-            cursor: pointer;
-            white-space: nowrap;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        @keyframes fragment-move {
-            from { bottom: 0; opacity: 1; }
-            to { bottom: 100%; opacity: 0.5; }
-        }
-        .vision-fragment.incorrect {
-            background-color: var(--error-color);
-        }
-        #visionFragmentsContainer {
-            position: relative;
-            height: 200px; /* Ensure container has height for animation */
-            width: 100%; /* Added to ensure offsetWidth is not 0 */
-            overflow: hidden;
-        }
-
-        .maze-cell {
-            border: 1px solid var(--border-color);
-            background-color: var(--background-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 0.8em;
-            font-weight: bold;
-            color: var(--text-color);
-        }
-        .maze-cell.mediator {
-            background-color: var(--primary-color);
-            color: var(--text-color-inverted);
-        }
-        .maze-control-btn {
-            width: 50px;
-            height: 50px;
-            margin: 5px;
-            font-size: 1.2em;
-        }
-        .relationship-type-box h3 {
-            color: var(--primary-color);
-        }
-        .assigned-actions {
-            background-color: var(--background-color-light);
-        }
-        .assigned-action-btn {
-            background-color: var(--success-color);
-            color: var(--text-color-inverted);
-            cursor: default;
+            border: 1px solid var(--error-color);
         }
     </style>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4262871645049971" crossorigin="anonymous"></script>
@@ -210,8 +159,8 @@
         </div>
     </div>
 
-    <script src="/u/tests/assets/js/main.js?20251013030000" defer></script>
-    <script src="/u/tests/assets/js/dynamic-menu.js?20251013030000" defer></script>
-    <script src="/u/tests/assets/js/today-game.js?20251013030000" defer></script>
+    <script src="/u/tests/assets/js/main.js?20251013033000" defer></script>
+    <script src="/u/tests/assets/js/dynamic-menu.js?20251013033000" defer></script>
+    <script src="/u/tests/assets/js/today-game.js?20251013033000" defer></script>
 </body>
 </html>
