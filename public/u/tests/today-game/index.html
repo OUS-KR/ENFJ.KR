@@ -87,7 +87,74 @@
         .feedback-message.incorrect {
             color: var(--error-color);
         }
-    </style>
+
+        /* New Game Specific Styles */
+        .emotion-cell.selected {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color-dark);
+            color: var(--text-color-inverted);
+        }
+        .emotion-grid button {
+            min-width: 60px;
+            height: 60px;
+            font-size: 0.9em;
+        }
+
+        .vision-fragment {
+            animation: fragment-move 1.5s linear forwards;
+            padding: 0.5em 0.8em;
+            border-radius: 20px;
+            background-color: var(--secondary-color);
+            color: var(--text-color-inverted);
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        @keyframes fragment-move {
+            from { bottom: 0; opacity: 1; }
+            to { bottom: 100%; opacity: 0.5; }
+        }
+        .vision-fragment.incorrect {
+            background-color: var(--error-color);
+        }
+        #visionFragmentsContainer {
+            position: relative;
+            height: 200px; /* Ensure container has height for animation */
+            overflow: hidden;
+        }
+
+        .maze-cell {
+            border: 1px solid var(--border-color);
+            background-color: var(--background-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        .maze-cell.mediator {
+            background-color: var(--primary-color);
+            color: var(--text-color-inverted);
+        }
+        .maze-control-btn {
+            width: 50px;
+            height: 50px;
+            margin: 5px;
+            font-size: 1.2em;
+        }
+        .relationship-type-box h3 {
+            color: var(--primary-color);
+        }
+        .assigned-actions {
+            background-color: var(--background-color-light);
+        }
+        .assigned-action-btn {
+            background-color: var(--success-color);
+            color: var(--text-color-inverted);
+            cursor: default;
+        }
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4262871645049971" crossorigin="anonymous"></script>
 </head>
 <body>
