@@ -652,11 +652,9 @@ const gameActions = {
         if (!spendActionPoint()) return;
         if (gameState.dailyActions.meetingHeld) {
             const message = "오늘은 이미 마을 회의를 개최했습니다. 연속 회의 개최로 주민들의 피로도가 높아져 행복도가 감소합니다. (-5 행복도)";
-            updateGameDisplay(message); // Display the message
+            gameScenarios.intro.text = `무엇을 할까요?\n\n${message}`;
             gameState.happiness -= 5; // Directly update stat
-            saveGameState(); // Save the updated state
-            renderStats(); // Re-render stats only
-            setTimeout(() => gameActions.return_to_intro(), 2000); // Return to intro after delay
+            updateState({}); // Trigger renderAll to update display and stats
             return;
         }
         updateState({ dailyActions: { ...gameState.dailyActions, meetingHeld: true } });
@@ -721,148 +719,170 @@ const gameActions = {
     perform_gather_food: () => {
         if (!spendActionPoint()) return;
         const successChance = Math.min(0.95, 0.6 + (gameState.toolsLevel * 0.1) + (gameState.dailyBonus.gatheringSuccess || 0));
-        let message = "";
+        let resultMessage = "";
         if (currentRandFn() < successChance) {
-            message = "식량을 성공적으로 채집했습니다! (+5 식량)";
+            resultMessage = "식량을 성공적으로 채집했습니다! (+5 식량)";
             gameState.resources.food += 5;
-            updateState({ currentScenarioId: "resource_gathering_result" }); // Set result scenario
         } else {
-            message = "식량 채집에 실패했습니다.";
-            updateState({ currentScenarioId: "resource_gathering_result" }); // Set result scenario
+            resultMessage = "식량 채집에 실패했습니다.";
         }
-        updateGameDisplay(message); // Display the result message
+        
+        // Update the text of the current scenario (action_resource_gathering)
+        gameScenarios.action_resource_gathering.text = `어떤 자원을 채집하시겠습니까?
+
+${resultMessage}`;
+        
+        updateState({}); // Trigger renderAll to update display and stats
     },
     perform_chop_wood: () => {
         if (!spendActionPoint()) return;
         const successChance = Math.min(0.95, 0.6 + (gameState.toolsLevel * 0.1) + (gameState.dailyBonus.gatheringSuccess || 0));
-        let message = "";
+        let resultMessage = "";
         if (currentRandFn() < successChance) {
-            message = "나무를 성공적으로 벌목했습니다! (+5 나무)";
+            resultMessage = "나무를 성공적으로 벌목했습니다! (+5 나무)";
             gameState.resources.wood += 5;
-            updateState({ currentScenarioId: "resource_gathering_result" }); // Set result scenario
         } else {
-            message = "나무 벌목에 실패했습니다.";
-            updateState({ currentScenarioId: "resource_gathering_result" }); // Set result scenario
+            resultMessage = "나무 벌목에 실패했습니다.";
         }
-        updateGameDisplay(message); // Display the result message
+        
+        // Update the text of the current scenario (action_resource_gathering)
+        gameScenarios.action_resource_gathering.text = `어떤 자원을 채집하시겠습니까?\n\n${resultMessage}`;
+        
+        updateState({}); // Trigger renderAll to update display and stats
     },
     perform_mine_stone: () => {
         if (!spendActionPoint()) return;
         const successChance = Math.min(0.95, 0.6 + (gameState.toolsLevel * 0.1) + (gameState.dailyBonus.gatheringSuccess || 0));
-        let message = "";
+        let resultMessage = "";
         if (currentRandFn() < successChance) {
-            message = "돌을 성공적으로 채굴했습니다! (+5 돌)";
+            resultMessage = "돌을 성공적으로 채굴했습니다! (+5 돌)";
             gameState.resources.stone += 5;
-            updateState({ currentScenarioId: "resource_gathering_result" }); // Set result scenario
         } else {
-            message = "돌 채굴에 실패했습니다.";
-            updateState({ currentScenarioId: "resource_gathering_result" }); // Set result scenario
+            resultMessage = "돌 채굴에 실패했습니다.";
         }
-        updateGameDisplay(message); // Display the result message
+        
+        // Update the text of the current scenario (action_resource_gathering)
+        gameScenarios.action_resource_gathering.text = `어떤 자원을 채집하시겠습니까?
+
+${resultMessage}`;
+        
+        updateState({}); // Trigger renderAll to update display and stats
     },
     build_food_storage: () => {
         if (!spendActionPoint()) return;
         const cost = { food: 50, wood: 20 };
-        let message = "";
+        let resultMessage = "";
         if (gameState.resources.wood >= cost.wood && gameState.resources.food >= cost.food) {
             gameState.villages.foodStorage.built = true;
-            message = "공동 식량 창고를 건설했습니다!";
+            resultMessage = "공동 식량 창고를 건설했습니다!";
             gameState.communitySpirit += 10;
             gameState.resources.wood -= cost.wood;
             gameState.resources.food -= cost.food;
-            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         } else {
-            message = "자원이 부족하여 건설할 수 없습니다.";
-            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
+            resultMessage = "자원이 부족하여 건설할 수 없습니다.";
         }
-        updateGameDisplay(message);
+        
+        // Update the text of the current scenario (action_facility_management)
+        gameScenarios.action_facility_management.text = `어떤 시설을 관리하시겠습니까?\n\n${resultMessage}`;
+        
+        updateState({}); // Trigger renderAll to update display and stats
     },
     build_workshop: () => {
         if (!spendActionPoint()) return;
         const cost = { wood: 30, stone: 30 };
-        let message = "";
+        let resultMessage = "";
         if (gameState.resources.wood >= cost.wood && gameState.resources.stone >= cost.stone) {
             gameState.villages.workshop.built = true;
-            message = "공동 작업장을 건설했습니다!";
+            resultMessage = "공동 작업장을 건설했습니다!";
             gameState.happiness += 10;
             gameState.resources.wood -= cost.wood;
             gameState.resources.stone -= cost.stone;
-            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         } else {
-            message = "자원이 부족하여 건설할 수 없습니다.";
-            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
+            resultMessage = "자원이 부족하여 건설할 수 없습니다.";
         }
-        updateGameDisplay(message);
+        
+        // Update the text of the current scenario (action_facility_management)
+        gameScenarios.action_facility_management.text = `어떤 시설을 관리하시겠습니까?\n\n${resultMessage}`;
+        
+        updateState({}); // Trigger renderAll to update display and stats
     },
     build_town_hall: () => {
         if (!spendActionPoint()) return;
         const cost = { food: 100, wood: 50, stone: 50 };
-        let message = "";
+        let resultMessage = "";
         if (gameState.resources.wood >= cost.wood && gameState.resources.stone >= cost.stone && gameState.resources.food >= cost.food) {
             gameState.villages.townHall.built = true;
-            message = "마을 회관을 건설했습니다!";
+            resultMessage = "마을 회관을 건설했습니다!";
             gameState.communitySpirit += 20;
             gameState.happiness += 20;
             gameState.resources.wood -= cost.wood;
             gameState.resources.stone -= cost.stone;
             gameState.resources.food -= cost.food;
-            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         } else {
-            message = "자원이 부족하여 건설할 수 없습니다.";
-            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
+            resultMessage = "자원이 부족하여 건설할 수 없습니다.";
         }
-        updateGameDisplay(message);
+        
+        // Update the text of the current scenario (action_facility_management)
+        gameScenarios.action_facility_management.text = `어떤 시설을 관리하시겠습니까?\n\n${resultMessage}`;
+        
+        updateState({}); // Trigger renderAll to update display and stats
     },
     build_library: () => {
         if (!spendActionPoint()) return;
         const cost = { wood: 80, stone: 40 };
-        let message = "";
+        let resultMessage = "";
         if (gameState.resources.wood >= cost.wood && gameState.resources.stone >= cost.stone) {
             gameState.villages.library.built = true;
-            message = "도서관을 건설했습니다!";
+            resultMessage = "도서관을 건설했습니다!";
             gameState.empathy += 15;
             gameState.communitySpirit += 10;
             gameState.resources.wood -= cost.wood;
             gameState.resources.stone -= cost.stone;
-            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         } else {
-            message = "자원이 부족하여 건설할 수 없습니다.";
-            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
+            resultMessage = "자원이 부족하여 건설할 수 없습니다.";
         }
-        updateGameDisplay(message);
+        
+        // Update the text of the current scenario (action_facility_management)
+        gameScenarios.action_facility_management.text = `어떤 시설을 관리하시겠습니까?\n\n${resultMessage}`;
+        
+        updateState({}); // Trigger renderAll to update display and stats
     },
     build_forge: () => {
         if (!spendActionPoint()) return;
         const cost = { wood: 50, stone: 100 };
-        let message = "";
+        let resultMessage = "";
         if (gameState.resources.wood >= cost.wood && gameState.resources.stone >= cost.stone) {
             gameState.villages.forge.built = true;
-            message = "대장간을 건설했습니다!";
+            resultMessage = "대장간을 건설했습니다!";
             gameState.resources.wood -= cost.wood;
             gameState.resources.stone -= cost.stone;
-            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         } else {
-            message = "자원이 부족하여 건설할 수 없습니다.";
-            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
+            resultMessage = "자원이 부족하여 건설할 수 없습니다.";
         }
-        updateGameDisplay(message);
+        
+        // Update the text of the current scenario (action_facility_management)
+        gameScenarios.action_facility_management.text = `어떤 시설을 관리하시겠습니까?\n\n${resultMessage}`;
+        
+        updateState({}); // Trigger renderAll to update display and stats
     },
     maintain_facility: (params) => {
         if (!spendActionPoint()) return;
         const facilityKey = params.facility;
         const cost = { wood: 10, stone: 10 };
-        let message = "";
+        let resultMessage = "";
         if (gameState.resources.wood >= cost.wood && gameState.resources.stone >= cost.stone) {
             gameState.villages[facilityKey].durability = 100;
-            message = `${facilityKey} 시설의 유지보수를 완료했습니다. 내구도가 100으로 회복되었습니다.`;
+            resultMessage = `${facilityKey} 시설의 유지보수를 완료했습니다. 내구도가 100으로 회복되었습니다.`;
             gameState.resources.wood -= cost.wood;
             gameState.resources.stone -= cost.stone;
-            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         } else {
-            message = "유지보수에 필요한 자원이 부족합니다.";
-            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
+            resultMessage = "유지보수에 필요한 자원이 부족합니다.";
         }
-        updateGameDisplay(message);
+        
+        // Update the text of the current scenario (action_facility_management)
+        gameScenarios.action_facility_management.text = `어떤 시설을 관리하시겠습니까?\n\n${resultMessage}`;
+        
+        updateState({}); // Trigger renderAll to update display and stats
     },
     craft_tools: () => {
         if (!spendActionPoint()) return;
