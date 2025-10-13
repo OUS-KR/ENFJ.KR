@@ -322,12 +322,19 @@ const minigames = [
             gameArea.innerHTML = `<p><b>갈등 상황:</b> ${conflict.issue}</p><p>다음 키워드 중 2개를 선택하여 해결책을 제시하세요.</p>`;
             choicesDiv.innerHTML = `
                 <div id="keyword-selection-area">
-                    ${conflict.keywords.map(k => `<button class="keyword-select-btn" onclick="minigameActions.relationship.selectKeyword('${k}', this)">${k}</button>`).join('')}
+                    ${conflict.keywords.map(k => `<button class="keyword-select-btn" data-keyword="${k}">${k}</button>`).join('')}
                 </div>
                 <button class="choice-btn relationship-submit-btn" data-correct-combination="${JSON.stringify(conflict.correctCombination)}">해결책 제시</button>
             `;
             choicesDiv.dataset.selectedKeywords = JSON.stringify([]);
             
+            // Add event listeners for keyword selection buttons
+            choicesDiv.querySelectorAll('.keyword-select-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    minigameActions.relationship.selectKeyword(this.dataset.keyword, this);
+                });
+            });
+
             // Add event listener for the submit button
             choicesDiv.querySelector('.relationship-submit-btn').addEventListener('click', function() {
                 const correctCombinationJson = this.dataset.correctCombination;
