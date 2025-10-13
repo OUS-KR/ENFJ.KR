@@ -253,6 +253,14 @@ const gameScenarios = {
     "action_facility_management": {
         text: "어떤 시설을 관리하시겠습니까?",
         choices: [] // Choices will be dynamically added in renderChoices
+    },
+    "resource_gathering_result": {
+        text: "", // Text will be set dynamically by updateGameDisplay
+        choices: [{ text: "확인", action: "show_resource_gathering_options" }] // Return to gathering menu
+    },
+    "facility_management_result": {
+        text: "", // Text will be set dynamically by updateGameDisplay
+        choices: [{ text: "확인", action: "show_facility_options" }] // Return to facility management menu
     }
 };
 
@@ -716,14 +724,13 @@ const gameActions = {
         let message = "";
         if (currentRandFn() < successChance) {
             message = "식량을 성공적으로 채집했습니다! (+5 식량)";
-            gameState.resources.food += 5; // Directly update resource
+            gameState.resources.food += 5;
+            updateState({ currentScenarioId: "resource_gathering_result" }); // Set result scenario
         } else {
             message = "식량 채집에 실패했습니다.";
+            updateState({ currentScenarioId: "resource_gathering_result" }); // Set result scenario
         }
         updateGameDisplay(message); // Display the result message
-        saveGameState(); // Save the updated state
-        renderStats(); // Re-render stats only
-        setTimeout(() => updateState({ currentScenarioId: 'action_resource_gathering' }), 2000); // Return to gathering menu after delay
     },
     perform_chop_wood: () => {
         if (!spendActionPoint()) return;
@@ -731,14 +738,13 @@ const gameActions = {
         let message = "";
         if (currentRandFn() < successChance) {
             message = "나무를 성공적으로 벌목했습니다! (+5 나무)";
-            gameState.resources.wood += 5; // Directly update resource
+            gameState.resources.wood += 5;
+            updateState({ currentScenarioId: "resource_gathering_result" }); // Set result scenario
         } else {
             message = "나무 벌목에 실패했습니다.";
+            updateState({ currentScenarioId: "resource_gathering_result" }); // Set result scenario
         }
         updateGameDisplay(message); // Display the result message
-        saveGameState(); // Save the updated state
-        renderStats(); // Re-render stats only
-        setTimeout(() => updateState({ currentScenarioId: 'action_resource_gathering' }), 2000); // Return to gathering menu after delay
     },
     perform_mine_stone: () => {
         if (!spendActionPoint()) return;
@@ -746,14 +752,13 @@ const gameActions = {
         let message = "";
         if (currentRandFn() < successChance) {
             message = "돌을 성공적으로 채굴했습니다! (+5 돌)";
-            gameState.resources.stone += 5; // Directly update resource
+            gameState.resources.stone += 5;
+            updateState({ currentScenarioId: "resource_gathering_result" }); // Set result scenario
         } else {
             message = "돌 채굴에 실패했습니다.";
+            updateState({ currentScenarioId: "resource_gathering_result" }); // Set result scenario
         }
         updateGameDisplay(message); // Display the result message
-        saveGameState(); // Save the updated state
-        renderStats(); // Re-render stats only
-        setTimeout(() => updateState({ currentScenarioId: 'action_resource_gathering' }), 2000); // Return to gathering menu after delay
     },
     build_food_storage: () => {
         if (!spendActionPoint()) return;
@@ -765,13 +770,12 @@ const gameActions = {
             gameState.communitySpirit += 10;
             gameState.resources.wood -= cost.wood;
             gameState.resources.food -= cost.food;
+            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         } else {
             message = "자원이 부족하여 건설할 수 없습니다.";
+            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         }
         updateGameDisplay(message);
-        saveGameState();
-        renderStats();
-        setTimeout(() => updateState({ currentScenarioId: 'action_facility_management' }), 2000); // Return to facility menu after delay
     },
     build_workshop: () => {
         if (!spendActionPoint()) return;
@@ -783,13 +787,12 @@ const gameActions = {
             gameState.happiness += 10;
             gameState.resources.wood -= cost.wood;
             gameState.resources.stone -= cost.stone;
+            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         } else {
             message = "자원이 부족하여 건설할 수 없습니다.";
+            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         }
         updateGameDisplay(message);
-        saveGameState();
-        renderStats();
-        setTimeout(() => updateState({ currentScenarioId: 'action_facility_management' }), 2000); // Return to facility menu after delay
     },
     build_town_hall: () => {
         if (!spendActionPoint()) return;
@@ -803,13 +806,12 @@ const gameActions = {
             gameState.resources.wood -= cost.wood;
             gameState.resources.stone -= cost.stone;
             gameState.resources.food -= cost.food;
+            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         } else {
             message = "자원이 부족하여 건설할 수 없습니다.";
+            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         }
         updateGameDisplay(message);
-        saveGameState();
-        renderStats();
-        setTimeout(() => updateState({ currentScenarioId: 'action_facility_management' }), 2000); // Return to facility menu after delay
     },
     build_library: () => {
         if (!spendActionPoint()) return;
@@ -822,13 +824,12 @@ const gameActions = {
             gameState.communitySpirit += 10;
             gameState.resources.wood -= cost.wood;
             gameState.resources.stone -= cost.stone;
+            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         } else {
             message = "자원이 부족하여 건설할 수 없습니다.";
+            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         }
         updateGameDisplay(message);
-        saveGameState();
-        renderStats();
-        setTimeout(() => updateState({ currentScenarioId: 'action_facility_management' }), 2000); // Return to facility menu after delay
     },
     build_forge: () => {
         if (!spendActionPoint()) return;
@@ -839,13 +840,12 @@ const gameActions = {
             message = "대장간을 건설했습니다!";
             gameState.resources.wood -= cost.wood;
             gameState.resources.stone -= cost.stone;
+            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         } else {
             message = "자원이 부족하여 건설할 수 없습니다.";
+            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         }
         updateGameDisplay(message);
-        saveGameState();
-        renderStats();
-        setTimeout(() => updateState({ currentScenarioId: 'action_facility_management' }), 2000); // Return to facility menu after delay
     },
     maintain_facility: (params) => {
         if (!spendActionPoint()) return;
@@ -857,13 +857,12 @@ const gameActions = {
             message = `${facilityKey} 시설의 유지보수를 완료했습니다. 내구도가 100으로 회복되었습니다.`;
             gameState.resources.wood -= cost.wood;
             gameState.resources.stone -= cost.stone;
+            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         } else {
             message = "유지보수에 필요한 자원이 부족합니다.";
+            updateState({ currentScenarioId: "facility_management_result" }); // Set result scenario
         }
         updateGameDisplay(message);
-        saveGameState();
-        renderStats();
-        setTimeout(() => updateState({ currentScenarioId: 'action_facility_management' }), 2000); // Return to facility menu after delay
     },
     craft_tools: () => {
         if (!spendActionPoint()) return;
