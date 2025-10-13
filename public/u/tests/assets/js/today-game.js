@@ -219,7 +219,6 @@ const gameScenarios = {
         ]
     },
     "daily_event_new_villager": {
-        text: `새로운 주민이 마을에 정착하고 싶어 합니다. (현재 주민 수: ${gameState.villagers.length} / ${gameState.maxVillagers})`,
         choices: [
             { text: "따뜻하게 환영하고 정착을 돕는다.", action: "welcome_new_unique_villager" },
             { text: "마을에 필요한지 좀 더 지켜본다.", action: "observe_villager" },
@@ -765,6 +764,21 @@ const gameActions = {
         minigame.setup(document.getElementById('gameArea'), document.getElementById('gameChoices'));
     }
 };
+
+function generateRandomVillager() {
+    const names = ["리나", "준", "미나", "철수", "영희"];
+    const personalities = ["온화한", "활발한", "차분한", "호기심 많은"];
+    const skills = ["농업", "벌목", "채굴"];
+    const randomId = Math.random().toString(36).substring(2, 9);
+
+    return {
+        id: randomId,
+        name: names[Math.floor(currentRandFn() * names.length)],
+        personality: personalities[Math.floor(currentRandFn() * personalities.length)],
+        skill: skills[Math.floor(currentRandFn() * skills.length)],
+        trust: 50
+    };
+}
 
 // --- Daily/Initialization Logic ---
 function processDailyEvents() {
