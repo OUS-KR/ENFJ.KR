@@ -261,6 +261,10 @@ const gameScenarios = {
     "facility_management_result": {
         text: "", // Text will be set dynamically by updateGameDisplay
         choices: [{ text: "확인", action: "show_facility_options" }] // Return to facility management menu
+    },
+    "conflict_resolution_result": {
+        text: "", // This will be set dynamically
+        choices: [{ text: "확인", action: "return_to_intro" }]
     }
 };
 
@@ -702,16 +706,12 @@ const gameActions = {
             return v;
         });
         
-        updateGameDisplay(message);
-        updateState({ ...reward, villagers: updatedVillagers });
-        setTimeout(() => gameActions.return_to_intro(), 2000);
+        updateState({ ...reward, villagers: updatedVillagers, currentScenarioId: 'conflict_resolution_result' }, message);
     },
     mediate_conflict: () => {
         if (!spendActionPoint()) return;
         const message = "당신의 중재로 엘라와 카이의 오해가 풀렸습니다. 마을의 공동체 정신이 강화되었습니다! (+10 공동체 정신, +5 행복도)";
-        updateGameDisplay(message);
-        updateState({ communitySpirit: gameState.communitySpirit + 10, happiness: gameState.happiness + 5 });
-        setTimeout(() => gameActions.return_to_intro(), 2000);
+        updateState({ communitySpirit: gameState.communitySpirit + 10, happiness: gameState.happiness + 5, currentScenarioId: 'conflict_resolution_result' }, message);
     },
     ignore_event: () => {
         if (!spendActionPoint()) return;
@@ -720,9 +720,7 @@ const gameActions = {
             v.trust = Math.max(0, v.trust - 5);
             return v;
         });
-        updateGameDisplay(message);
-        updateState({ happiness: gameState.happiness - 10, communitySpirit: gameState.communitySpirit - 5, villagers: updatedVillagers });
-        setTimeout(() => gameActions.return_to_intro(), 2000);
+        updateState({ happiness: gameState.happiness - 10, communitySpirit: gameState.communitySpirit - 5, villagers: updatedVillagers, currentScenarioId: 'conflict_resolution_result' }, message);
     },
     show_resource_gathering_options: () => updateState({ currentScenarioId: 'action_resource_gathering' }),
     show_facility_options: () => updateState({ currentScenarioId: 'action_facility_management' }),
