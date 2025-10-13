@@ -834,9 +834,11 @@ function processDailyEvents() {
 
     // Reset daily actions and action points
     updateState({
-        actionPoints: gameState.maxActionPoints,
+        actionPoints: 10, // Reset to base maxActionPoints
+        maxActionPoints: 10, // Reset maxActionPoints to base
         dailyActions: { explored: false, meetingHeld: false, talkedTo: [], minigamePlayed: false },
-        dailyEventTriggered: true
+        dailyEventTriggered: true,
+        dailyBonus: { gatheringSuccess: 0 } // Reset daily bonus
     });
 
     // Apply stat effects
@@ -864,12 +866,13 @@ function processDailyEvents() {
     });
 
     gameState.resources.food -= gameState.villagers.length * 2;
-    let dailyMessage = statEffectMessage + skillBonusMessage + durabilityMessage;
+    let dailyMessage = "새로운 하루가 시작되었습니다. ";
+    dailyMessage += statEffectMessage + skillBonusMessage + durabilityMessage;
     if (gameState.resources.food < 0) {
         gameState.happiness -= 10;
         dailyMessage += "식량이 부족하여 주민들이 굶주립니다! (-10 행복도)";
     } else {
-        dailyMessage += "새로운 하루가 시작되었습니다.";
+        dailyMessage += "";
     }
     
     // Random daily event
@@ -878,7 +881,7 @@ function processDailyEvents() {
     if (rand < 0.15) { eventId = "daily_event_storm"; updateState({resources: {...gameState.resources, wood: Math.max(0, gameState.resources.wood - 10)}}); }
     else if (rand < 0.30) { eventId = "daily_event_blight"; updateState({resources: {...gameState.resources, food: Math.max(0, gameState.resources.food - 10)}}); }
     else if (rand < 0.5 && gameState.villagers.length >= 2) { eventId = "daily_event_conflict"; }
-    else if (rand < 0.7 && gameState.day % 4 === 0 && gameState.villagers.length < gameState.maxVillagers) {
+    else if (rand < 0.7 && gameState.villages.townHall.built && gameState.villagers.length < gameState.maxVillagers) {
         eventId = "daily_event_new_villager";
         const newVillager = generateRandomVillager();
         gameState.pendingNewVillager = newVillager;
