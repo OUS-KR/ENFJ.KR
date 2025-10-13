@@ -107,8 +107,10 @@ let gameState = {
         workshopBuilt: false,
         townHallBuilt: false,
         empathyWellBuilt: false,
-        happinessSquareBuilt: false
-    }
+        happinessSquareBuilt: false,
+        libraryBuilt: false
+    },
+    toolsLevel: 0
 };
 
 // Game Data (scenarios, events, choices)
@@ -177,6 +179,14 @@ const gameScenarios = {
             { text: "피해 복구를 위해 주민들과 함께 노력한다.", action: "repair_together" },
             { text: "외부의 도움을 요청한다.", action: "seek_external_help" },
             { text: "피해를 입은 주민들을 위로하고 격려한다.", action: "comfort_victims" }
+        ]
+    },
+    "daily_mini_game_resource_puzzle": {
+        text: "오늘의 미니게임: 자원 분배! 겨울이 다가옵니다. 한정된 목재 10개로 무엇을 하시겠습니까?",
+        choices: [
+            { text: "집 보강하기 (행복도 +10, 공동체 정신 +5)", action: "puzzle_reinforce_houses" },
+            { text: "공공 시설 보수하기 (공동체 정신 +15)", action: "puzzle_repair_facilities" },
+            { text: "땔감으로 비축하기 (행복도 +15)", action: "puzzle_stockpile_firewood" }
         ]
     },
     "action_gather_food": {
@@ -336,8 +346,10 @@ function generateRandomVillager() {
 }
 
 function resetGame() {
-    localStorage.removeItem('enfjVillageGame');
-    location.reload(); // Reload the page to restart the game
+    if (confirm("정말로 게임을 초기화하시겠습니까? 모든 진행 상황이 사라집니다.")) {
+        localStorage.removeItem('enfjVillageGame');
+        location.reload(); // Reload the page to restart the game
+    }
 }
 
 // Game Actions
@@ -524,13 +536,15 @@ const gameActions = {
         }
         gameState.actionPoints--;
         const rand = currentRandFn();
+        let message = "";
         if (rand < 0.7) {
-            updateGameDisplay("새로운 식량원을 찾아냈습니다! 앞으로 식량 생산량이 증가할 것입니다. (+10 식량, +10 공동체 정신)");
+            message += "새로운 식량원을 찾아냈습니다! 앞으로 식량 생산량이 증가할 것입니다. (+10 식량, +10 공동체 정신)";
             updateState({ resources: { food: gameState.resources.food + 10 }, communitySpirit: gameState.communitySpirit + 10 });
         } else {
-            updateGameDisplay("새로운 식량원을 찾지 못했습니다. 노력은 가상하지만 결과는 없었습니다. (-5 행복도)");
+            message += "새로운 식량원을 찾지 못했습니다. 노력은 가상하지만 결과는 없었습니다. (-5 행복도)";
             updateState({ happiness: gameState.happiness - 5 });
         }
+        updateGameDisplay(message);
         renderChoices(gameScenarios["intro"].choices);
     },
     welcome_new_unique_villager: () => {
@@ -587,6 +601,7 @@ const gameActions = {
         if (gameState.resources.food >= 50 && gameState.resources.wood >= 20) {
             updateGameDisplay("성대한 축제를 개최했습니다! 주민들의 행복과 공동체 정신이 크게 상승했습니다. (+30 행복도, +30 공동체 정신, -50 식량, -20 나무)");
             updateState({ happiness: gameState.happiness + 30, communitySpirit: gameState.communitySpirit + 30, resources: { food: gameState.resources.food - 50, wood: gameState.resources.wood - 20 } });
+            gameState.villages.foodStorageBuilt = true; // New state for built facility
         } else {
             updateGameDisplay("자원이 부족하여 축제를 개최할 수 없었습니다. 주민들이 아쉬워합니다. (-10 행복도)");
             updateState({ happiness: gameState.happiness - 10 });
@@ -612,7 +627,8 @@ const gameActions = {
         }
         gameState.actionPoints--;
         const rand = currentRandFn();
-        if (rand < 0.6) {
+        const successChance = Math.min(0.95, 0.6 + (gameState.toolsLevel * 0.1));
+        if (rand < successChance) {
             updateGameDisplay("주민들이 자발적으로 자원을 기부했습니다! 축제를 개최할 수 있게 되었습니다. (+20 식량, +10 나무, +10 공동체 정신)");
             updateState({ resources: { food: gameState.resources.food + 20, wood: gameState.resources.wood + 10 }, communitySpirit: gameState.communitySpirit + 10 });
         } else {
@@ -804,10 +820,60 @@ const gameActions = {
         }
         renderChoices(gameScenarios["intro"].choices);
     },
+    build_library: () => {
+        if (gameState.actionPoints <= 0) {
+            updateGameDisplay("행동 포인트가 부족하여 더 이상 행동할 수 없습니다. 내일을 기다리세요.");
+            renderChoices(gameScenarios["intro"].choices);
+            return;
+        }
+        gameState.actionPoints--;
+        if (gameState.resources.wood >= 80 && gameState.resources.stone >= 40) {
+            updateGameDisplay("도서관을 건설했습니다! 이제 마을의 지식을 보존하고 연구할 수 있습니다. (+15 공감, +10 공동체 정신, -80 나무, -40 돌)");
+            updateState({ empathy: gameState.empathy + 15, communitySpirit: gameState.communitySpirit + 10, resources: { ...gameState.resources, wood: gameState.resources.wood - 80, stone: gameState.resources.stone - 40 } });
+            gameState.villages.libraryBuilt = true;
+        } else {
+            updateGameDisplay("자원이 부족하여 도서관을 건설할 수 없습니다.");
+        }
+        renderChoices(gameScenarios["intro"].choices);
+    },
     return_to_intro: () => {
         updateGameDisplay(gameScenarios["intro"].text);
         renderChoices(gameScenarios["intro"].choices);
     },
+
+    puzzle_reinforce_houses: () => {
+        if (gameState.resources.wood >= 10) {
+            updateGameDisplay("목재를 사용해 주민들의 집을 보강했습니다. 주민들이 더 안전함을 느낍니다. (+10 행복도, +5 공동체 정신, -10 나무)");
+            updateState({ happiness: gameState.happiness + 10, communitySpirit: gameState.communitySpirit + 5, resources: { ...gameState.resources, wood: gameState.resources.wood - 10 } });
+        } else {
+            updateGameDisplay("목재가 부족하여 집을 보강할 수 없습니다. (-5 행복도)");
+            updateState({ happiness: gameState.happiness - 5 });
+        }
+        renderChoices(gameScenarios["intro"].choices);
+    },
+
+    puzzle_repair_facilities: () => {
+        if (gameState.resources.wood >= 10) {
+            updateGameDisplay("목재를 사용해 마을의 공공 시설을 보수했습니다. 공동체 정신이 향상됩니다. (+15 공동체 정신, -10 나무)");
+            updateState({ communitySpirit: gameState.communitySpirit + 15, resources: { ...gameState.resources, wood: gameState.resources.wood - 10 } });
+        } else {
+            updateGameDisplay("목재가 부족하여 공공 시설을 보수할 수 없습니다. (-5 공동체 정신)");
+            updateState({ communitySpirit: gameState.communitySpirit - 5 });
+        }
+        renderChoices(gameScenarios["intro"].choices);
+    },
+
+    puzzle_stockpile_firewood: () => {
+        if (gameState.resources.wood >= 10) {
+            updateGameDisplay("목재를 땔감으로 비축하여 주민들에게 나누어 주었습니다. 주민들이 따뜻한 겨울을 보낼 수 있게 되었습니다. (+15 행복도, -10 나무)");
+            updateState({ happiness: gameState.happiness + 15, resources: { ...gameState.resources, wood: gameState.resources.wood - 10 } });
+        } else {
+            updateGameDisplay("목재가 부족하여 땔감을 비축할 수 없습니다. (-5 행복도)");
+            updateState({ happiness: gameState.happiness - 5 });
+        }
+        renderChoices(gameScenarios["intro"].choices);
+    },
+
     show_resource_gathering_options: () => {
         if (gameState.actionPoints <= 0) {
             updateGameDisplay("행동 포인트가 부족하여 더 이상 행동할 수 없습니다. 내일을 기다리세요.");
@@ -818,6 +884,53 @@ const gameActions = {
         updateGameDisplay(gameScenarios["action_resource_gathering"].text);
         renderChoices(gameScenarios["action_resource_gathering"].choices);
     },
+    craft_tools: () => {
+        if (gameState.actionPoints <= 0) {
+            updateGameDisplay("행동 포인트가 부족합니다.");
+            renderChoices(gameScenarios["intro"].choices);
+            return;
+        }
+
+        const cost = 20 * (gameState.toolsLevel + 1);
+        if (gameState.resources.wood >= cost && gameState.resources.stone >= cost) {
+            gameState.actionPoints--;
+            gameState.toolsLevel++;
+            updateState({
+                resources: { 
+                    ...gameState.resources, 
+                    wood: gameState.resources.wood - cost, 
+                    stone: gameState.resources.stone - cost 
+                },
+                toolsLevel: gameState.toolsLevel
+            });
+            updateGameDisplay(`도구 제작에 성공했습니다! 모든 자원 채집 성공률이 10% 증가합니다. (현재 레벨: ${gameState.toolsLevel})`);
+        } else {
+            updateGameDisplay(`도구를 제작하기 위한 자원이 부족합니다. (나무 ${cost}, 돌 ${cost} 필요)`);
+        }
+        renderChoices(gameScenarios["intro"].choices);
+    },
+
+    research_documents: () => {
+        if (gameState.actionPoints <= 0) {
+            updateGameDisplay("행동 포인트가 부족합니다.");
+            renderChoices(gameScenarios["intro"].choices);
+            return;
+        }
+        gameState.actionPoints--;
+
+        const rand = currentRandFn();
+        if (rand < 0.3) {
+            updateState({ resources: { ...gameState.resources, wood: gameState.resources.wood + 20, stone: gameState.resources.stone + 20 } });
+            updateGameDisplay("고문서 연구 중 숨겨진 자원 저장소를 발견했습니다! (+20 나무, +20 돌)");
+        } else if (rand < 0.5) {
+            updateState({ empathy: gameState.empathy + 10, communitySpirit: gameState.communitySpirit + 10 });
+            updateGameDisplay("고문서에서 잊혀진 공동체 운영의 지혜를 발견했습니다. (+10 공감, +10 공동체 정신)");
+        } else {
+            updateGameDisplay("고문서를 연구했지만, 특별한 것은 발견하지 못했습니다.");
+        }
+        renderChoices(gameScenarios["intro"].choices);
+    },
+
     show_building_options: () => {
         if (gameState.actionPoints <= 0) {
             updateGameDisplay("행동 포인트가 부족하여 더 이상 행동할 수 없습니다. 내일을 기다리세요.");
@@ -845,6 +958,11 @@ function renderStats() {
         newStatsDiv.id = 'gameStats';
         document.getElementById('gameArea').before(newStatsDiv);
     }
+
+    const villagerListHtml = gameState.villagers.map(v => `
+        <li>${v.name} (${v.personality}, ${v.skill}) - 신뢰도: ${v.trust}</li>
+    `).join('');
+
     document.getElementById('gameStats').innerHTML = `
         <p><b>날짜:</b> ${gameState.day}일</p>
         <p><b>행동 포인트:</b> <span style="color: var(--accent-color);">${gameState.actionPoints} / ${gameState.maxActionPoints}</span></p>
@@ -865,7 +983,19 @@ function renderChoices(choices) {
         newChoicesDiv.className = 'choices';
         document.getElementById('gameArea').after(newChoicesDiv);
     }
-    document.getElementById('gameChoices').innerHTML = choices.map((choice, index) => {
+
+    let dynamicChoices = [...choices]; // Start with base choices
+
+    if (gameState.currentScenarioId === 'intro') { // Only add to main menu
+        if (gameState.villages.workshopBuilt) {
+            dynamicChoices.push({ text: `도구 제작 (현재 레벨: ${gameState.toolsLevel})`, action: "craft_tools" });
+        }
+        if (gameState.villages.libraryBuilt) {
+            dynamicChoices.push({ text: "고문서 연구", action: "research_documents" });
+        }
+    }
+
+    document.getElementById('gameChoices').innerHTML = dynamicChoices.map((choice, index) => {
         const isDisabled = gameState.actionPoints <= 0 && choice.action !== "return_to_intro"; // Allow returning to intro even with 0 AP
         return `<button class="choice-btn" data-action="${choice.action}" data-params='${JSON.stringify(choice.params || {})}' data-index="${index}" ${isDisabled ? 'disabled' : ''}>${choice.text}</button>`;
     }).join('');
@@ -951,15 +1081,33 @@ function processDailyEvents() {
     };
     gameState.actionPoints = gameState.maxActionPoints;
 
+    // Daily bonus from villager skills
+    let skillBonusMessage = "";
+    gameState.villagers.forEach(v => {
+        if (v.skill === '농업') {
+            gameState.resources.food++;
+            skillBonusMessage += `${v.name}의 기술 덕분에 식량을 추가로 얻었습니다. `;
+        } else if (v.skill === '벌목') {
+            gameState.resources.wood++;
+            skillBonusMessage += `${v.name}의 기술 덕분에 목재를 추가로 얻었습니다. `;
+        } else if (v.skill === '채굴') {
+            gameState.resources.stone++;
+            skillBonusMessage += `${v.name}의 기술 덕분에 석재를 추가로 얻었습니다. `;
+        }
+    });
+
     // Daily resource consumption
-    gameState.resources.food -= gameState.villagers.length * 1; // Each villager consumes 1 food
+    gameState.resources.food -= gameState.villagers.length * 2; // Each villager consumes 2 food
+    
+    let dailyMessage = skillBonusMessage; // Start with the bonus message
     if (gameState.resources.food < 0) {
         gameState.happiness -= 10;
         gameState.communitySpirit -= 5;
-        updateGameDisplay("마을에 식량이 부족하여 주민들이 굶주리고 있습니다! (-10 행복도, -5 공동체 정신)");
+        dailyMessage += "마을에 식량이 부족하여 주민들이 굶주리고 있습니다! (-10 행복도, -5 공동체 정신)";
     } else {
-        updateGameDisplay("새로운 하루가 시작되었습니다. 마을은 평화롭습니다.");
+        dailyMessage += "새로운 하루가 시작되었습니다. 마을은 평화롭습니다.";
     }
+    updateGameDisplay(dailyMessage);
 
     // Random daily event
     const rand = currentRandFn();
@@ -980,7 +1128,9 @@ function processDailyEvents() {
         eventId = "daily_event_rumor";
     } else if (rand < 0.9 && gameState.day > 5) { // Natural disaster after some days
         eventId = "daily_event_natural_disaster";
-    } else if (rand < 0.95) { // Daily mini-game
+    } else if (rand < 0.94 && gameState.day > 3 && gameState.resources.wood >= 10) { // New resource puzzle
+        eventId = "daily_mini_game_resource_puzzle";
+    } else if (rand < 0.98) { // Daily mini-game
         eventId = "daily_mini_game_emotion_match";
     }
 
@@ -1025,4 +1175,4 @@ window.onload = function() {
         console.error("오늘의 게임 생성 중 오류 발생:", e);
         document.getElementById('gameDescription').innerText = "콘텐츠를 불러오는 데 실패했습니다. 페이지를 새로고침해 주세요.";
     }
-};
+};};
