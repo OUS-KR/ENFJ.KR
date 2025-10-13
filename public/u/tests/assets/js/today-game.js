@@ -290,7 +290,24 @@ function calculateMinigameReward(minigameName, score) {
                 rewards.message = `기억력 게임을 완료했지만, 아쉽게도 보상은 없습니다.`;
             }
             break;
-        // Add cases for other minigames here
+        case "플레이스홀더 미니게임 2":
+            rewards.happiness = 2;
+            rewards.message = `플레이스홀더 미니게임 2를 완료했습니다. (+2 행복)`;
+            break;
+        case "플레이스홀더 미니게임 3":
+            rewards.empathy = 2;
+            rewards.message = `플레이스홀더 미니게임 3을 완료했습니다. (+2 공감)`;
+            break;
+        case "플레이스홀더 미니게임 4":
+            rewards.communitySpirit = 2;
+            rewards.message = `플레이스홀더 미니게임 4를 완료했습니다. (+2 공동체 정신)`;
+            break;
+        case "플레이스홀더 미니게임 5":
+            rewards.happiness = 1;
+            rewards.empathy = 1;
+            rewards.communitySpirit = 1;
+            rewards.message = `플레이스홀더 미니게임 5를 완료했습니다. (+1 행복, +1 공감, +1 공동체 정신)`;
+            break;
         default:
             rewards.message = `미니게임 ${minigameName}을(를) 완료했습니다.`;
             break;
@@ -390,14 +407,111 @@ const minigames = [
             }, rewards.message);
             gameState.minigameState = {}; // Clear minigame state
         }
+    },
+    {
+        name: "플레이스홀더 미니게임 2",
+        description: "이것은 두 번째 플레이스홀더 미니게임입니다.",
+        start: (gameArea, choicesDiv) => {
+            gameState.minigameState = { score: 10 }; // Simple score for placeholder
+            gameArea.innerHTML = `<p>${minigames[1].description}</p><p>게임을 시작합니다!</p>`;
+            choicesDiv.innerHTML = `<button class="choice-btn" onclick="minigames[1].processAction('endGame')">게임 종료</button>`;
+        },
+        render: () => {}, // Not used for simple placeholder
+        processAction: (actionType) => {
+            if (actionType === 'endGame') {
+                minigames[1].end();
+            }
+        },
+        end: () => {
+            const rewards = calculateMinigameReward(minigames[1].name, gameState.minigameState.score);
+            updateState({
+                empathy: gameState.empathy + rewards.empathy,
+                happiness: gameState.happiness + rewards.happiness,
+                communitySpirit: gameState.communitySpirit + rewards.communitySpirit,
+                currentScenarioId: 'intro'
+            }, rewards.message);
+            gameState.minigameState = {};
+        }
+    },
+    {
+        name: "플레이스홀더 미니게임 3",
+        description: "이것은 세 번째 플레이스홀더 미니게임입니다.",
+        start: (gameArea, choicesDiv) => {
+            gameState.minigameState = { score: 15 };
+            gameArea.innerHTML = `<p>${minigames[2].description}</p><p>게임을 시작합니다!</p>`;
+            choicesDiv.innerHTML = `<button class="choice-btn" onclick="minigames[2].processAction('endGame')">게임 종료</button>`;
+        },
+        render: () => {},
+        processAction: (actionType) => {
+            if (actionType === 'endGame') {
+                minigames[2].end();
+            }
+        },
+        end: () => {
+            const rewards = calculateMinigameReward(minigames[2].name, gameState.minigameState.score);
+            updateState({
+                empathy: gameState.empathy + rewards.empathy,
+                happiness: gameState.happiness + rewards.happiness,
+                communitySpirit: gameState.communitySpirit + rewards.communitySpirit,
+                currentScenarioId: 'intro'
+            }, rewards.message);
+            gameState.minigameState = {};
+        }
+    },
+    {
+        name: "플레이스홀더 미니게임 4",
+        description: "이것은 네 번째 플레이스홀더 미니게임입니다.",
+        start: (gameArea, choicesDiv) => {
+            gameState.minigameState = { score: 20 };
+            gameArea.innerHTML = `<p>${minigames[3].description}</p><p>게임을 시작합니다!</p>`;
+            choicesDiv.innerHTML = `<button class="choice-btn" onclick="minigames[3].processAction('endGame')">게임 종료</button>`;
+        },
+        render: () {},
+        processAction: (actionType) => {
+            if (actionType === 'endGame') {
+                minigames[3].end();
+            }
+        },
+        end: () => {
+            const rewards = calculateMinigameReward(minigames[3].name, gameState.minigameState.score);
+            updateState({
+                empathy: gameState.empathy + rewards.empathy,
+                happiness: gameState.happiness + rewards.happiness,
+                communitySpirit: gameState.communitySpirit + rewards.communitySpirit,
+                currentScenarioId: 'intro'
+            }, rewards.message);
+            gameState.minigameState = {};
+        }
+    },
+    {
+        name: "플레이스홀더 미니게임 5",
+        description: "이것은 다섯 번째 플레이스홀더 미니게임입니다.",
+        start: (gameArea, choicesDiv) => {
+            gameState.minigameState = { score: 25 };
+            gameArea.innerHTML = `<p>${minigames[4].description}</p><p>게임을 시작합니다!</p>`;
+            choicesDiv.innerHTML = `<button class="choice-btn" onclick="minigames[4].processAction('endGame')">게임 종료</button>`;
+        },
+        render: () => {},
+        processAction: (actionType) => {
+            if (actionType === 'endGame') {
+                minigames[4].end();
+            }
+        },
+        end: () => {
+            const rewards = calculateMinigameReward(minigames[4].name, gameState.minigameState.score);
+            updateState({
+                empathy: gameState.empathy + rewards.empathy,
+                happiness: gameState.happiness + rewards.happiness,
+                communitySpirit: gameState.communitySpirit + rewards.communitySpirit,
+                currentScenarioId: 'intro'
+            }, rewards.message);
+            gameState.minigameState = {};
+        }
     }
-    // Other minigames will be added here following this new structure
 ];
 
 const minigameActions = {
-    // This object will now primarily contain helper functions for minigames if needed,
-    // but the core logic will be within the minigames array itself.
-    // For now, it can be empty or removed if no common minigame actions are needed.
+    // This object is now empty as minigame logic is within the minigames array itself.
 };
 
 // --- Game Actions ---
@@ -664,7 +778,7 @@ const gameActions = {
         if (gameState.dailyActions.minigamePlayed) { updateGameDisplay("오늘의 미니게임은 이미 플레이했습니다."); return; }
         if (!spendActionPoint()) return;
         
-        const minigameIndex = gameState.day % minigames.length; // Select minigame based on day
+        const minigameIndex = (gameState.day - 1) % minigames.length; // Select minigame based on day
         const minigame = minigames[minigameIndex];
         
         gameState.currentScenarioId = `minigame_${minigame.name}`; 
