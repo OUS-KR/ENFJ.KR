@@ -51,6 +51,23 @@ function getEulReParticle(word) {
     return hasFinalConsonant ? "을" : "를";
 }
 
+// Helper function to choose between '와' and '과' based on final consonant
+function getWaGwaParticle(word) {
+    if (!word || word.length === 0) {
+        return "";
+    }
+    const lastChar = word[word.length - 1];
+    const uni = lastChar.charCodeAt(0);
+
+    // Check if the character is a Korean character
+    if (uni < 0xAC00 || uni > 0xD7A3) {
+        return "와"; // Default to '와' for non-Korean or if unsure
+    }
+
+    const hasFinalConsonant = (uni - 0xAC00) % 28 > 0;
+    return hasFinalConsonant ? "과" : "와";
+}
+
 function showFeedback(isSuccess, message) {
     const feedbackMessage = document.getElementById('feedbackMessage');
     feedbackMessage.innerText = message;
@@ -362,7 +379,7 @@ const gameActions = {
         const villager = gameState.villagers[Math.floor(rand * gameState.villagers.length)];
 
         if (gameState.dailyActions.talkedTo.includes(villager.id)) {
-            updateGameDisplay(`${villager.name}와(과) 이미 충분히 대화했습니다. 오늘은 다른 주민과 이야기하거나 다른 활동을 해보세요.`);
+            updateGameDisplay(`${villager.name}${getWaGwaParticle(villager.name)} 이미 충분히 대화했습니다. 오늘은 다른 주민과 이야기하거나 다른 활동을 해보세요.`);
             renderChoices(gameScenarios["intro"].choices);
             return;
         }
