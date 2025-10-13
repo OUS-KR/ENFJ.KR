@@ -18,6 +18,7 @@ function mulberry32(seed) {
 
 // --- Game State Management ---
 let gameState = {};
+let currentRandFn = null;
 
 function resetGameState() {
     gameState = {
@@ -38,7 +39,6 @@ function resetGameState() {
         manualDayAdvances: 0,
         dailyEventTriggered: false,
         dailyBonus: { gatheringSuccess: 0 },
-        messageQueue: [],
         dailyActions: { explored: false, meetingHeld: false, talkedTo: [], minigamePlayed: false },
         villages: {
             foodStorage: { built: false, durability: 100 },
@@ -49,7 +49,6 @@ function resetGameState() {
         },
         toolsLevel: 0
     };
-    processDailyEvents(); // Run events for the first day
 }
 
 function saveGameState() {
@@ -61,21 +60,20 @@ function loadGameState() {
     const today = new Date().toISOString().slice(0, 10);
     if (savedState) {
         let loaded = JSON.parse(savedState);
-        // Patch for old save files
         if (!loaded.dailyBonus) loaded.dailyBonus = { gatheringSuccess: 0 };
-        if (!loaded.villages) loaded.villages = { foodStorage: { built: false, durability: 100 }, workshop: { built: false, durability: 100 }, townHall: { built: false, durability: 100 }, library: { built: false, durability: 100 }, forge: { built: false, durability: 100 } };
-        if (loaded.lastPlayedDate !== today) {
-            loaded.day += 1;
-            loaded.lastPlayedDate = today;
-            loaded.manualDayAdvances = 0;
-            loaded.dailyEventTriggered = false;
-            Object.assign(gameState, loaded);
+        if (!loaded.villages) resetGameState();
+        else Object.assign(gameState, loaded);
+
+        if (gameState.lastPlayedDate !== today) {
+            gameState.day += 1;
+            gameState.lastPlayedDate = today;
+            gameState.manualDayAdvances = 0;
+            gameState.dailyEventTriggered = false;
             processDailyEvents();
-        } else {
-            Object.assign(gameState, loaded);
         }
     } else {
         resetGameState();
+        processDailyEvents();
     }
     renderAll();
 }
@@ -88,8 +86,8 @@ function updateState(changes) {
             gameState[key] = changes[key];
         }
     });
-    renderAll();
     saveGameState();
+    renderAll();
 }
 
 // --- UI Rendering ---
@@ -129,7 +127,7 @@ function renderChoices(choices) {
         button.addEventListener('click', () => {
             const action = button.dataset.action;
             if (gameActions[action]) {
-                gameActions[action](JSON.parse(button.dataset.params));
+                gameActions[action](JSON.parse(button.dataset.params || '{}'));
             }
         });
     });
@@ -158,7 +156,6 @@ const gameScenarios = {
         { text: "돌 채굴", action: "perform_mine_stone" },
         { text: "취소", action: "return_to_intro" }
     ]},
-    "daily_event_new_villager": { text: "새로운 주민이 마을에 정착하고 싶어 합니다.", choices: [] },
 };
 
 const minigames = [ { name: "기억력 테스트", description: "아이콘 순서를 기억하세요.", setup: (area, choices) => { area.innerHTML = "기억력 테스트 준비중"; choices.innerHTML = ""; } } ];
@@ -184,10 +181,10 @@ const gameActions = {
     hold_meeting: () => { if (!spendActionPoint()) return; updateGameDisplay("마을 회의를 개최했습니다."); },
     manualNextDay: () => {
         if (gameState.manualDayAdvances >= 5) { updateGameDisplay("오늘은 더 이상 수동으로 날짜를 넘길 수 없습니다."); return; }
-        updateState({
-            manualDayAdvances: gameState.manualDayAdvances + 1,
-            day: gameState.day + 1,
-            dailyEventTriggered: false
+        updateState({ 
+            manualDayAdvances: gameState.manualDayAdvances + 1, 
+            day: gameState.day + 1, 
+            dailyEventTriggered: false 
         });
         processDailyEvents();
     },
@@ -198,7 +195,7 @@ const gameActions = {
         const cost = { wood: 30, stone: 30 };
         if (gameState.resources.wood >= cost.wood && gameState.resources.stone >= cost.stone) {
             updateState({ happiness: gameState.happiness + 10, resources: { ...gameState.resources, wood: gameState.resources.wood - cost.wood, stone: gameState.resources.stone - cost.stone } });
-            gameState.villages.workshop.built = true; // Direct mutation is not ideal, but ok for now
+            gameState.villages.workshop.built = true;
             updateGameDisplay("공동 작업장을 건설했습니다!");
         } else { 
             updateGameDisplay("자원이 부족하여 건설할 수 없습니다."); 
@@ -230,6 +227,15 @@ function processDailyEvents() {
 
 function initDailyGame() {
     loadGameState();
+}
+
+function resetGame() {
+    if (confirm("정말로 게임을 초기화하시겠습니까? 모든 진행 상황이 사라집니다.")) {
+        localStorage.removeItem('enfjVillageGame');
+        resetGameState();
+        saveGameState();
+        location.reload();
+    }
 }
 
 window.onload = function() {
