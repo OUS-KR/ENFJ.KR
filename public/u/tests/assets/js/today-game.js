@@ -986,6 +986,6 @@ window.onload = function() {
         console.error("오늘의 게임 생성 중 오류 발생:", e);
         document.getElementById('gameDescription').innerText = "콘텐츠를 불러오는 데 실패했습니다. 페이지를 새로고침해 주세요.";
     }
-};meDescription').innerText = "콘텐츠를 불러오는 데 실패했습니다. 페이지를 새로고침해 주세요.";
+};
     }
 };
