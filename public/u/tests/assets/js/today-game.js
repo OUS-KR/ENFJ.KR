@@ -81,6 +81,7 @@ let gameState = {
     lastPlayedDate: null,
     manualDayAdvances: 0,
     dailyEventTriggered: false,
+    dailyBonus: {}
     eventHistory: [],
     dailyActions: {
         explored: false,
@@ -214,21 +215,21 @@ const gameActions = {
     },
     perform_gather_food: () => {
         if (gameState.actionPoints-- <= 0) { updateGameDisplay("행동 포인트가 부족합니다."); return; }
-        const successChance = Math.min(0.95, 0.6 + (gameState.toolsLevel * 0.1));
+        const successChance = Math.min(0.95, 0.6 + (gameState.toolsLevel * 0.1) + (gameState.dailyBonus.gatheringSuccess || 0));
         if (currentRandFn() < successChance) { updateGameDisplay("식량을 성공적으로 채집했습니다! (+5 식량)"); updateState({ resources: { ...gameState.resources, food: gameState.resources.food + 5 } }); }
         else { updateGameDisplay("식량 채집에 실패했습니다."); }
         renderChoices(gameScenarios["intro"].choices);
     },
     perform_chop_wood: () => {
         if (gameState.actionPoints-- <= 0) { updateGameDisplay("행동 포인트가 부족합니다."); return; }
-        const successChance = Math.min(0.95, 0.6 + (gameState.toolsLevel * 0.1));
+        const successChance = Math.min(0.95, 0.6 + (gameState.toolsLevel * 0.1) + (gameState.dailyBonus.gatheringSuccess || 0));
         if (currentRandFn() < successChance) { updateGameDisplay("나무를 성공적으로 벌목했습니다! (+5 나무)"); updateState({ resources: { ...gameState.resources, wood: gameState.resources.wood + 5 } }); }
         else { updateGameDisplay("나무 벌목에 실패했습니다."); }
         renderChoices(gameScenarios["intro"].choices);
     },
     perform_mine_stone: () => {
         if (gameState.actionPoints-- <= 0) { updateGameDisplay("행동 포인트가 부족합니다."); return; }
-        const successChance = Math.min(0.95, 0.6 + (gameState.toolsLevel * 0.1));
+        const successChance = Math.min(0.95, 0.6 + (gameState.toolsLevel * 0.1) + (gameState.dailyBonus.gatheringSuccess || 0));
         if (currentRandFn() < successChance) { updateGameDisplay("돌을 성공적으로 채굴했습니다! (+5 돌)"); updateState({ resources: { ...gameState.resources, stone: gameState.resources.stone + 5 } }); }
         else { updateGameDisplay("돌 채굴에 실패했습니다."); }
         renderChoices(gameScenarios["intro"].choices);
@@ -432,6 +433,48 @@ function updateState(changes) {
 
 function saveGameState() {
     localStorage.setItem('enfjVillageGame', JSON.stringify(gameState));
+}
+
+function applyStatEffects() {
+    let effectMessage = "";
+    gameState.dailyBonus = { gatheringSuccess: 0 }; // Reset daily bonus
+
+    // Empathy Effects
+    if (gameState.empathy > 70) {
+        gameState.dailyBonus.gatheringSuccess = 0.1; // +10% success rate
+        effectMessage += "높은 공감 지수 덕분에 주민들이 협력하여 자원 채집이 더 수월해집니다. ";
+    } else if (gameState.empathy < 30) {
+        gameState.happiness -= 3;
+        effectMessage += "낮은 공감 지수로 마을에 불화가 잦아 행복도가 감소합니다. ";
+    }
+
+    // Happiness Effects
+    if (gameState.happiness > 70) {
+        gameState.actionPoints += 2;
+        effectMessage += "주민들의 행복도가 높아 마을에 활기가 넘칩니다! (행동 포인트 +2) ";
+    } else if (gameState.happiness < 30) {
+        gameState.actionPoints -= 2;
+        effectMessage += "마을이 무기력에 빠져 행동하기가 힘듭니다. (행동 포인트 -2) ";
+    }
+
+    // Community Spirit Effects
+    if (gameState.communitySpirit > 70) {
+        Object.keys(gameState.villages).forEach(key => {
+            if (gameState.villages[key].built) {
+                gameState.villages[key].durability = Math.min(100, gameState.villages[key].durability + 5);
+            }
+        });
+        effectMessage += "높은 공동체 정신으로 주민들이 스스로 시설을 돌봅니다. (시설 내구도 소폭 회복) ";
+    } else if (gameState.communitySpirit < 30) {
+        Object.keys(gameState.villages).forEach(key => {
+            if (gameState.villages[key].built) {
+                gameState.villages[key].durability -= 5;
+            }
+        });
+        effectMessage += "공동체 정신이 약화되어 시설이 빠르게 낡습니다. (시설 내구도 추가 감소) ";
+    }
+    
+    return effectMessage;
 }
 
 function loadGameState() {
