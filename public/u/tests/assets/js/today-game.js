@@ -125,6 +125,14 @@ const gameScenarios = {
             { text: "제안을 거절한다", action: "decline_trade" }
         ]
     },
+    "daily_event_new_villager": {
+        text: `새로운 주민이 마을에 정착하고 싶어 합니다. (현재 주민 수: ${gameState.villagers.length} / ${gameState.maxVillagers})`,
+        choices: [
+            { text: "따뜻하게 환영하고 정착을 돕는다.", action: "welcome_new_unique_villager" },
+            { text: "마을에 필요한지 좀 더 지켜본다.", action: "observe_villager" },
+            { text: "정착을 거절한다.", action: "reject_villager" }
+        ]
+    },
     "action_facility_management": { text: "마을 시설을 관리합니다. 무엇을 하시겠습니까?", choices: [] },
     "action_resource_gathering": {
         text: "어떤 자원을 채집하시겠습니까?",
@@ -194,7 +202,7 @@ const gameActions = {
         }
         gameState.manualDayAdvances++;
         gameState.day++;
-        processDailyEvents(true);
+        processDailyEvents();
     },
     ignore_event: () => {
         if (gameState.actionPoints-- <= 0) { updateGameDisplay("행동 포인트가 부족합니다."); return; }
@@ -433,55 +441,55 @@ function loadGameState() {
             gameState.day++;
             gameState.lastPlayedDate = today;
             gameState.manualDayAdvances = 0; // Reset manual advances
-            processDailyEvents(true); // Pass true for natural day progression
+            processDailyEvents();
         }
     } else {
         gameState.day = 1;
         gameState.lastPlayedDate = today;
-        processDailyEvents(false); // First time playing
+        processDailyEvents();
     }
     updateGameDisplay(gameScenarios[gameState.currentScenarioId]?.text || "마을에 오신 것을 환영합니다!");
     renderChoices(gameScenarios[gameState.currentScenarioId]?.choices || gameScenarios["intro"].choices);
     renderStats();
 }
 
-function processDailyEvents(isNewDay) {
-    const seed = getDailySeed() + gameState.day;
+function processDailyEvents() {
+    const seed = getDailySeed() + gameState.day; 
     currentRandFn = mulberry32(seed);
     
-    if(isNewDay) {
-        gameState.actionPoints = gameState.maxActionPoints;
-        let skillBonusMessage = "";
-        let durabilityMessage = "";
+    gameState.actionPoints = gameState.maxActionPoints;
+    gameState.dailyActions = { explored: false, meetingHeld: false, talkedTo: [] };
 
-        gameState.villagers.forEach(v => {
-            if (v.skill === '농업') { gameState.resources.food++; skillBonusMessage += `${v.name}의 기술 덕분에 식량을 추가로 얻었습니다. `; }
-            else if (v.skill === '벌목') { gameState.resources.wood++; skillBonusMessage += `${v.name}의 기술 덕분에 목재를 추가로 얻었습니다. `; }
-            else if (v.skill === '채굴') { gameState.resources.stone++; skillBonusMessage += `${v.name}의 기술 덕분에 석재를 추가로 얻었습니다. `; }
-        });
+    let skillBonusMessage = "";
+    let durabilityMessage = "";
 
-        Object.keys(gameState.villages).forEach(key => {
-            const facility = gameState.villages[key];
-            if(facility.built) {
-                facility.durability -= 1;
-                if(facility.durability <= 0) {
-                    facility.built = false;
-                    durabilityMessage += `${key} 시설이 파손되었습니다! 수리가 필요합니다. `;
-                }
+    gameState.villagers.forEach(v => {
+        if (v.skill === '농업') { gameState.resources.food++; skillBonusMessage += `${v.name}의 기술 덕분에 식량을 추가로 얻었습니다. `; }
+        else if (v.skill === '벌목') { gameState.resources.wood++; skillBonusMessage += `${v.name}의 기술 덕분에 목재를 추가로 얻었습니다. `; }
+        else if (v.skill === '채굴') { gameState.resources.stone++; skillBonusMessage += `${v.name}의 기술 덕분에 석재를 추가로 얻었습니다. `; }
+    });
+
+    Object.keys(gameState.villages).forEach(key => {
+        const facility = gameState.villages[key];
+        if(facility.built) {
+            facility.durability -= 1;
+            if(facility.durability <= 0) {
+                facility.built = false;
+                durabilityMessage += `${key} 시설이 파손되었습니다! 수리가 필요합니다. `;
             }
-        });
-
-        gameState.resources.food -= gameState.villagers.length * 2;
-        let dailyMessage = skillBonusMessage + durabilityMessage;
-        if (gameState.resources.food < 0) {
-            gameState.happiness -= 10;
-            dailyMessage += "식량이 부족하여 주민들이 굶주립니다! (-10 행복도)";
-        } else {
-            dailyMessage += "새로운 하루가 시작되었습니다.";
         }
-        updateGameDisplay(dailyMessage);
-    }
+    });
 
+    gameState.resources.food -= gameState.villagers.length * 2;
+    let dailyMessage = skillBonusMessage + durabilityMessage;
+    if (gameState.resources.food < 0) {
+        gameState.happiness -= 10;
+        dailyMessage += "식량이 부족하여 주민들이 굶주립니다! (-10 행복도)";
+    } else {
+        dailyMessage += "새로운 하루가 시작되었습니다.";
+    }
+    updateGameDisplay(dailyMessage);
+    
     const rand = currentRandFn();
     let eventId = "intro";
     if (rand < 0.15) { eventId = "daily_event_storm"; updateState({resources: {...gameState.resources, wood: Math.max(0, gameState.resources.wood - 10)}}); }
