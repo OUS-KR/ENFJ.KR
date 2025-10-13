@@ -852,6 +852,8 @@ function renderStats() {
         <p><b>행복도:</b> <span style="color: var(--success-color);">${gameState.happiness}</span></p>
         <p><b>공동체 정신:</b> <span style="color: var(--accent-color);">${gameState.communitySpirit}</span></p>
         <p><b>자원:</b> 식량 ${gameState.resources.food}, 나무 ${gameState.resources.wood}, 돌 ${gameState.resources.stone}</p>
+        <p><b>마을 주민 (${gameState.villagers.length} / ${gameState.maxVillagers}):</b></p>
+        <ul>${villagerListHtml}</ul>
     `;
 }
 
@@ -971,7 +973,7 @@ function processDailyEvents() {
         eventId = "daily_event_new_villager";
         const newVillager = generateRandomVillager();
         gameState.pendingNewVillager = newVillager; // Store pending villager
-        gameScenarios["daily_event_new_villager"].text = `새로운 주민이 마을에 정착하고 싶어 합니다. 그의 이름은 <span id="newVillagerName">${newVillager.name}</span>이며, <span id="newVillagerPersonality">${newVillager.personality}</span> 성향을 가지고 있습니다. (현재 주민 수: ${gameState.villagers.length} / ${gameState.maxVillagers})`;
+        gameScenarios["daily_event_new_villager"].text = `새로운 주민이 마을에 정착하고 싶어 합니다. 그의 이름은 <span id=\"newVillagerName\">${newVillager.name}</span>이며, <span id=\"newVillagerPersonality\">${newVillager.personality}</span> 성향을 가지고 있습니다. (현재 주민 수: ${gameState.villagers.length} / ${gameState.maxVillagers})`;
     } else if (rand < 0.7 && gameState.day % 7 === 0) { // Festival request every 7 days
         eventId = "daily_event_festival_request";
     } else if (rand < 0.8 && gameState.communitySpirit < 60) { // Rumor event if community spirit is low
