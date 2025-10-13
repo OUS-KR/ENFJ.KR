@@ -202,6 +202,7 @@ const gameActions = {
         }
         gameState.manualDayAdvances++;
         gameState.day++;
+        gameState.lastPlayedDate = new Date().toISOString().slice(0, 10); // Save the date
         processDailyEvents();
     },
     ignore_event: () => {
@@ -238,6 +239,7 @@ const gameActions = {
     },
     show_facility_options: () => {
         if (gameState.actionPoints <= 0) { updateGameDisplay("행동 포인트가 부족합니다."); return; }
+        gameState.currentScenarioId = 'action_facility_management'; // Set scenario ID
         updateGameDisplay(gameScenarios["action_facility_management"].text);
         renderChoices(gameScenarios["action_facility_management"].choices);
     },
