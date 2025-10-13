@@ -141,6 +141,13 @@ const gameScenarios = {
     "game_over_resources": { text: "마을의 자원이 고갈되어 주민들이 굶주리고 있습니다. 더 이상 버틸 수 없습니다.", choices: [], final: true, feedback: "게임 오버: 자원 고갈" }
 };
 
+function resetGame() {
+    if (confirm("정말로 게임을 초기화하시겠습니까? 모든 진행 상황이 사라집니다.")) {
+        localStorage.removeItem('enfjVillageGame');
+        location.reload();
+    }
+}
+
 // Game Actions
 const gameActions = {
     explore: () => {
