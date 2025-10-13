@@ -80,6 +80,7 @@ let gameState = {
     currentScenarioId: "intro",
     lastPlayedDate: null,
     manualDayAdvances: 0,
+    dailyEventTriggered: false,
     eventHistory: [],
     dailyActions: {
         explored: false,
@@ -330,7 +331,11 @@ const gameActions = {
         updateGameDisplay("무역 제안을 거절했습니다. 상인은 아쉬워하며 떠났습니다.");
         renderChoices(gameScenarios["intro"].choices);
     },
-    return_to_intro: () => { updateGameDisplay(gameScenarios["intro"].text); renderChoices(gameScenarios["intro"].choices); }
+    return_to_intro: () => { 
+        gameState.currentScenarioId = 'intro';
+        updateGameDisplay(gameScenarios["intro"].text); 
+        renderChoices(gameScenarios["intro"].choices); 
+    }
 };
 
 // Functions to update game state and render UI
@@ -443,6 +448,7 @@ function loadGameState() {
             gameState.day++;
             gameState.lastPlayedDate = today;
             gameState.manualDayAdvances = 0; // Reset manual advances
+            gameState.dailyEventTriggered = false; // Reset event trigger flag
             processDailyEvents();
         }
     } else {
@@ -456,6 +462,8 @@ function loadGameState() {
 }
 
 function processDailyEvents() {
+    if (gameState.dailyEventTriggered) return;
+
     const seed = getDailySeed() + gameState.day; 
     currentRandFn = mulberry32(seed);
     
@@ -508,6 +516,8 @@ function processDailyEvents() {
     gameState.currentScenarioId = eventId;
     updateGameDisplay(gameScenarios[eventId].text);
     renderChoices(gameScenarios[eventId].choices);
+    
+    gameState.dailyEventTriggered = true;
     saveGameState();
     checkGameOver();
 }
