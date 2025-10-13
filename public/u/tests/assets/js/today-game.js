@@ -73,6 +73,7 @@ function resetGameState() {
         },
         toolsLevel: 0
     };
+    currentRandFn = mulberry32(getDailySeed() + gameState.day);
 }
 
 function saveGameState() {
@@ -93,6 +94,9 @@ function loadGameState() {
             ];
         }
         Object.assign(gameState, loaded);
+
+        // Always initialize currentRandFn after loading state
+        currentRandFn = mulberry32(getDailySeed() + gameState.day);
 
         if (gameState.lastPlayedDate !== today) {
             gameState.day += 1;
