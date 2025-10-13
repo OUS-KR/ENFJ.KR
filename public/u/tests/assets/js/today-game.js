@@ -665,6 +665,46 @@ const gameActions = {
         });
         processDailyEvents();
     },
+    handle_conflict: (params) => {
+        if (!spendActionPoint()) return;
+        const { first, second } = params;
+        let message = "";
+        let reward = { empathy: 0, happiness: 0, communitySpirit: 0 };
+        
+        const updatedVillagers = gameState.villagers.map(v => {
+            if (v.id === first) {
+                v.trust = Math.min(100, v.trust + 10);
+                message += `${v.name}의 이야기를 들어주었습니다. ${v.name}의 신뢰도가 상승했습니다. `; 
+                reward.empathy += 5;
+            } else if (v.id === second) {
+                v.trust = Math.max(0, v.trust - 5);
+                message += `${second}의 신뢰도가 약간 하락했습니다. `; 
+            }
+            return v;
+        });
+        
+        updateGameDisplay(message);
+        updateState({ ...reward, villagers: updatedVillagers });
+        setTimeout(() => gameActions.return_to_intro(), 2000);
+    },
+    mediate_conflict: () => {
+        if (!spendActionPoint()) return;
+        const message = "당신의 중재로 엘라와 카이의 오해가 풀렸습니다. 마을의 공동체 정신이 강화되었습니다! (+10 공동체 정신, +5 행복도)";
+        updateGameDisplay(message);
+        updateState({ communitySpirit: gameState.communitySpirit + 10, happiness: gameState.happiness + 5 });
+        setTimeout(() => gameActions.return_to_intro(), 2000);
+    },
+    ignore_event: () => {
+        if (!spendActionPoint()) return;
+        const message = "갈등을 무시했습니다. 주민들의 불만이 커지고 마을의 분위기가 침체됩니다. (-10 행복도, -5 공동체 정신)";
+        const updatedVillagers = gameState.villagers.map(v => {
+            v.trust = Math.max(0, v.trust - 5);
+            return v;
+        });
+        updateGameDisplay(message);
+        updateState({ happiness: gameState.happiness - 10, communitySpirit: gameState.communitySpirit - 5, villagers: updatedVillagers });
+        setTimeout(() => gameActions.return_to_intro(), 2000);
+    },
     show_resource_gathering_options: () => updateState({ currentScenarioId: 'action_resource_gathering' }),
     show_facility_options: () => updateState({ currentScenarioId: 'action_facility_management' }),
     perform_gather_food: () => {
