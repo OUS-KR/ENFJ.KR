@@ -871,9 +871,12 @@ function saveGameState() {
 
 function loadGameState() {
     const savedState = localStorage.getItem('enfjVillageGame');
+    const today = new Date().toISOString().slice(0, 10);
+    const seed = getDailySeed(); // Get daily seed
+    currentRandFn = mulberry32(seed); // Initialize currentRandFn here
+
     if (savedState) {
         const loadedState = JSON.parse(savedState);
-        const today = new Date().toISOString().slice(0, 10);
         if (loadedState.lastPlayedDate === today) {
             gameState = loadedState;
             // If it's the same day, just render current state
@@ -889,7 +892,7 @@ function loadGameState() {
     } else {
         // First time playing
         gameState.day = 1;
-        gameState.lastPlayedDate = new Date().toISOString().slice(0, 10);
+        gameState.lastPlayedDate = today; // Use 'today' here
         updateGameDisplay(gameScenarios["intro"].text);
         renderChoices(gameScenarios["intro"].choices);
     }
