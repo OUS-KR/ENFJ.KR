@@ -769,6 +769,49 @@ const gameActions = {
     }
 };
 
+function applyStatEffects() {
+    let message = "";
+    // High Empathy: Resource gathering success chance increase
+    if (gameState.empathy >= 70) {
+        gameState.dailyBonus.gatheringSuccess += 0.1;
+        message += "높은 공감 지수 덕분에 주민들의 사기가 올라 자원 채집 성공률이 증가합니다. ";
+    }
+    // Low Empathy: Villager trust decrease
+    if (gameState.empathy < 30) {
+        gameState.villagers.forEach(v => v.trust = Math.max(0, v.trust - 5));
+        message += "낮은 공감 지수로 인해 주민들의 신뢰가 하락합니다. ";
+    }
+
+    // High Happiness: Action points increase
+    if (gameState.happiness >= 70) {
+        gameState.maxActionPoints += 1;
+        gameState.actionPoints = gameState.maxActionPoints;
+        message += "높은 행복도로 인해 마을에 활기가 넘쳐 행동 포인트가 증가합니다. ";
+    }
+    // Low Happiness: Action points decrease
+    if (gameState.happiness < 30) {
+        gameState.maxActionPoints = Math.max(5, gameState.maxActionPoints - 1);
+        gameState.actionPoints = Math.min(gameState.actionPoints, gameState.maxActionPoints);
+        message += "낮은 행복도로 인해 마을에 침체기가 찾아와 행동 포인트가 감소합니다. ";
+    }
+
+    // High Community Spirit: Facility durability decay slower
+    if (gameState.communitySpirit >= 70) {
+        Object.keys(gameState.villages).forEach(key => {
+            if (gameState.villages[key].built) gameState.villages[key].durability = Math.min(100, gameState.villages[key].durability + 1); // Slightly increase durability
+        });
+        message += "강한 공동체 정신 덕분에 시설물 유지보수가 더 잘 이루어집니다. ";
+    }
+    // Low Community Spirit: Facility durability decay faster
+    if (gameState.communitySpirit < 30) {
+        Object.keys(gameState.villages).forEach(key => {
+            if (gameState.villages[key].built) gameState.villages[key].durability = Math.max(0, gameState.villages[key].durability - 2); // Faster decay
+        });
+        message += "공동체 정신이 약화되어 시설물들이 빠르게 노후화됩니다. ";
+    }
+    return message;
+}
+
 function generateRandomVillager() {
     const names = ["리나", "준", "미나", "철수", "영희"];
     const personalities = ["온화한", "활발한", "차분한", "호기심 많은"];
