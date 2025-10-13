@@ -150,12 +150,13 @@ function renderStats() {
 function renderChoices(choices) {
     const choicesDiv = document.getElementById('gameChoices');
     if (!choicesDiv) return;
-    let dynamicChoices = choices ? [...choices] : [];
+    let dynamicChoices = []; // Initialize as empty
 
     if (gameState.currentScenarioId === 'intro') {
         dynamicChoices = gameScenarios.intro.choices;
-    }
-    if (gameState.currentScenarioId === 'action_facility_management') {
+    } else if (gameState.currentScenarioId === 'action_facility_management') {
+        // Start with base choices for facility management, then add dynamic ones
+        dynamicChoices = gameScenarios.action_facility_management.choices ? [...gameScenarios.action_facility_management.choices] : [];
         // Build options
         if (!gameState.villages.foodStorage.built) dynamicChoices.push({ text: "공동 식량 창고 건설 (식량 50, 나무 20)", action: "build_food_storage" });
         if (!gameState.villages.workshop.built) dynamicChoices.push({ text: "공동 작업장 건설 (나무 30, 돌 30)", action: "build_workshop" });
@@ -172,6 +173,8 @@ function renderChoices(choices) {
             }
         });
         dynamicChoices.push({ text: "취소", action: "return_to_intro" });
+    } else { // For any other scenario, use its predefined choices
+        dynamicChoices = choices ? [...choices] : [];
     }
 
     choicesDiv.innerHTML = dynamicChoices.map(choice => `<button class="choice-btn" data-action="${choice.action}" data-params='${JSON.stringify(choice.params || {})}'>${choice.text}</button>`).join('');
@@ -236,6 +239,19 @@ const gameScenarios = {
     "meeting_already_held": {
         text: "오늘은 이미 마을 회의를 개최했습니다. 연속 회의 개최로 주민들의 피로도가 높아져 행복도가 감소합니다. (-5 행복도)",
         choices: [{ text: "확인", action: "return_to_intro" }]
+    },
+    "action_resource_gathering": {
+        text: "어떤 자원을 채집하시겠습니까?",
+        choices: [
+            { text: "식량 채집", action: "perform_gather_food" },
+            { text: "나무 벌목", action: "perform_chop_wood" },
+            { text: "돌 채굴", action: "perform_mine_stone" },
+            { text: "취소", action: "return_to_intro" }
+        ]
+    },
+    "action_facility_management": {
+        text: "어떤 시설을 관리하시겠습니까?",
+        choices: [] // Choices will be dynamically added in renderChoices
     }
 };
 
