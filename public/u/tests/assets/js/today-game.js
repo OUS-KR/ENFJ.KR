@@ -81,7 +81,7 @@ let gameState = {
     lastPlayedDate: null,
     manualDayAdvances: 0,
     dailyEventTriggered: false,
-    dailyBonus: {}
+    dailyBonus: {},
     eventHistory: [],
     dailyActions: {
         explored: false,
