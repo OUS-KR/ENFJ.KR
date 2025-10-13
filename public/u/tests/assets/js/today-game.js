@@ -192,9 +192,14 @@ function renderAll() {
     const desc = document.getElementById('gameDescription');
     if (desc) desc.style.display = 'none';
     renderStats();
-    const scenario = gameScenarios[gameState.currentScenarioId] || gameScenarios.intro;
-    updateGameDisplay(scenario.text);
-    renderChoices(scenario.choices);
+    
+    // Only update game display and render choices if NOT a minigame
+    if (!gameState.currentScenarioId.startsWith('minigame_')) {
+        const scenario = gameScenarios[gameState.currentScenarioId] || gameScenarios.intro;
+        updateGameDisplay(scenario.text);
+        renderChoices(scenario.choices);
+    }
+    // Minigames handle their own display and choice rendering
 }
 
 // --- Game Data ---
@@ -794,9 +799,17 @@ const gameActions = {
     play_minigame: () => {
         if (gameState.dailyActions.minigamePlayed) { updateGameDisplay("오늘의 미니게임은 이미 플레이했습니다."); return; }
         if (!spendActionPoint()) return;
-        updateState({ dailyActions: { ...gameState.dailyActions, minigamePlayed: true } });
+        
         const minigame = minigames[gameState.day % minigames.length];
-        updateGameDisplay(minigame.description);
+        
+        // Set currentScenarioId BEFORE updateState so renderAll knows it's a minigame
+        gameState.currentScenarioId = `minigame_${minigame.name}`; 
+        
+        // Update state, which will call renderAll. renderAll will skip renderChoices.
+        // updateGameDisplay will be called by play_minigame directly.
+        updateState({ dailyActions: { ...gameState.dailyActions, minigamePlayed: true } }); 
+        
+        updateGameDisplay(minigame.description); // This should be the one that sets the description
         minigame.setup(document.getElementById('gameArea'), document.getElementById('gameChoices'));
     }
 };
