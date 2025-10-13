@@ -323,14 +323,19 @@ function updateGameDisplay(text) {
 }
 
 function renderStats() {
-    const statsDiv = document.getElementById('gameStats');
+    let statsDiv = document.getElementById('gameStats');
     if (!statsDiv) {
-        const newStatsDiv = document.createElement('div');
-        newStatsDiv.id = 'gameStats';
-        document.getElementById('gameArea').before(newStatsDiv);
+        statsDiv = document.createElement('div');
+        statsDiv.id = 'gameStats';
+        document.getElementById('gameArea').before(statsDiv);
     }
     const villagerListHtml = gameState.villagers.map(v => `<li>${v.name} (${v.skill}) - 신뢰도: ${v.trust}</li>`).join('');
-    document.getElementById('manualDayCounter').innerText = gameState.manualDayAdvances;
+    
+    const manualDayCounter = document.getElementById('manualDayCounter');
+    if (manualDayCounter) {
+        manualDayCounter.innerText = gameState.manualDayAdvances;
+    }
+
     statsDiv.innerHTML = `
         <p><b>날짜:</b> ${gameState.day}일</p>
         <p><b>행동 포인트:</b> <span>${gameState.actionPoints}/${gameState.maxActionPoints}</span></p>
