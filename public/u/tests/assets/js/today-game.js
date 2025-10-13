@@ -34,6 +34,23 @@ function getDayOfWeekText(day) {
     return messages[day];
 }
 
+// Helper function to choose between '을' and '를' based on final consonant
+function getEulReParticle(word) {
+    if (!word || word.length === 0) {
+        return "";
+    }
+    const lastChar = word[word.length - 1];
+    const uni = lastChar.charCodeAt(0);
+
+    // Check if the character is a Korean character
+    if (uni < 0xAC00 || uni > 0xD7A3) {
+        return "를"; // Default to '를' for non-Korean or if unsure
+    }
+
+    const hasFinalConsonant = (uni - 0xAC00) % 28 > 0;
+    return hasFinalConsonant ? "을" : "를";
+}
+
 function showFeedback(isSuccess, message) {
     const feedbackMessage = document.getElementById('feedbackMessage');
     feedbackMessage.innerText = message;
@@ -509,7 +526,7 @@ const gameActions = {
         const newVillager = gameState.pendingNewVillager;
         if (newVillager) {
             gameState.villagers.push(newVillager);
-            updateGameDisplay(`새로운 주민 ${newVillager.name}을(를) 따뜻하게 환영했습니다. 마을에 새로운 활력이 생겼습니다. (+10 공동체 정신, +5 행복도)`);
+            updateGameDisplay(`새로운 주민 ${newVillager.name}${getEulReParticle(newVillager.name)} 따뜻하게 환영했습니다. 마을에 새로운 활력이 생겼습니다. (+10 공동체 정신, +5 행복도)`);
             updateState({ communitySpirit: gameState.communitySpirit + 10, happiness: gameState.happiness + 5, villagers: gameState.villagers });
             delete gameState.pendingNewVillager; // Clear pending villager
         } else {
