@@ -232,7 +232,11 @@ const gameScenarios = {
     "game_over_empathy": { text: "마을의 공감 지수가 너무 낮아 주민들이 서로를 이해하지 못하고 떠나기 시작했습니다. 마을은 황폐해졌습니다.", choices: [], final: true },
     "game_over_happiness": { text: "주민들의 행복도가 바닥을 쳤습니다. 불만이 폭주하고, 당신의 리더십은 더 이상 통하지 않습니다.", choices: [], final: true },
     "game_over_communitySpirit": { text: "마을의 공동체 정신이 무너져 주민들이 각자의 이익만을 추구합니다. 더 이상 마을이라 부를 수 없습니다.", choices: [], final: true },
-    "game_over_resources": { text: "마을의 자원이 고갈되어 주민들이 굶주리고 있습니다. 더 이상 버틸 수 없습니다.", choices: [], final: true }
+    "game_over_resources": { text: "마을의 자원이 고갈되어 주민들이 굶주리고 있습니다. 더 이상 버틸 수 없습니다.", choices: [], final: true },
+    "meeting_already_held": {
+        text: "오늘은 이미 마을 회의를 개최했습니다. 연속 회의 개최로 주민들의 피로도가 높아져 행복도가 감소합니다. (-5 행복도)",
+        choices: [{ text: "확인", action: "return_to_intro" }]
+    }
 };
 
 const minigames = [
@@ -295,9 +299,15 @@ const minigames = [
                 <div id="keyword-selection-area">
                     ${conflict.keywords.map(k => `<button class="keyword-select-btn" onclick="minigameActions.relationship.selectKeyword('${k}', this)">${k}</button>`).join('')}
                 </div>
-                <button class="choice-btn" onclick="minigameActions.relationship.submitSolution('${JSON.stringify(conflict.correctCombination)}')">해결책 제시</button>
+                <button class="choice-btn relationship-submit-btn" data-correct-combination="${JSON.stringify(conflict.correctCombination)}">해결책 제시</button>
             `;
             choicesDiv.dataset.selectedKeywords = JSON.stringify([]);
+            
+            // Add event listener for the submit button
+            choicesDiv.querySelector('.relationship-submit-btn').addEventListener('click', function() {
+                const correctCombinationJson = this.dataset.correctCombination;
+                minigameActions.relationship.submitSolution(correctCombinationJson);
+            });
         }
     },
     {
@@ -615,7 +625,13 @@ const gameActions = {
     },
     hold_meeting: () => {
         if (!spendActionPoint()) return;
-        if (gameState.dailyActions.meetingHeld) { updateGameDisplay("오늘은 이미 마을 회의를 개최했습니다. (-5 행복도)"); updateState({ happiness: gameState.happiness - 5 }); return; }
+        if (gameState.dailyActions.meetingHeld) {
+            updateState({
+                happiness: gameState.happiness - 5,
+                currentScenarioId: "meeting_already_held"
+            });
+            return;
+        }
         updateState({ dailyActions: { ...gameState.dailyActions, meetingHeld: true } });
         const rand = currentRandFn();
         let message = "마을 회의를 개최했습니다. ";
