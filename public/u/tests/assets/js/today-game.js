@@ -204,7 +204,8 @@ const gameActions = {
         }
         gameState.manualDayAdvances++;
         gameState.day++;
-        gameState.lastPlayedDate = new Date().toISOString().slice(0, 10); // Save the date
+        gameState.lastPlayedDate = new Date().toISOString().slice(0, 10);
+        gameState.dailyEventTriggered = false;
         processDailyEvents();
     },
     ignore_event: () => {
@@ -236,12 +237,13 @@ const gameActions = {
     },
     show_resource_gathering_options: () => {
         if (gameState.actionPoints <= 0) { updateGameDisplay("행동 포인트가 부족합니다."); return; }
+        gameState.currentScenarioId = 'action_resource_gathering';
         updateGameDisplay(gameScenarios["action_resource_gathering"].text);
         renderChoices(gameScenarios["action_resource_gathering"].choices);
     },
     show_facility_options: () => {
         if (gameState.actionPoints <= 0) { updateGameDisplay("행동 포인트가 부족합니다."); return; }
-        gameState.currentScenarioId = 'action_facility_management'; // Set scenario ID
+        gameState.currentScenarioId = 'action_facility_management';
         updateGameDisplay(gameScenarios["action_facility_management"].text);
         renderChoices(gameScenarios["action_facility_management"].choices);
     },
@@ -484,14 +486,17 @@ function loadGameState() {
     currentRandFn = mulberry32(seed);
     if (savedState) {
         const loadedState = JSON.parse(savedState);
+        // Patch for old save files
+        if (!loadedState.dailyBonus) loadedState.dailyBonus = {};
+
         if (loadedState.lastPlayedDate === today) {
             gameState = loadedState;
         } else {
             gameState = loadedState;
             gameState.day++;
             gameState.lastPlayedDate = today;
-            gameState.manualDayAdvances = 0; // Reset manual advances
-            gameState.dailyEventTriggered = false; // Reset event trigger flag
+            gameState.manualDayAdvances = 0; 
+            gameState.dailyEventTriggered = false;
             processDailyEvents();
         }
     } else {
@@ -512,6 +517,8 @@ function processDailyEvents() {
     
     gameState.actionPoints = gameState.maxActionPoints;
     gameState.dailyActions = { explored: false, meetingHeld: false, talkedTo: [] };
+
+    const statEffectMessage = applyStatEffects();
 
     let skillBonusMessage = "";
     let durabilityMessage = "";
@@ -534,14 +541,13 @@ function processDailyEvents() {
     });
 
     gameState.resources.food -= gameState.villagers.length * 2;
-    let dailyMessage = skillBonusMessage + durabilityMessage;
+    let dailyMessage = statEffectMessage + skillBonusMessage + durabilityMessage;
     if (gameState.resources.food < 0) {
         gameState.happiness -= 10;
         dailyMessage += "식량이 부족하여 주민들이 굶주립니다! (-10 행복도)";
     } else {
         dailyMessage += "새로운 하루가 시작되었습니다.";
     }
-    updateGameDisplay(dailyMessage);
     
     const rand = currentRandFn();
     let eventId = "intro";
@@ -557,7 +563,7 @@ function processDailyEvents() {
     else if (rand < 0.85 && gameState.villages.townHall.built) { eventId = "daily_event_trade_offer"; }
     
     gameState.currentScenarioId = eventId;
-    updateGameDisplay(gameScenarios[eventId].text);
+    updateGameDisplay(dailyMessage + (eventId !== 'intro' ? `\n\n${gameScenarios[eventId].text}`: ''));
     renderChoices(gameScenarios[eventId].choices);
     
     gameState.dailyEventTriggered = true;
