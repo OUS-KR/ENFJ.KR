@@ -71,7 +71,8 @@ function resetGameState() {
             library: { built: false, durability: 100 },
             forge: { built: false, durability: 100 }
         },
-        toolsLevel: 0
+        toolsLevel: 0,
+        minigameState: {}
     };
     currentRandFn = mulberry32(getDailySeed() + gameState.day);
 }
@@ -268,362 +269,135 @@ const gameScenarios = {
     }
 };
 
+function calculateMinigameReward(minigameName, score) {
+    let rewards = { empathy: 0, happiness: 0, communitySpirit: 0, message: "" };
+
+    switch (minigameName) {
+        case "기억력 순서 맞추기":
+            if (score >= 51) {
+                rewards.happiness = 15;
+                rewards.empathy = 10;
+                rewards.communitySpirit = 5;
+                rewards.message = `최고의 기억력을 보여주셨습니다! (+15 행복, +10 공감, +5 공동체 정신)`;
+            } else if (score >= 21) {
+                rewards.happiness = 10;
+                rewards.empathy = 5;
+                rewards.message = `훌륭한 기억력입니다! (+10 행복, +5 공감)`;
+            } else if (score >= 0) {
+                rewards.happiness = 5;
+                rewards.message = `기억력 게임을 완료했습니다. (+5 행복)`;
+            } else {
+                rewards.message = `기억력 게임을 완료했지만, 아쉽게도 보상은 없습니다.`;
+            }
+            break;
+        // Add cases for other minigames here
+        default:
+            rewards.message = `미니게임 ${minigameName}을(를) 완료했습니다.`;
+            break;
+    }
+    return rewards;
+}
+
 const minigames = [
     {
-        name: "감정 공감 챌린지",
-        description: "주민의 감정을 파악하고 적절한 반응을 선택하여 공감 능력을 시험합니다.",
-        setup: (gameArea, choicesDiv) => {
-            const scenarios = [
-                {
-                    villager: "엘라",
-                    situation: "요즘 잠도 잘 못 자고, 밥맛도 없어... 마을에 도움이 안 되는 것 같아.",
-                    correctEmotion: "무력감",
-                    correctAction: "적극적 경청",
-                    choices: [
-                        { text: "무슨 일 있어? 이야기해 줄 수 있을까?", emotion: "무력감", action: "적극적 경청" },
-                        { text: "힘내! 넌 잘할 수 있어!", emotion: "좌절감", action: "단순 격려" },
-                        { text: "그냥 쉬는 게 좋겠어.", emotion: "피로감", action: "휴식 권유" }
-                    ]
-                },
-                {
-                    villager: "카이",
-                    situation: "내가 제안한 아이디어가 또 무시당했어. 아무도 내 말을 듣지 않아.",
-                    correctEmotion: "좌절감",
-                    correctAction: "지지와 격려",
-                    choices: [
-                        { text: "네 아이디어는 항상 좋았어. 포기하지 마.", emotion: "좌절감", action: "지지와 격려" },
-                        { text: "다른 방법을 찾아보는 건 어때?", emotion: "무력감", action: "대안 제시" },
-                        { text: "원래 그런 거야. 너무 신경 쓰지 마.", emotion: "분노", action: "무관심" }
-                    ]
-                }
-            ];
-            const scenario = scenarios[Math.floor(currentRandFn() * scenarios.length)];
-            gameArea.innerHTML = `<p><b>${scenario.villager}:</b> "${scenario.situation}"</p><p>주민의 감정을 파악하고 어떻게 반응하시겠습니까?</p>`;
-            choicesDiv.innerHTML = scenario.choices.map((choice, index) =>
-                `<button class="choice-btn" onclick="minigameActions.empathy.evaluate('${scenario.correctEmotion}', '${scenario.correctAction}', '${choice.emotion}', '${choice.action}')">${choice.text}</button>`
-            ).join('');
-        }
-    },
-    {
-        name: "관계 조율 퍼즐",
-        description: "마을 주민 간의 갈등을 해결하고 관계를 개선하는 퍼즐 게임입니다.",
-        setup: (gameArea, choicesDiv) => {
-            const conflicts = [
-                {
-                    villagerA: "엘라", villagerB: "카이",
-                    issue: "엘라는 마을 광장에 꽃밭을 만들고 싶어 하고, 카이는 그 자리에 훈련장을 만들고 싶어 합니다.",
-                    keywords: ["꽃밭", "훈련장", "공간 분리", "타협", "양보", "협력"],
-                    correctCombination: ["공간 분리", "타협"]
-                },
-                {
-                    villagerA: "리나", villagerB: "준",
-                    issue: "리나는 조용한 환경에서 작업하길 원하고, 준은 작업 중 음악을 크게 틀어놓습니다.",
-                    keywords: ["소음", "집중", "배려", "규칙", "헤드폰", "구역 지정"],
-                    correctCombination: ["구역 지정", "배려"]
-                }
-            ];
-            const conflict = conflicts[Math.floor(currentRandFn() * conflicts.length)];
-            gameArea.innerHTML = `<p><b>갈등 상황:</b> ${conflict.issue}</p><p>다음 키워드 중 2개를 선택하여 해결책을 제시하세요.</p>`;
-            choicesDiv.innerHTML = `
-                <div id="keyword-selection-area">
-                    ${conflict.keywords.map(k => `<button class="keyword-select-btn" data-keyword="${k}">${k}</button>`).join('')}
-                </div>
-                <button class="choice-btn relationship-submit-btn" data-correct-combination="${JSON.stringify(conflict.correctCombination)}">해결책 제시</button>
+        name: "기억력 순서 맞추기",
+        description: "화면에 나타나는 숫자 순서를 기억하고 정확하게 입력하세요. 단계가 올라갈수록 어려워집니다!",
+        start: (gameArea, choicesDiv) => {
+            gameState.minigameState = {
+                currentSequence: [],
+                playerInput: [],
+                stage: 1,
+                score: 0,
+                showingSequence: false
+            };
+            minigames[0].render(gameArea, choicesDiv);
+            minigames[0].showSequence();
+        },
+        render: (gameArea, choicesDiv) => {
+            gameArea.innerHTML = `
+                <p><b>단계:</b> ${gameState.minigameState.stage} | <b>점수:</b> ${gameState.minigameState.score}</p>
+                <p id="sequenceDisplay" style="font-size: 2em; font-weight: bold; min-height: 1.5em;"></p>
+                <p>순서를 기억하고 입력하세요:</p>
+                <div id="playerInputDisplay" style="font-size: 1.5em; min-height: 1.5em;">${gameState.minigameState.playerInput.join(' ')}</div>
             `;
-            choicesDiv.dataset.selectedKeywords = JSON.stringify([]);
-            
-            // Add event listeners for keyword selection buttons
-            choicesDiv.querySelectorAll('.keyword-select-btn').forEach(button => {
-                button.addEventListener('click', function() {
-                    minigameActions.relationship.selectKeyword(this.dataset.keyword, this);
-                });
+            choicesDiv.innerHTML = `
+                <div class="number-pad">
+                    ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => `<button class="choice-btn num-btn" data-value="${num}">${num}</button>`).join('')}
+                    <button class="choice-btn num-btn" data-value="0">0</button>
+                    <button class="choice-btn submit-btn" data-action="submitSequence">입력 완료</button>
+                    <button class="choice-btn reset-btn" data-action="resetInput">초기화</button>
+                </div>
+            `;
+            choicesDiv.querySelectorAll('.num-btn').forEach(button => {
+                button.addEventListener('click', () => minigames[0].processAction('addInput', button.dataset.value));
             });
+            choicesDiv.querySelector('.submit-btn').addEventListener('click', () => minigames[0].processAction('submitSequence'));
+            choicesDiv.querySelector('.reset-btn').addEventListener('click', () => minigames[0].processAction('resetInput'));
+        },
+        showSequence: () => {
+            gameState.minigameState.showingSequence = true;
+            gameState.minigameState.currentSequence = [];
+            const sequenceLength = gameState.minigameState.stage + 2; // e.g., stage 1 -> 3 numbers
+            for (let i = 0; i < sequenceLength; i++) {
+                gameState.minigameState.currentSequence.push(Math.floor(currentRandFn() * 10));
+            }
 
-            // Add event listener for the submit button
-            choicesDiv.querySelector('.relationship-submit-btn').addEventListener('click', function() {
-                const correctCombinationJson = this.dataset.correctCombination;
-                minigameActions.relationship.submitSolution(correctCombinationJson);
-            });
-        }
-    },
-    {
-        name: "비전 공유 스토리",
-        description: "마을의 미래 비전을 제시하고 주민들의 동의를 얻는 스토리텔링 게임입니다.",
-        setup: (gameArea, choicesDiv) => {
-            const visions = [
-                {
-                    partial: "우리 마을은 ____과 ____을 통해, 모든 주민이 ____하는 곳이 될 것입니다.",
-                    keywords: ["협력", "혁신", "행복", "성장", "평화", "번영"],
-                    correctFill: ["협력", "성장", "행복"]
-                },
-                {
-                    partial: "우리는 ____을 기반으로 ____을 추구하며, ____ 마을을 만들어 나갈 것입니다.",
-                    keywords: ["자연", "기술", "조화", "발전", "지속 가능한", "활기찬"],
-                    correctFill: ["자연", "조화", "지속 가능한"]
+            const sequenceDisplay = document.getElementById('sequenceDisplay');
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < gameState.minigameState.currentSequence.length) {
+                    sequenceDisplay.innerText = gameState.minigameState.currentSequence[i];
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    sequenceDisplay.innerText = "입력하세요!";
+                    gameState.minigameState.showingSequence = false;
                 }
-            ];
-            const vision = visions[Math.floor(currentRandFn() * visions.length)];
-            gameArea.innerHTML = `<p><b>비전 문구:</b> ${vision.partial}</p><p>다음 키워드 중 3개를 선택하여 비전을 완성하세요.</p>`;
-            choicesDiv.innerHTML = `
-                <div id="vision-keyword-selection">
-                    ${vision.keywords.map(k => `<button class="keyword-select-btn" onclick="minigameActions.vision.selectKeyword('${k}', this)">${k}</button>`).join('')}
-                </div>
-                <button class="choice-btn" onclick="minigameActions.vision.submitVision('${JSON.stringify(vision.correctFill)}')">비전 발표</button>
-            `;
-            choicesDiv.dataset.selectedKeywords = JSON.stringify([]);
-        }
-    },
-    {
-        name: "긍정 영향력 미로",
-        description: "마을에 퍼진 부정적인 소문을 긍정적인 영향력으로 바꾸며 미로를 탈출하세요.",
-        setup: (gameArea, choicesDiv) => {
-            const maze = [
-                {
-                    text: "마을에 '엘라가 자원을 독점하고 있다!'는 소문이 퍼졌습니다. 어떻게 대응하시겠습니까?",
-                    choices: [
-                        { text: "엘라에게 직접 물어본다", next: 1, type: "positive" },
-                        { text: "소문을 무시한다", next: 2, type: "negative" }
-                    ]
-                },
-                {
-                    text: "엘라는 큰 프로젝트를 위해 자원을 모으고 있었다고 설명합니다. 이제 주민들에게 어떻게 전달할까요?",
-                    choices: [
-                        { text: "주민들에게 엘라의 계획을 설명한다", next: 3, type: "positive" },
-                        { text: "엘라에게 자원 분배를 요구한다", next: 2, type: "negative" }
-                    ]
-                },
-                {
-                    text: "소문이 더욱 확산되어 주민들의 불만이 커졌습니다. 미로 탈출 실패!",
-                    choices: [], final: true, outcome: "fail"
-                },
-                {
-                    text: "주민들이 엘라의 진심을 이해하고 오해가 풀렸습니다. 미로 탈출 성공!",
-                    choices: [], final: true, outcome: "success"
-                }
-            ];
-            gameArea.dataset.maze = JSON.stringify(maze);
-            gameArea.dataset.currentStep = 0;
-            minigameActions.influence.renderMazeStep(0);
-        }
-    },
-    {
-        name: "소통의 다리 놓기",
-        description: "단절된 주민들 사이의 소통을 연결하고 공동체 정신을 회복하세요.",
-        setup: (gameArea, choicesDiv) => {
-            const villagers = [
-                { id: "kai", name: "카이", preference: "직접적이고 논리적인 정보" },
-                { id: "ella", name: "엘라", preference: "감정적 지지와 공감" },
-                { id: "lina", name: "리나", preference: "공동체 활동을 통한 자연스러운 교류" }
-            ];
-            const methods = [
-                { id: "report", name: "데이터 기반 보고서", type: "직접적이고 논리적인 정보" },
-                { id: "talk", name: "따뜻한 대화 시간", type: "감정적 지지와 공감" },
-                { id: "festival", name: "마을 축제 개최", type: "공동체 활동을 통한 자연스러운 교류" }
-            ];
+            }, 800);
+        },
+        processAction: (actionType, value = null) => {
+            if (gameState.minigameState.showingSequence) return;
 
-            gameArea.innerHTML = `<p>주민들의 소통 스타일을 파악하고 적절한 소통 방법을 매칭하세요.</p>`;
-            choicesDiv.innerHTML = `
-                <div id="matching-game-area">
-                    <div class="matching-column">
-                        <h3>주민</h3>
-                        ${villagers.map(v => `<div class="matching-item villager-item" data-id="${v.id}" data-preference="${v.preference}">${v.name} (${v.preference})</div>`).join('')}
-                    </div>
-                    <div class="matching-column">
-                        <h3>소통 방법</h3>
-                        ${methods.map(m => `<div class="matching-item method-item" data-id="${m.id}" data-type="${m.type}">${m.name}</div>`).join('')}
-                    </div>
-                    <button class="choice-btn" onclick="minigameActions.communication.submitMatching()">매칭 완료</button>
-                </div>
-            `;
-            choicesDiv.dataset.matches = JSON.stringify({}); // Store matches as { villagerId: methodId }
-            
-            // Add event listeners for click-to-match
-            let selectedVillager = null;
-            choicesDiv.querySelectorAll('.villager-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    if (selectedVillager) selectedVillager.classList.remove('selected');
-                    selectedVillager = this;
-                    selectedVillager.classList.add('selected');
-                });
-            });
-            choicesDiv.querySelectorAll('.method-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    if (selectedVillager) {
-                        const matches = JSON.parse(choicesDiv.dataset.matches);
-                        matches[selectedVillager.dataset.id] = this.dataset.id;
-                        choicesDiv.dataset.matches = JSON.stringify(matches);
-                        
-                        // Visually indicate match (e.g., change color or move items)
-                        this.style.backgroundColor = '#d4edda'; // Example visual feedback
-                        selectedVillager.style.backgroundColor = '#d4edda';
-                        
-                        selectedVillager = null; // Reset selection
-                    }
-                });
-            });
+            if (actionType === 'addInput') {
+                gameState.minigameState.playerInput.push(parseInt(value));
+                document.getElementById('playerInputDisplay').innerText = gameState.minigameState.playerInput.join(' ');
+            } else if (actionType === 'resetInput') {
+                gameState.minigameState.playerInput = [];
+                document.getElementById('playerInputDisplay').innerText = '';
+            } else if (actionType === 'submitSequence') {
+                const correct = gameState.minigameState.currentSequence.every((num, i) => num === gameState.minigameState.playerInput[i]);
+
+                if (correct && gameState.minigameState.playerInput.length === gameState.minigameState.currentSequence.length) {
+                    gameState.minigameState.score += gameState.minigameState.currentSequence.length * 10;
+                    gameState.minigameState.stage++;
+                    gameState.minigameState.playerInput = [];
+                    updateGameDisplay("정답입니다! 다음 단계로 넘어갑니다.");
+                    minigames[0].render(document.getElementById('gameArea'), document.getElementById('gameChoices'));
+                    setTimeout(() => minigames[0].showSequence(), 1500);
+                } else {
+                    updateGameDisplay("틀렸습니다! 게임 종료.");
+                    minigames[0].end();
+                }
+            }
+        },
+        end: () => {
+            const rewards = calculateMinigameReward(minigames[0].name, gameState.minigameState.score);
+            updateState({
+                empathy: gameState.empathy + rewards.empathy,
+                happiness: gameState.happiness + rewards.happiness,
+                communitySpirit: gameState.communitySpirit + rewards.communitySpirit,
+                currentScenarioId: 'intro' // Return to intro after showing message
+            }, rewards.message);
+            gameState.minigameState = {}; // Clear minigame state
         }
     }
+    // Other minigames will be added here following this new structure
 ];
 
 const minigameActions = {
-    empathy: {
-        evaluate: (correctEmotion, correctAction, chosenEmotion, chosenAction) => {
-            let reward = { empathy: 0, happiness: 0 };
-            let message = "";
-            if (correctEmotion === chosenEmotion && correctAction === chosenAction) {
-                message = "정확하게 감정을 파악하고 적절히 반응했습니다! (+15 공감, +10 행복)";
-                reward.empathy = 15;
-                reward.happiness = 10;
-            } else {
-                message = `감정 파악 또는 반응이 아쉬웠습니다. (정답: ${correctEmotion}, ${correctAction}) (-5 행복)`;
-                reward.happiness = -5;
-            }
-            updateGameDisplay(message);
-            updateState(reward);
-            setTimeout(() => gameActions.return_to_intro(), 2000);
-        }
-    },
-    relationship: {
-        selectKeyword: (keyword, button) => {
-            const choicesDiv = document.getElementById('gameChoices');
-            let selectedKeywords = JSON.parse(choicesDiv.dataset.selectedKeywords);
-            if (selectedKeywords.includes(keyword)) {
-                selectedKeywords = selectedKeywords.filter(k => k !== keyword);
-                button.classList.remove('selected');
-            } else if (selectedKeywords.length < 2) { // Allow selecting up to 2 keywords
-                selectedKeywords.push(keyword);
-                button.classList.add('selected');
-            }
-            choicesDiv.dataset.selectedKeywords = JSON.stringify(selectedKeywords);
-        },
-        submitSolution: (correctCombinationJson) => {
-            const choicesDiv = document.getElementById('gameChoices');
-            const selectedKeywords = JSON.parse(choicesDiv.dataset.selectedKeywords);
-            const correctCombination = JSON.parse(correctCombinationJson);
-            let reward = { communitySpirit: 0, happiness: 0 };
-            let message = "";
-
-            const isCorrect = correctCombination.every(k => selectedKeywords.includes(k)) && selectedKeywords.length === correctCombination.length;
-
-            if (isCorrect) {
-                message = "훌륭한 중재로 갈등을 해결했습니다! (+15 공동체 정신, +10 행복)";
-                reward.communitySpirit = 15;
-                reward.happiness = 10;
-            } else {
-                message = `해결책이 충분하지 않았습니다. (정답 키워드 조합: ${correctCombination.join(', ')}) (-5 공동체 정신)`;
-                reward.communitySpirit = -5;
-            }
-            updateGameDisplay(message);
-            updateState(reward);
-            setTimeout(() => gameActions.return_to_intro(), 2000);
-        }
-    },
-    vision: {
-        selectKeyword: (keyword, button) => {
-            const choicesDiv = document.getElementById('gameChoices');
-            let selectedKeywords = JSON.parse(choicesDiv.dataset.selectedKeywords);
-            if (selectedKeywords.includes(keyword)) {
-                selectedKeywords = selectedKeywords.filter(k => k !== keyword);
-                button.classList.remove('selected');
-            } else if (selectedKeywords.length < 3) {
-                selectedKeywords.push(keyword);
-                button.classList.add('selected');
-            }
-            choicesDiv.dataset.selectedKeywords = JSON.stringify(selectedKeywords);
-        },
-        submitVision: (correctFillJson) => {
-            const choicesDiv = document.getElementById('gameChoices');
-            const selectedKeywords = JSON.parse(choicesDiv.dataset.selectedKeywords);
-            const correctFill = JSON.parse(correctFillJson);
-            let reward = { communitySpirit: 0, empathy: 0 };
-            let message = "";
-
-            const isCorrect = correctFill.every(k => selectedKeywords.includes(k)) && selectedKeywords.length === correctFill.length;
-
-            if (isCorrect) {
-                message = "마을의 비전을 성공적으로 발표했습니다! 주민들이 당신의 비전에 공감합니다. (+15 공동체 정신, +10 공감)";
-                reward.communitySpirit = 15;
-                reward.empathy = 10;
-            } else {
-                message = `비전이 충분히 명확하지 않았습니다. (정답 키워드: ${correctFill.join(', ')}) (-5 공동체 정신)`;
-                reward.communitySpirit = -5;
-            }
-            updateGameDisplay(message);
-            updateState(reward);
-            setTimeout(() => gameActions.return_to_intro(), 2000);
-        }
-    },
-    influence: {
-        renderMazeStep: (stepIndex) => {
-            const gameArea = document.getElementById('gameArea');
-            const choicesDiv = document.getElementById('gameChoices');
-            const maze = JSON.parse(gameArea.dataset.maze);
-            const currentStep = maze[stepIndex];
-
-            gameArea.innerHTML = `<p>${currentStep.text}</p>`;
-            choicesDiv.innerHTML = currentStep.choices.map(choice =>
-                `<button class="choice-btn" onclick="minigameActions.influence.choosePath(${choice.next}, '${choice.type}')">${choice.text}</button>`
-            ).join('');
-
-            if (currentStep.final) {
-                let reward = { happiness: 0, communitySpirit: 0 };
-                if (currentStep.outcome === "success") {
-                    reward.happiness = 15;
-                    reward.communitySpirit = 10;
-                    updateGameDisplay(currentStep.text + " (+15 행복, +10 공동체 정신)");
-                } else {
-                    reward.happiness = -10;
-                    reward.communitySpirit = -5;
-                    updateGameDisplay(currentStep.text + " (-10 행복, -5 공동체 정신)");
-                }
-                updateState(reward);
-                setTimeout(() => gameActions.return_to_intro(), 2000);
-            }
-        },
-        choosePath: (nextStepIndex, type) => {
-            const gameArea = document.getElementById('gameArea');
-            gameArea.dataset.currentStep = nextStepIndex;
-            minigameActions.influence.renderMazeStep(nextStepIndex);
-        }
-    },
-    communication: {
-        submitMatching: () => {
-            const choicesDiv = document.getElementById('gameChoices');
-            const matches = JSON.parse(choicesDiv.dataset.matches);
-            
-            const correctMatches = {
-                "kai": "report",
-                "ella": "talk",
-                "lina": "festival"
-            };
-
-            let isCorrect = true;
-            for (const villagerId in correctMatches) {
-                if (matches[villagerId] !== correctMatches[villagerId]) {
-                    isCorrect = false;
-                    break;
-                }
-            }
-
-            let reward = { empathy: 0, happiness: 0, communitySpirit: 0 };
-            let message = "";
-
-            if (isCorrect) {
-                message = "주민들의 소통 스타일을 정확히 파악하고 적절한 방법을 제시했습니다! (+15 공감, +10 행복, +10 공동체 정신)";
-                reward.empathy = 15;
-                reward.happiness = 10;
-                reward.communitySpirit = 10;
-            } else {
-                message = "소통 방법 매칭이 정확하지 않았습니다. (-5 공감, -5 행복)";
-                reward.empathy = -5;
-                reward.happiness = -5;
-            }
-
-            updateGameDisplay(message);
-            updateState(reward);
-            setTimeout(() => gameActions.return_to_intro(), 2000);
-        }
-    }
+    // This object will now primarily contain helper functions for minigames if needed,
+    // but the core logic will be within the minigames array itself.
+    // For now, it can be empty or removed if no common minigame actions are needed.
 };
 
 // --- Game Actions ---
@@ -890,17 +664,15 @@ const gameActions = {
         if (gameState.dailyActions.minigamePlayed) { updateGameDisplay("오늘의 미니게임은 이미 플레이했습니다."); return; }
         if (!spendActionPoint()) return;
         
-        const minigame = minigames[gameState.day % minigames.length];
+        const minigameIndex = gameState.day % minigames.length; // Select minigame based on day
+        const minigame = minigames[minigameIndex];
         
-        // Set currentScenarioId BEFORE updateState so renderAll knows it's a minigame
         gameState.currentScenarioId = `minigame_${minigame.name}`; 
         
-        // Update state, which will call renderAll. renderAll will skip renderChoices.
-        // updateGameDisplay will be called by play_minigame directly.
         updateState({ dailyActions: { ...gameState.dailyActions, minigamePlayed: true } }); 
         
-        updateGameDisplay(minigame.description); // This should be the one that sets the description
-        minigame.setup(document.getElementById('gameArea'), document.getElementById('gameChoices'));
+        updateGameDisplay(minigame.description);
+        minigame.start(document.getElementById('gameArea'), document.getElementById('gameChoices'));
     }
 };
 
