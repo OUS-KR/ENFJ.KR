@@ -466,7 +466,7 @@ const minigames = [
             gameArea.innerHTML = `<p>${minigames[3].description}</p><p>게임을 시작합니다!</p>`;
             choicesDiv.innerHTML = `<button class="choice-btn" onclick="minigames[3].processAction('endGame')">게임 종료</button>`;
         },
-        render: () {},
+        render: () => {},
         processAction: (actionType) => {
             if (actionType === 'endGame') {
                 minigames[3].end();
