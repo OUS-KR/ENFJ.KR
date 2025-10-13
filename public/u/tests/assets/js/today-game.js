@@ -62,9 +62,11 @@ function loadGameState() {
         let loaded = JSON.parse(savedState);
         // Patch for old save files
         if (!loaded.dailyBonus) loaded.dailyBonus = { gatheringSuccess: 0 };
-        if (!loaded.villages) loaded.villages = { foodStorage: { built: false, durability: 100 }, workshop: { built: false, durability: 100 }, townHall: { built: false, durability: 100 }, library: { built: false, durability: 100 }, forge: { built: false, durability: 100 } };
-        
-        Object.assign(gameState, loaded);
+        if (!loaded.villages) {
+            resetGameState();
+        } else {
+            Object.assign(gameState, loaded);
+        }
 
         if (gameState.lastPlayedDate !== today) {
             gameState.day += 1;
@@ -106,7 +108,7 @@ function renderStats() {
         <p><b>날짜:</b> ${gameState.day}일</p>
         <p><b>행동력:</b> ${gameState.actionPoints}/${gameState.maxActionPoints}</p>
         <p><b>공감:</b> ${gameState.empathy} | <b>행복:</b> ${gameState.happiness} | <b>공동체:</b> ${gameState.communitySpirit}</p>
-        <p><b>자원:</b> 식량 ${gameState.resources.food}, 나무 ${gameState.resources.wood}, 돌 ${gameState.resources.stone}</p>
+        <p><b>자원:</b> 식량 ${gameState.resources.food}, 나무 ${gameState.resources.wood}, 돌 ${gameState.resources.stone}, 희귀광물 ${gameState.resources.rare_minerals || 0}</p>
         <p><b>도구 레벨:</b> ${gameState.toolsLevel}</p>
         <p><b>마을 주민 (${gameState.villagers.length}/${gameState.maxVillagers}):</b></p>
         <ul>${villagerListHtml}</ul>
@@ -140,6 +142,8 @@ function renderChoices(choices) {
 }
 
 function renderAll() {
+    const desc = document.getElementById('gameDescription');
+    if (desc) desc.style.display = 'none';
     renderStats();
     const scenario = gameScenarios[gameState.currentScenarioId] || gameScenarios.intro;
     updateGameDisplay(scenario.text);
