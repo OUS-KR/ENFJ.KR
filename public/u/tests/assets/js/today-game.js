@@ -86,11 +86,13 @@ function loadGameState() {
         let loaded = JSON.parse(savedState);
         // Patch for old save files
         if (!loaded.dailyBonus) loaded.dailyBonus = { gatheringSuccess: 0 };
-        if (!loaded.villages) {
-            resetGameState(); // If villages object is missing, reset entire game
-        } else {
-            Object.assign(gameState, loaded);
+        if (!loaded.villages || loaded.villages.length === 0) {
+            loaded.villagers = [
+                { id: "ella", name: "엘라", personality: "낙천적", skill: "농업", trust: 70 },
+                { id: "kai", name: "카이", personality: "현실적", skill: "벌목", trust: 60 }
+            ];
         }
+        Object.assign(gameState, loaded);
 
         if (gameState.lastPlayedDate !== today) {
             gameState.day += 1;
