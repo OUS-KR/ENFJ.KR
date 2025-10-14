@@ -401,6 +401,127 @@ const meetingOutcomes = [
     }
 ];
 
+const exploreOutcomes = [
+    {
+        condition: (gs) => gs.resources.food < 20,
+        weight: 30,
+        effect: (gs) => {
+            const foodGain = getRandomValue(10, 5);
+            return {
+                changes: { resources: { ...gs.resources, food: gs.resources.food + foodGain } },
+                message: `숲을 탐색하여 식량을 발견했습니다! (+${foodGain} 식량)`
+            };
+        }
+    },
+    {
+        condition: (gs) => gs.resources.wood < 20,
+        weight: 25,
+        effect: (gs) => {
+            const woodGain = getRandomValue(10, 5);
+            return {
+                changes: { resources: { ...gs.resources, wood: gs.resources.wood + woodGain } },
+                message: `숲에서 쓸만한 나무를 발견했습니다! (+${woodGain} 나무)`
+            };
+        }
+    },
+    {
+        condition: (gs) => gs.happiness < 40,
+        weight: 20,
+        effect: (gs) => {
+            const happinessGain = getRandomValue(10, 3);
+            return {
+                changes: { happiness: gs.happiness + happinessGain },
+                message: `아름다운 풍경을 보며 마음의 평화를 얻었습니다. (+${happinessGain} 행복)`
+            };
+        }
+    },
+    {
+        condition: (gs) => true, // Default outcome
+        weight: 25,
+        effect: (gs) => {
+            const empathyGain = getRandomValue(5, 2);
+            return {
+                changes: { empathy: gs.empathy + empathyGain },
+                message: `마을 주변을 탐색하며 새로운 영감을 얻었습니다. (+${empathyGain} 공감)`
+            };
+        }
+    },
+    { // Negative outcome as mentioned in the log for 'explore_lost'
+        condition: (gs) => currentRandFn() < 0.1, // 10% chance
+        weight: 10,
+        effect: (gs) => {
+            const actionLoss = getRandomValue(2, 1);
+            const happinessLoss = getRandomValue(5, 2);
+            return {
+                changes: { actionPoints: gs.actionPoints - actionLoss, happiness: gs.happiness - happinessLoss },
+                message: `길을 잃어 헤매다 행동력을 소모하고 행복도가 감소했습니다. (-${actionLoss} 행동력, -${happinessLoss} 행복)`
+            };
+        }
+    }
+];
+
+const talkOutcomes = [
+    {
+        condition: (gs, villager) => villager.trust < 60,
+        weight: 40,
+        effect: (gs, villager) => {
+            const trustGain = getRandomValue(10, 5);
+            const empathyGain = getRandomValue(5, 2);
+            const updatedVillagers = gs.villagers.map(v => v.id === villager.id ? { ...v, trust: Math.min(100, v.trust + trustGain) } : v);
+            return {
+                changes: { villagers: updatedVillagers, empathy: gs.empathy + empathyGain },
+                message: `${villager.name}${getWaGwaParticle(villager.name)} 깊은 대화를 나누며 신뢰를 얻었습니다. (+${trustGain} ${villager.name} 신뢰도, +${empathyGain} 공감)`
+            };
+        }
+    },
+    {
+        condition: (gs, villager) => villager.personality === "낙천적",
+        weight: 20,
+        effect: (gs, villager) => {
+            const happinessGain = getRandomValue(10, 3);
+            return {
+                changes: { happiness: gs.happiness + happinessGain },
+                message: `${villager.name}${getWaGwaParticle(villager.name)} 즐거운 대화를 나누며 행복도가 상승했습니다. (+${happinessGain} 행복)`
+            };
+        }
+    },
+    {
+        condition: (gs, villager) => villager.skill === "농업",
+        weight: 15,
+        effect: (gs, villager) => {
+            const foodGain = getRandomValue(5, 2);
+            return {
+                changes: { resources: { ...gs.resources, food: gs.resources.food + foodGain } },
+                message: `${villager.name}${getWaGwaParticle(villager.name)} 농업에 대한 유용한 정보를 얻어 식량을 추가로 확보했습니다. (+${foodGain} 식량)`
+            };
+        }
+    },
+    {
+        condition: (gs, villager) => true, // Default outcome
+        weight: 25,
+        effect: (gs, villager) => {
+            const communityGain = getRandomValue(5, 2);
+            return {
+                changes: { communitySpirit: gs.communitySpirit + communityGain },
+                message: `${villager.name}${getWaGwaParticle(villager.name)} 소소한 이야기를 나누며 공동체 정신이 조금 더 단단해졌습니다. (+${communityGain} 공동체 정신)`
+            };
+        }
+    },
+    { // Negative outcome as mentioned in the log for 'talk_misunderstanding'
+        condition: (gs, villager) => currentRandFn() < 0.05, // 5% chance
+        weight: 5,
+        effect: (gs, villager) => {
+            const trustLoss = getRandomValue(10, 3);
+            const happinessLoss = getRandomValue(5, 2);
+            const updatedVillagers = gs.villagers.map(v => v.id === villager.id ? { ...v, trust: Math.max(0, v.trust - trustLoss) } : v);
+            return {
+                changes: { villagers: updatedVillagers, happiness: gs.happiness - happinessLoss },
+                message: `${villager.name}${getWaGwaParticle(villager.name)} 대화 중 오해를 사서 신뢰도와 행복도가 감소했습니다. (-${trustLoss} ${villager.name} 신뢰도, -${happinessLoss} 행복)`
+            };
+        }
+    }
+];
+
 
 
 function calculateMinigameReward(minigameName, score) {
