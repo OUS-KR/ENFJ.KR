@@ -425,9 +425,9 @@ const meetingOutcomes = [
             };
         }
     },
-    { // New negative outcome: unproductive meeting
-        condition: () => true, // Always possible
-        weight: 15,
+    { // New negative outcome: unproductive meeting - more likely if low community spirit or empathy
+        condition: (gs) => gs.communitySpirit < 40 || gs.empathy < 40,
+        weight: 25, // Increased weight when conditions met
         effect: (gs) => {
             const happinessLoss = getRandomValue(5, 2);
             const communityLoss = getRandomValue(5, 2);
@@ -484,9 +484,9 @@ const exploreOutcomes = [
             };
         }
     },
-    { // Negative outcome: getting lost
-        condition: () => true, // Always possible
-        weight: 15, // Increased weight
+    { // Negative outcome: getting lost - more likely if low action points or happiness
+        condition: (gs) => gs.actionPoints < 5 || gs.happiness < 30,
+        weight: 20, // Increased weight when conditions met
         effect: (gs) => {
             const actionLoss = getRandomValue(2, 1);
             const happinessLoss = getRandomValue(5, 2);
@@ -496,9 +496,9 @@ const exploreOutcomes = [
             };
         }
     },
-    { // New negative outcome: minor setback
-        condition: () => true, // Always possible
-        weight: 10,
+    { // Negative outcome: minor setback - more likely if low empathy
+        condition: (gs) => gs.empathy < 30,
+        weight: 15, // Increased weight when conditions met
         effect: (gs) => {
             const empathyLoss = getRandomValue(5, 2);
             return {
@@ -556,9 +556,9 @@ const talkOutcomes = [
             };
         }
     },
-    { // Negative outcome: misunderstanding
-        condition: () => true, // Always possible
-        weight: 15, // Increased weight
+    { // Negative outcome: misunderstanding - more likely if low community spirit or villager trust
+        condition: (gs, villager) => gs.communitySpirit < 40 || villager.trust < 40,
+        weight: 20, // Increased weight when conditions met
         effect: (gs, villager) => {
             const trustLoss = getRandomValue(10, 3);
             const happinessLoss = getRandomValue(5, 2);
@@ -569,11 +569,11 @@ const talkOutcomes = [
             };
         }
     },
-    { // New negative outcome: unproductive conversation
-        condition: () => true, // Always possible
-        weight: 10,
+    { // Negative outcome: unproductive conversation - more likely if low happiness
+        condition: (gs) => gs.happiness < 30,
+        weight: 15, // Increased weight when conditions met
         effect: (gs, villager) => {
-            const actionLoss = getRandomValue(1, 0); // Small chance of losing an action point
+            const actionLoss = getRandomValue(1, 0);
             return {
                 changes: { actionPoints: gs.actionPoints - actionLoss },
                 message: `${villager.name}${getWaGwaParticle(villager.name)} 대화가 길어졌지만, 특별한 소득은 없었습니다. (-${actionLoss} 행동력)`
