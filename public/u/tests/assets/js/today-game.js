@@ -335,6 +335,32 @@ const gameScenarios = {
     "disease_result": {
         text: "", // This will be set dynamically
         choices: [{ text: "확인", action: "return_to_intro" }]
+    },
+    "daily_event_resource_discovery": {
+        text: "", // Set by onTrigger
+        choices: [{ text: "확인", action: "return_to_intro" }]
+    },
+    "daily_event_rumors": {
+        text: "마을에 이상한 소문이 돌고 있습니다. 주민들의 표정이 좋지 않습니다. 어떻게 하시겠습니까?",
+        choices: [
+            { text: "소문의 근원을 조사한다 (행동력 1 소모)", action: "investigate_rumors" },
+            { text: "소문을 무시한다", action: "ignore_rumors" }
+        ]
+    },
+    "rumors_result": {
+        text: "", // Set dynamically
+        choices: [{ text: "확인", action: "return_to_intro" }]
+    },
+    "daily_event_wild_animal_attack": {
+        text: "밤새 야생 동물이 마을을 습격했습니다! 자원 창고가 파손되고 있습니다. 어떻게 대응하시겠습니까?",
+        choices: [
+            { text: "주민들과 함께 방어한다 (나무 10, 돌 10 소모)", action: "defend_village" },
+            { text: "자원 일부를 포기하고 동물을 쫓아낸다 (식량 20 소모)", action: "sacrifice_resources" }
+        ]
+    },
+    "wild_animal_attack_result": {
+        text: "", // Set dynamically
+        choices: [{ text: "확인", action: "return_to_intro" }]
     }
 };
 
@@ -1167,6 +1193,65 @@ const gameActions = {
         
         updateGameDisplay(minigame.description);
         minigame.start(document.getElementById('gameArea'), document.getElementById('gameChoices'));
+    },
+    investigate_rumors: () => {
+        if (!spendActionPoint()) return;
+        const rand = currentRandFn();
+        let message = "";
+        let changes = {};
+        if (rand < 0.6) {
+            const communityGain = getRandomValue(10, 3);
+            message = `소문의 근원을 조사한 결과, 오해였음이 밝혀졌습니다. 주민들의 공동체 정신이 회복됩니다. (+${communityGain} 공동체 정신)`;
+            changes.communitySpirit = gameState.communitySpirit + communityGain;
+        } else {
+            const happinessLoss = getRandomValue(10, 3);
+            message = `소문을 조사하려 했지만, 오히려 불신만 키웠습니다. 주민들의 행복도가 감소합니다. (-${happinessLoss} 행복)`;
+            changes.happiness = gameState.happiness - happinessLoss;
+        }
+        updateState({ ...changes, currentScenarioId: 'rumors_result' }, message);
+    },
+    ignore_rumors: () => {
+        const communityLoss = getRandomValue(15, 5);
+        const trustLoss = getRandomValue(10, 3);
+        const updatedVillagers = gameState.villagers.map(v => ({ ...v, trust: Math.max(0, v.trust - trustLoss) }));
+        const message = `소문을 무시했습니다. 불신이 커져 공동체 정신과 주민들의 신뢰도가 하락합니다. (-${communityLoss} 공동체 정신, -${trustLoss} 주민 신뢰도)`;
+        updateState({ communitySpirit: gameState.communitySpirit - communityLoss, villagers: updatedVillagers, currentScenarioId: 'rumors_result' }, message);
+    },
+    defend_village: () => {
+        if (!spendActionPoint()) return;
+        const cost = { wood: 10, stone: 10 };
+        let message = "";
+        let changes = {};
+        if (gameState.resources.wood >= cost.wood && gameState.resources.stone >= cost.stone) {
+            const happinessGain = getRandomValue(15, 5);
+            const communityGain = getRandomValue(10, 3);
+            message = `주민들과 힘을 합쳐 야생 동물을 물리쳤습니다! 마을의 행복과 공동체 정신이 상승합니다. (+${happinessGain} 행복, +${communityGain} 공동체 정신)`;
+            changes.happiness = gameState.happiness + happinessGain;
+            changes.communitySpirit = gameState.communitySpirit + communityGain;
+            changes.resources = { ...gameState.resources, wood: gameState.resources.wood - cost.wood, stone: gameState.resources.stone - cost.stone };
+        } else {
+            const happinessLoss = getRandomValue(10, 3);
+            message = `자원이 부족하여 제대로 방어하지 못했습니다. 주민들의 행복도가 감소합니다. (-${happinessLoss} 행복)`;
+            changes.happiness = gameState.happiness - happinessLoss;
+        }
+        updateState({ ...changes, currentScenarioId: 'wild_animal_attack_result' }, message);
+    },
+    sacrifice_resources: () => {
+        if (!spendActionPoint()) return;
+        const cost = { food: 20 };
+        let message = "";
+        let changes = {};
+        if (gameState.resources.food >= cost.food) {
+            const happinessLoss = getRandomValue(5, 2);
+            message = `야생 동물을 쫓아내기 위해 식량 일부를 포기했습니다. 주민들의 행복도가 약간 감소합니다. (-${happinessLoss} 행복)`;
+            changes.happiness = gameState.happiness - happinessLoss;
+            changes.resources = { ...gameState.resources, food: gameState.resources.food - cost.food };
+        } else {
+            const communityLoss = getRandomValue(10, 3);
+            message = `포기할 식량조차 부족하여 마을이 큰 피해를 입었습니다. 공동체 정신이 하락합니다. (-${communityLoss} 공동체 정신)`;
+            changes.communitySpirit = gameState.communitySpirit - communityLoss;
+        }
+        updateState({ ...changes, currentScenarioId: 'wild_animal_attack_result' }, message);
     }
 };
 
@@ -1259,7 +1344,15 @@ const weightedDailyEvents = [
     { id: "daily_event_neighbor_request", weight: 5, condition: () => gameState.day > 15 && gameState.resources.food > 100 },
     { id: "daily_event_raiders", weight: 15, condition: () => gameState.resources.food > 30 || gameState.resources.wood > 30 || gameState.resources.stone > 30 },
     { id: "daily_event_serious_conflict", weight: 10, condition: () => gameState.villagers.length >= 3 && gameState.communitySpirit < 50 },
-    { id: "daily_event_disease", weight: 5, condition: () => gameState.happiness < 40 || gameState.resources.food < 20 }
+    { id: "daily_event_disease", weight: 5, condition: () => gameState.happiness < 40 || gameState.resources.food < 20 },
+    { id: "daily_event_resource_discovery", weight: 8, condition: () => gameState.day > 5, onTrigger: () => {
+        const resourceType = currentRandFn() < 0.5 ? "rare_minerals" : (currentRandFn() < 0.5 ? "food" : "wood");
+        const amount = getRandomValue(10, 5);
+        gameState.resources[resourceType] += amount;
+        gameScenarios.daily_event_resource_discovery.text = `탐색 중 숨겨진 ${resourceType === "food" ? "식량" : resourceType === "wood" ? "목재" : "희귀 광물"} 저장소를 발견했습니다! (+${amount} ${resourceType === "food" ? "식량" : resourceType === "wood" ? "목재" : "희귀 광물"})`;
+    }},
+    { id: "daily_event_rumors", weight: 12, condition: () => gameState.villagers.length >= 3 },
+    { id: "daily_event_wild_animal_attack", weight: 10, condition: () => gameState.resources.food > 20 || gameState.resources.wood > 20 || gameState.resources.stone > 20 }
 ];
 
 function processDailyEvents() {
