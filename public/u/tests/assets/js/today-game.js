@@ -184,7 +184,7 @@ function renderChoices(choices) {
         dynamicChoices = choices ? [...choices] : [];
     }
 
-    choicesDiv.innerHTML = dynamicChoices.map(choice => `<button class="choice-btn" data-action="${choice.action}" data-params='${JSON.stringify(choice.params || {})}' >${choice.text}</button>`).join('');
+    choicesDiv.innerHTML = dynamicChoices.map(choice => `<button class="choice-btn" data-action="${choice.action}" data-params='${JSON.stringify(choice.params || {})}'>${choice.text}</button>`).join('');
     choicesDiv.querySelectorAll('.choice-btn').forEach(button => {
         button.addEventListener('click', () => {
             const action = button.dataset.action;
@@ -362,6 +362,112 @@ const meetingOutcomes = [
             return {
                 changes: { communitySpirit: gs.communitySpirit + communityGain },
                 message: `평범한 마을 회의였지만, 모두가 한자리에 모여 의견을 나눈 것만으로도 의미가 있었습니다. (+${communityGain} 공동체 정신)`
+            };
+        }
+    }
+];
+
+const exploreOutcomes = [
+    {
+        condition: (gs) => gs.resources.food < 20,
+        weight: 30,
+        effect: (gs) => {
+            const foodGain = getRandomValue(5, 2);
+            return {
+                changes: { resources: { ...gs.resources, food: gs.resources.food + foodGain } },
+                message: `식량이 부족한 상황에서 숲을 탐색하던 중, 풍부한 식량 자원을 발견했습니다! (+${foodGain} 식량)`
+            };
+        }
+    },
+    {
+        condition: (gs) => gs.resources.wood < 20,
+        weight: 30,
+        effect: (gs) => {
+            const woodGain = getRandomValue(5, 2);
+            return {
+                changes: { resources: { ...gs.resources, wood: gs.resources.wood + woodGain } },
+                message: `목재가 부족한 상황에서 숲을 탐색하던 중, 튼튼한 나무들을 발견했습니다! (+${woodGain} 나무)`
+            };
+        }
+    },
+    {
+        condition: (gs) => gs.empathy > 60,
+        weight: 20,
+        effect: (gs) => {
+            const happinessGain = getRandomValue(5, 2);
+            return {
+                changes: { happiness: gs.happiness + happinessGain },
+                message: `마을 외곽을 둘러보던 중, 아름다운 풍경에 마음이 평화로워집니다. (+${happinessGain} 행복)`
+            };
+        }
+    },
+    {
+        condition: (gs) => gs.toolsLevel < 1,
+        weight: 20,
+        effect: (gs) => {
+            const happinessLoss = getRandomValue(5, 2);
+            return {
+                changes: { happiness: gs.happiness - happinessLoss },
+                message: `탐색 중 예상치 못한 위험에 노출되었습니다. 장비가 좋지 않아 위험을 피하기 어려웠습니다. (-${happinessLoss} 행복)`
+            };
+        }
+    },
+    {
+        condition: () => true, // Default
+        weight: 10,
+        effect: (gs) => {
+            return {
+                changes: {},
+                message: `마을 주변을 둘러보았지만, 특별한 것은 발견하지 못했습니다.`
+            };
+        }
+    }
+];
+
+const talkOutcomes = [
+    {
+        condition: (gs, villager) => villager.trust < 50 && gs.empathy > 60,
+        weight: 30,
+        effect: (gs, villager) => {
+            const trustGain = getRandomValue(15, 5);
+            const empathyGain = getRandomValue(5, 2);
+            const updatedVillagers = gs.villagers.map(v => v.id === villager.id ? { ...v, trust: Math.min(100, v.trust + trustGain) } : v);
+            return {
+                changes: { villagers: updatedVillagers, empathy: gs.empathy + empathyGain },
+                message: `${villager.name}의 깊은 고민을 들어주고 진심으로 공감해주었습니다. ${villager.name}의 신뢰도가 크게 상승하고 당신의 공감 지수도 높아졌습니다. (+${trustGain} ${villager.name} 신뢰도, +${empathyGain} 공감)`
+            };
+        }
+    },
+    {
+        condition: (gs, villager) => villager.trust > 70 && gs.communitySpirit > 60,
+        weight: 25,
+        effect: (gs, villager) => {
+            const communityGain = getRandomValue(10, 3);
+            return {
+                changes: { communitySpirit: gs.communitySpirit + communityGain },
+                message: `${villager.name}와(과) 마을 발전에 대한 건설적인 아이디어를 나누었습니다. 공동체 정신이 더욱 강화됩니다. (+${communityGain} 공동체 정신)`
+            };
+        }
+    },
+    {
+        condition: (gs, villager) => villager.trust < 70,
+        weight: 20,
+        effect: (gs, villager) => {
+            const happinessLoss = getRandomValue(5, 2);
+            return {
+                changes: { happiness: gs.happiness - happinessLoss },
+                message: `${villager.name}의 사소한 불평을 들어주었습니다. 당신의 행복도가 약간 감소합니다. (-${happinessLoss} 행복)`
+            };
+        }
+    },
+    {
+        condition: () => true, // Default
+        weight: 10,
+        effect: (gs, villager) => {
+            const happinessGain = getRandomValue(5, 2);
+            return {
+                changes: { happiness: gs.happiness + happinessGain },
+                message: `${villager.name}와(과) 즐거운 대화를 나누었습니다. (+${happinessGain} 행복)`
             };
         }
     }
@@ -668,11 +774,11 @@ const exploreOutcomes = [
         }
     },
     {
-        condition: () => true, // Default 
+        condition: () => true, // Default
         weight: 10,
         effect: (gs) => {
             return {
-                changes: {}, 
+                changes: {},
                 message: `마을 주변을 둘러보았지만, 특별한 것은 발견하지 못했습니다.`
             };
         }
@@ -716,7 +822,7 @@ const talkOutcomes = [
         }
     },
     {
-        condition: () => true, // Default 
+        condition: () => true, // Default
         weight: 10,
         effect: (gs, villager) => {
             const happinessGain = getRandomValue(5, 2);
@@ -1009,7 +1115,7 @@ const gameActions = {
             message = `마을 회관을 건설했습니다! (+${communityGain} 공동체 정신, +${happinessGain} 행복)`;
             changes.communitySpirit = gameState.communitySpirit + communityGain;
             changes.happiness = gameState.happiness + happinessGain;
-            changes.resources = { ...gameState.resources, wood: gameState.resources.wood - cost.wood, stone: gameState.resources.stone - cost.stone, food: gameState.resources.food - cost.food };
+            changes.resources = { ...gameState.resources, wood: gameState.resources.wood - cost.wood, stone: gameState.resources.stone - cost.food, food: gameState.resources.food - cost.food };
         } else {
             message = "자원이 부족하여 건설할 수 없습니다.";
         }
