@@ -273,6 +273,28 @@ const gameScenarios = {
             { text: "우리 마을도 여유가 없다며 거절한다", action: "decline_neighbor" }
         ]
     },
+    "daily_event_raiders": {
+        text: "마을 외곽에 자원 약탈자들이 나타났습니다! 그들은 당신의 자원 일부를 요구합니다. 어떻게 하시겠습니까?",
+        choices: [
+            { text: "요구를 들어준다 (자원 손실)", action: "raiders_pay" },
+            { text: "싸워서 물리친다 (주민 행복/공동체 정신 위험)", action: "raiders_fight" }
+        ]
+    },
+    "daily_event_serious_conflict": {
+        text: "마을 주민들 사이에 심각한 갈등이 발생했습니다. 당신의 중재가 시급합니다.",
+        choices: [
+            { text: "적극적으로 중재한다 (행동력 소모)", action: "serious_conflict_mediate" },
+            { text: "한쪽 편을 들어준다 (다른 쪽 신뢰도 하락)", action: "serious_conflict_take_side" },
+            { text: "갈등을 무시한다 (큰 페널티)", action: "serious_conflict_ignore" }
+        ]
+    },
+    "daily_event_disease": {
+        text: "마을에 원인 모를 전염병이 돌기 시작했습니다. 주민들의 행복도가 떨어지고 있습니다.",
+        choices: [
+            { text: "치료에 집중한다 (자원 소모, 행복도 회복)", action: "disease_treat" },
+            { text: "자연적으로 해결되기를 기다린다 (행복도 추가 하락 위험)", action: "disease_ignore" }
+        ]
+    },
     "game_over_empathy": { text: "마을의 공감 지수가 너무 낮아 주민들이 서로를 이해하지 못하고 떠나기 시작했습니다. 마을은 황폐해졌습니다.", choices: [], final: true },
     "game_over_happiness": { text: "주민들의 행복도가 바닥을 쳤습니다. 불만이 폭주하고, 당신의 리더십은 더 이상 통하지 않습니다.", choices: [], final: true },
     "game_over_communitySpirit": { text: "마을의 공동체 정신이 무너져 주민들이 각자의 이익만을 추구합니다. 더 이상 마을이라 부를 수 없습니다.", choices: [], final: true },
@@ -299,6 +321,18 @@ const gameScenarios = {
         choices: [{ text: "확인", action: "show_facility_options" }] // Return to facility management menu
     },
     "conflict_resolution_result": {
+        text: "", // This will be set dynamically
+        choices: [{ text: "확인", action: "return_to_intro" }]
+    },
+    "raiders_result": {
+        text: "", // This will be set dynamically
+        choices: [{ text: "확인", action: "return_to_intro" }]
+    },
+    "serious_conflict_result": {
+        text: "", // This will be set dynamically
+        choices: [{ text: "확인", action: "return_to_intro" }]
+    },
+    "disease_result": {
         text: "", // This will be set dynamically
         choices: [{ text: "확인", action: "return_to_intro" }]
     }
@@ -367,111 +401,7 @@ const meetingOutcomes = [
     }
 ];
 
-const exploreOutcomes = [
-    {
-        condition: (gs) => gs.resources.food < 20,
-        weight: 30,
-        effect: (gs) => {
-            const foodGain = getRandomValue(5, 2);
-            return {
-                changes: { resources: { ...gs.resources, food: gs.resources.food + foodGain } },
-                message: `식량이 부족한 상황에서 숲을 탐색하던 중, 풍부한 식량 자원을 발견했습니다! (+${foodGain} 식량)`
-            };
-        }
-    },
-    {
-        condition: (gs) => gs.resources.wood < 20,
-        weight: 30,
-        effect: (gs) => {
-            const woodGain = getRandomValue(5, 2);
-            return {
-                changes: { resources: { ...gs.resources, wood: gs.resources.wood + woodGain } },
-                message: `목재가 부족한 상황에서 숲을 탐색하던 중, 튼튼한 나무들을 발견했습니다! (+${woodGain} 나무)`
-            };
-        }
-    },
-    {
-        condition: (gs) => gs.empathy > 60,
-        weight: 20,
-        effect: (gs) => {
-            const happinessGain = getRandomValue(5, 2);
-            return {
-                changes: { happiness: gs.happiness + happinessGain },
-                message: `마을 외곽을 둘러보던 중, 아름다운 풍경에 마음이 평화로워집니다. (+${happinessGain} 행복)`
-            };
-        }
-    },
-    {
-        condition: (gs) => gs.toolsLevel < 1,
-        weight: 20,
-        effect: (gs) => {
-            const happinessLoss = getRandomValue(5, 2);
-            return {
-                changes: { happiness: gs.happiness - happinessLoss },
-                message: `탐색 중 예상치 못한 위험에 노출되었습니다. 장비가 좋지 않아 위험을 피하기 어려웠습니다. (-${happinessLoss} 행복)`
-            };
-        }
-    },
-    {
-        condition: () => true, // Default
-        weight: 10,
-        effect: (gs) => {
-            return {
-                changes: {},
-                message: `마을 주변을 둘러보았지만, 특별한 것은 발견하지 못했습니다.`
-            };
-        }
-    }
-];
 
-const talkOutcomes = [
-    {
-        condition: (gs, villager) => villager.trust < 50 && gs.empathy > 60,
-        weight: 30,
-        effect: (gs, villager) => {
-            const trustGain = getRandomValue(15, 5);
-            const empathyGain = getRandomValue(5, 2);
-            const updatedVillagers = gs.villagers.map(v => v.id === villager.id ? { ...v, trust: Math.min(100, v.trust + trustGain) } : v);
-            return {
-                changes: { villagers: updatedVillagers, empathy: gs.empathy + empathyGain },
-                message: `${villager.name}의 깊은 고민을 들어주고 진심으로 공감해주었습니다. ${villager.name}의 신뢰도가 크게 상승하고 당신의 공감 지수도 높아졌습니다. (+${trustGain} ${villager.name} 신뢰도, +${empathyGain} 공감)`
-            };
-        }
-    },
-    {
-        condition: (gs, villager) => villager.trust > 70 && gs.communitySpirit > 60,
-        weight: 25,
-        effect: (gs, villager) => {
-            const communityGain = getRandomValue(10, 3);
-            return {
-                changes: { communitySpirit: gs.communitySpirit + communityGain },
-                message: `${villager.name}와(과) 마을 발전에 대한 건설적인 아이디어를 나누었습니다. 공동체 정신이 더욱 강화됩니다. (+${communityGain} 공동체 정신)`
-            };
-        }
-    },
-    {
-        condition: (gs, villager) => villager.trust < 70,
-        weight: 20,
-        effect: (gs, villager) => {
-            const happinessLoss = getRandomValue(5, 2);
-            return {
-                changes: { happiness: gs.happiness - happinessLoss },
-                message: `${villager.name}의 사소한 불평을 들어주었습니다. 당신의 행복도가 약간 감소합니다. (-${happinessLoss} 행복)`
-            };
-        }
-    },
-    {
-        condition: () => true, // Default
-        weight: 10,
-        effect: (gs, villager) => {
-            const happinessGain = getRandomValue(5, 2);
-            return {
-                changes: { happiness: gs.happiness + happinessGain },
-                message: `${villager.name}와(과) 즐거운 대화를 나누었습니다. (+${happinessGain} 행복)`
-            };
-        }
-    }
-];
 
 function calculateMinigameReward(minigameName, score) {
     let rewards = { empathy: 0, happiness: 0, communitySpirit: 0, message: "" };
@@ -727,112 +657,6 @@ function spendActionPoint() {
     updateState({ actionPoints: gameState.actionPoints - 1 });
     return true;
 }
-
-const exploreOutcomes = [
-    {
-        condition: (gs) => gs.resources.food < 20,
-        weight: 30,
-        effect: (gs) => {
-            const foodGain = getRandomValue(5, 2);
-            return {
-                changes: { resources: { ...gs.resources, food: gs.resources.food + foodGain } },
-                message: `식량이 부족한 상황에서 숲을 탐색하던 중, 풍부한 식량 자원을 발견했습니다! (+${foodGain} 식량)`
-            };
-        }
-    },
-    {
-        condition: (gs) => gs.resources.wood < 20,
-        weight: 30,
-        effect: (gs) => {
-            const woodGain = getRandomValue(5, 2);
-            return {
-                changes: { resources: { ...gs.resources, wood: gs.resources.wood + woodGain } },
-                message: `목재가 부족한 상황에서 숲을 탐색하던 중, 튼튼한 나무들을 발견했습니다! (+${woodGain} 나무)`
-            };
-        }
-    },
-    {
-        condition: (gs) => gs.empathy > 60,
-        weight: 20,
-        effect: (gs) => {
-            const happinessGain = getRandomValue(5, 2);
-            return {
-                changes: { happiness: gs.happiness + happinessGain },
-                message: `마을 외곽을 둘러보던 중, 아름다운 풍경에 마음이 평화로워집니다. (+${happinessGain} 행복)`
-            };
-        }
-    },
-    {
-        condition: (gs) => gs.toolsLevel < 1,
-        weight: 20,
-        effect: (gs) => {
-            const happinessLoss = getRandomValue(5, 2);
-            return {
-                changes: { happiness: gs.happiness - happinessLoss },
-                message: `탐색 중 예상치 못한 위험에 노출되었습니다. 장비가 좋지 않아 위험을 피하기 어려웠습니다. (-${happinessLoss} 행복)`
-            };
-        }
-    },
-    {
-        condition: () => true, // Default
-        weight: 10,
-        effect: (gs) => {
-            return {
-                changes: {},
-                message: `마을 주변을 둘러보았지만, 특별한 것은 발견하지 못했습니다.`
-            };
-        }
-    }
-];
-
-const talkOutcomes = [
-    {
-        condition: (gs, villager) => villager.trust < 50 && gs.empathy > 60,
-        weight: 30,
-        effect: (gs, villager) => {
-            const trustGain = getRandomValue(15, 5);
-            const empathyGain = getRandomValue(5, 2);
-            const updatedVillagers = gs.villagers.map(v => v.id === villager.id ? { ...v, trust: Math.min(100, v.trust + trustGain) } : v);
-            return {
-                changes: { villagers: updatedVillagers, empathy: gs.empathy + empathyGain },
-                message: `${villager.name}의 깊은 고민을 들어주고 진심으로 공감해주었습니다. ${villager.name}의 신뢰도가 크게 상승하고 당신의 공감 지수도 높아졌습니다. (+${trustGain} ${villager.name} 신뢰도, +${empathyGain} 공감)`
-            };
-        }
-    },
-    {
-        condition: (gs, villager) => villager.trust > 70 && gs.communitySpirit > 60,
-        weight: 25,
-        effect: (gs, villager) => {
-            const communityGain = getRandomValue(10, 3);
-            return {
-                changes: { communitySpirit: gs.communitySpirit + communityGain },
-                message: `${villager.name}와(과) 마을 발전에 대한 건설적인 아이디어를 나누었습니다. 공동체 정신이 더욱 강화됩니다. (+${communityGain} 공동체 정신)`
-            };
-        }
-    },
-    {
-        condition: (gs, villager) => villager.trust < 70,
-        weight: 20,
-        effect: (gs, villager) => {
-            const happinessLoss = getRandomValue(5, 2);
-            return {
-                changes: { happiness: gs.happiness - happinessLoss },
-                message: `${villager.name}의 사소한 불평을 들어주었습니다. 당신의 행복도가 약간 감소합니다. (-${happinessLoss} 행복)`
-            };
-        }
-    },
-    {
-        condition: () => true, // Default
-        weight: 10,
-        effect: (gs, villager) => {
-            const happinessGain = getRandomValue(5, 2);
-            return {
-                changes: { happiness: gs.happiness + happinessGain },
-                message: `${villager.name}와(과) 즐거운 대화를 나누었습니다. (+${happinessGain} 행복)`
-            };
-        }
-    }
-];
 
 const gameActions = {
     explore: () => {
@@ -1115,7 +939,7 @@ const gameActions = {
             message = `마을 회관을 건설했습니다! (+${communityGain} 공동체 정신, +${happinessGain} 행복)`;
             changes.communitySpirit = gameState.communitySpirit + communityGain;
             changes.happiness = gameState.happiness + happinessGain;
-            changes.resources = { ...gameState.resources, wood: gameState.resources.wood - cost.wood, stone: gameState.resources.stone - cost.food, food: gameState.resources.food - cost.food };
+            changes.resources = { ...gameState.resources, wood: gameState.resources.wood - cost.wood, stone: gameState.resources.stone - cost.stone, food: gameState.resources.food - cost.food };
         } else {
             message = "자원이 부족하여 건설할 수 없습니다.";
         }
@@ -1311,7 +1135,10 @@ const weightedDailyEvents = [
     { id: "daily_event_injured_animal", weight: 15, condition: () => true },
     { id: "daily_event_storyteller", weight: 10, condition: () => true },
     { id: "daily_event_festival_prep", weight: 10, condition: () => gameState.day > 10 && gameState.resources.food > 50 && gameState.resources.wood > 50 },
-    { id: "daily_event_neighbor_request", weight: 5, condition: () => gameState.day > 15 && gameState.resources.food > 100 }
+    { id: "daily_event_neighbor_request", weight: 5, condition: () => gameState.day > 15 && gameState.resources.food > 100 },
+    { id: "daily_event_raiders", weight: 15, condition: () => gameState.resources.food > 30 || gameState.resources.wood > 30 || gameState.resources.stone > 30 },
+    { id: "daily_event_serious_conflict", weight: 10, condition: () => gameState.villagers.length >= 3 && gameState.communitySpirit < 50 },
+    { id: "daily_event_disease", weight: 5, condition: () => gameState.happiness < 40 || gameState.resources.food < 20 }
 ];
 
 function processDailyEvents() {
