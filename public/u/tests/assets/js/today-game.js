@@ -415,13 +415,25 @@ const meetingOutcomes = [
         }
     },
     {
-        condition: () => true, // Default case
+        condition: () => true, // Default positive outcome
         weight: 20,
         effect: (gs) => {
             const communityGain = getRandomValue(5, 2);
             return {
                 changes: { communitySpirit: gs.communitySpirit + communityGain },
                 message: `평범한 마을 회의였지만, 모두가 한자리에 모여 의견을 나눈 것만으로도 의미가 있었습니다. (+${communityGain} 공동체 정신)`
+            };
+        }
+    },
+    { // New negative outcome: unproductive meeting
+        condition: () => true, // Always possible
+        weight: 15,
+        effect: (gs) => {
+            const happinessLoss = getRandomValue(5, 2);
+            const communityLoss = getRandomValue(5, 2);
+            return {
+                changes: { happiness: gs.happiness - happinessLoss, communitySpirit: gs.communitySpirit - communityLoss },
+                message: `회의는 길어졌지만, 의견 차이만 확인하고 끝났습니다. 주민들의 행복과 공동체 정신이 약간 감소했습니다. (-${happinessLoss} 행복, -${communityLoss} 공동체 정신)`
             };
         }
     }
@@ -462,7 +474,7 @@ const exploreOutcomes = [
         }
     },
     {
-        condition: (gs) => true, // Default outcome
+        condition: (gs) => true, // Default positive outcome
         weight: 25,
         effect: (gs) => {
             const empathyGain = getRandomValue(5, 2);
@@ -472,15 +484,26 @@ const exploreOutcomes = [
             };
         }
     },
-    { // Negative outcome as mentioned in the log for 'explore_lost'
-        condition: (gs) => currentRandFn() < 0.1, // 10% chance
-        weight: 10,
+    { // Negative outcome: getting lost
+        condition: () => true, // Always possible
+        weight: 15, // Increased weight
         effect: (gs) => {
             const actionLoss = getRandomValue(2, 1);
             const happinessLoss = getRandomValue(5, 2);
             return {
                 changes: { actionPoints: gs.actionPoints - actionLoss, happiness: gs.happiness - happinessLoss },
                 message: `길을 잃어 헤매다 행동력을 소모하고 행복도가 감소했습니다. (-${actionLoss} 행동력, -${happinessLoss} 행복)`
+            };
+        }
+    },
+    { // New negative outcome: minor setback
+        condition: () => true, // Always possible
+        weight: 10,
+        effect: (gs) => {
+            const empathyLoss = getRandomValue(5, 2);
+            return {
+                changes: { empathy: gs.empathy - empathyLoss },
+                message: `탐색 중 예상치 못한 어려움에 부딪혀 공감 지수가 약간 감소했습니다. (-${empathyLoss} 공감)`
             };
         }
     }
@@ -523,7 +546,7 @@ const talkOutcomes = [
         }
     },
     {
-        condition: (gs, villager) => true, // Default outcome
+        condition: (gs, villager) => true, // Default positive outcome
         weight: 25,
         effect: (gs, villager) => {
             const communityGain = getRandomValue(5, 2);
@@ -533,9 +556,9 @@ const talkOutcomes = [
             };
         }
     },
-    { // Negative outcome as mentioned in the log for 'talk_misunderstanding'
-        condition: (gs, villager) => currentRandFn() < 0.05, // 5% chance
-        weight: 5,
+    { // Negative outcome: misunderstanding
+        condition: () => true, // Always possible
+        weight: 15, // Increased weight
         effect: (gs, villager) => {
             const trustLoss = getRandomValue(10, 3);
             const happinessLoss = getRandomValue(5, 2);
@@ -543,6 +566,17 @@ const talkOutcomes = [
             return {
                 changes: { villagers: updatedVillagers, happiness: gs.happiness - happinessLoss },
                 message: `${villager.name}${getWaGwaParticle(villager.name)} 대화 중 오해를 사서 신뢰도와 행복도가 감소했습니다. (-${trustLoss} ${villager.name} 신뢰도, -${happinessLoss} 행복)`
+            };
+        }
+    },
+    { // New negative outcome: unproductive conversation
+        condition: () => true, // Always possible
+        weight: 10,
+        effect: (gs, villager) => {
+            const actionLoss = getRandomValue(1, 0); // Small chance of losing an action point
+            return {
+                changes: { actionPoints: gs.actionPoints - actionLoss },
+                message: `${villager.name}${getWaGwaParticle(villager.name)} 대화가 길어졌지만, 특별한 소득은 없었습니다. (-${actionLoss} 행동력)`
             };
         }
     }
