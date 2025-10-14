@@ -304,6 +304,69 @@ const gameScenarios = {
     }
 };
 
+const meetingOutcomes = [
+    {
+        condition: (gs) => gs.happiness < 40,
+        weight: 40,
+        effect: (gs) => {
+            const happinessLoss = getRandomValue(10, 4);
+            const communityLoss = getRandomValue(5, 2);
+            return {
+                changes: { happiness: gs.happiness - happinessLoss, communitySpirit: gs.communitySpirit - communityLoss },
+                message: `회의를 시작하자마자 주민들의 불만이 터져 나왔습니다. 낮은 행복도로 인해 분위기가 험악합니다. (-${happinessLoss} 행복, -${communityLoss} 공동체 정신)`
+            };
+        }
+    },
+    {
+        condition: (gs) => gs.communitySpirit > 70 && gs.empathy > 60,
+        weight: 30,
+        effect: (gs) => {
+            const communityGain = getRandomValue(15, 5);
+            const happinessGain = getRandomValue(10, 3);
+            return {
+                changes: { communitySpirit: gs.communitySpirit + communityGain, happiness: gs.happiness + happinessGain },
+                message: `높은 공동체 정신과 공감대를 바탕으로 마을의 미래에 대한 건설적인 논의가 오갔습니다! (+${communityGain} 공동체 정신, +${happinessGain} 행복)`
+            };
+        }
+    },
+    {
+        condition: (gs) => gs.resources.food < gs.villagers.length * 4,
+        weight: 25,
+        effect: (gs) => {
+            const empathyGain = getRandomValue(10, 3);
+            return {
+                changes: { empathy: gs.empathy + empathyGain },
+                message: `식량이 부족한 상황에 대해 논의했습니다. 모두가 허리띠를 졸라매기로 동의하며 당신의 리더십을 신뢰했습니다. (+${empathyGain} 공감)`
+            };
+        }
+    },
+    {
+        condition: (gs) => gs.villagers.some(v => v.trust < 50),
+        weight: 20,
+        effect: (gs) => {
+            const villager = gs.villagers.find(v => v.trust < 50);
+            const trustGain = getRandomValue(10, 4);
+            const empathyGain = getRandomValue(5, 2);
+            const updatedVillagers = gs.villagers.map(v => v.id === villager.id ? { ...v, trust: v.trust + trustGain } : v);
+            return {
+                changes: { villagers: updatedVillagers, empathy: gs.empathy + empathyGain },
+                message: `회의 중, ${villager.name}이(가) 조심스럽게 불만을 토로했습니다. 그의 의견을 존중하고 해결을 약속하자 신뢰를 얻었습니다. (+${trustGain} ${villager.name} 신뢰도, +${empathyGain} 공감)`
+            };
+        }
+    },
+    {
+        condition: () => true, // Default case
+        weight: 20,
+        effect: (gs) => {
+            const communityGain = getRandomValue(5, 2);
+            return {
+                changes: { communitySpirit: gs.communitySpirit + communityGain },
+                message: `평범한 마을 회의였지만, 모두가 한자리에 모여 의견을 나눈 것만으로도 의미가 있었습니다. (+${communityGain} 공동체 정신)`
+            };
+        }
+    }
+];
+
 function calculateMinigameReward(minigameName, score) {
     let rewards = { empathy: 0, happiness: 0, communitySpirit: 0, message: "" };
 
@@ -608,28 +671,23 @@ const gameActions = {
     },
     hold_meeting: () => {
         if (!spendActionPoint()) return;
-        if (gameState.dailyActions.meetingHeld) {
-            const happinessLoss = getRandomValue(5, 2);
-            const message = `오늘은 이미 마을 회의를 개최했습니다. 연속 회의 개최로 주민들의 피로도가 높아져 행복도가 감소합니다. (-${happinessLoss} 행복도)`;
-            gameState.happiness -= happinessLoss; // Directly update stat
-            updateState({ happiness: gameState.happiness }, message); // Pass message
-            return;
+
+        const possibleOutcomes = meetingOutcomes.filter(outcome => outcome.condition(gameState));
+        const totalWeight = possibleOutcomes.reduce((sum, outcome) => sum + outcome.weight, 0);
+        const rand = currentRandFn() * totalWeight;
+
+        let cumulativeWeight = 0;
+        let chosenOutcome = possibleOutcomes.find(outcome => {
+            cumulativeWeight += outcome.weight;
+            return rand < cumulativeWeight;
+        });
+
+        if (!chosenOutcome) { // Fallback to default if something goes wrong
+            chosenOutcome = meetingOutcomes.find(o => o.condition());
         }
-        updateState({ dailyActions: { ...gameState.dailyActions, meetingHeld: true } });
-        const rand = currentRandFn();
-        let message = "마을 회의를 개최했습니다. ";
-        if (rand < 0.5) { 
-            const communityGain = getRandomValue(10, 3);
-            const happinessGain = getRandomValue(5, 2);
-            message += `주민들이 적극적으로 의견을 나누며 공동체 정신이 강화되었습니다. (+${communityGain} 공동체 정신, +${happinessGain} 행복도)`; 
-            updateState({ communitySpirit: gameState.communitySpirit + communityGain, happiness: gameState.happiness + happinessGain }); 
-        }
-        else { 
-            const empathyGain = getRandomValue(5, 2);
-            message += `의견 충돌이 있었지만, 당신의 중재로 잘 마무리되었습니다. (+${empathyGain} 공감)`; 
-            updateState({ empathy: gameState.empathy + empathyGain }); 
-        }
-        updateGameDisplay(message);
+
+        const result = chosenOutcome.effect(gameState);
+        updateState(result.changes, result.message);
     },
     manualNextDay: () => {
         if (gameState.manualDayAdvances >= 5) { updateGameDisplay("오늘은 더 이상 수동으로 날짜를 넘길 수 없습니다. 내일 다시 시도해주세요."); return; }
@@ -654,11 +712,11 @@ const gameActions = {
         const updatedVillagers = gameState.villagers.map(v => {
             if (v.id === first) {
                 v.trust = Math.min(100, v.trust + trustGain);
-                message += `${v.name}의 이야기를 들어주었습니다. ${v.name}의 신뢰도가 상승했습니다. `; 
+                message += `${v.name}의 이야기를 들어주었습니다. ${v.name}의 신뢰도가 상승했습니다. `;
                 reward.empathy += empathyGain;
             } else if (v.id === second) {
                 v.trust = Math.max(0, v.trust - trustLoss);
-                message += `${second}의 신뢰도가 약간 하락했습니다. `; 
+                message += `${second}의 신뢰도가 약간 하락했습니다. `;
             }
             return v;
         });
@@ -1080,7 +1138,7 @@ function processDailyEvents() {
             facility.durability -= 1;
             if(facility.durability <= 0) {
                 facility.built = false;
-                durabilityMessage += `${key} 시설이 파손되었습니다! 수리가 필요합니다. `; 
+                durabilityMessage += `${key} 시설이 파손되었습니다! 수리가 필요합니다. `;
             }
         }
     });
