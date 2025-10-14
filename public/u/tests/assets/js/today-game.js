@@ -238,6 +238,35 @@ const gameScenarios = {
             { text: "정착을 거절한다.", action: "reject_villager" }
         ]
     },
+    "daily_event_bountiful_harvest": { text: "올해는 날씨가 좋아 풍년입니다! (+15 식량)", choices: [{ text: "확인", action: "return_to_intro" }] },
+    "daily_event_injured_animal": {
+        text: "숲 근처에서 다리가 다친 작은 여우를 발견했습니다. 어떻게 할까요?",
+        choices: [
+            { text: "식량을 사용해 돌봐준다 (식량 5 소모)", action: "care_for_animal" },
+            { text: "마음이 아프지만, 그대로 둔다", action: "ignore_animal" }
+        ]
+    },
+    "daily_event_storyteller": {
+        text: "마을에 떠돌이 이야기꾼이 방문했습니다. 그의 이야기는 항상 교훈과 즐거움을 줍니다.",
+        choices: [
+            { text: "이야기를 듣는다 (행동력 1 소모)", action: "listen_to_storyteller" },
+            { text: "바빠서 거절한다", action: "decline_storyteller" }
+        ]
+    },
+    "daily_event_festival_prep": {
+        text: "곧 마을 축제일입니다! 축제를 준비하면 주민들의 행복도가 크게 오를 것입니다.",
+        choices: [
+            { text: "축제를 준비한다 (나무 20, 식량 20 소모)", action: "prepare_festival" },
+            { text: "지금은 자원을 아껴야 한다", action: "decline_festival" }
+        ]
+    },
+    "daily_event_neighbor_request": {
+        text: "이웃 마을에서 가뭄으로 식량이 부족하다며 도움을 요청했습니다.",
+        choices: [
+            { text: "식량을 나눠준다 (식량 30 소모)", action: "help_neighbor" },
+            { text: "우리 마을도 여유가 없다며 거절한다", action: "decline_neighbor" }
+        ]
+    },
     "game_over_empathy": { text: "마을의 공감 지수가 너무 낮아 주민들이 서로를 이해하지 못하고 떠나기 시작했습니다. 마을은 황폐해졌습니다.", choices: [], final: true },
     "game_over_happiness": { text: "주민들의 행복도가 바닥을 쳤습니다. 불만이 폭주하고, 당신의 리더십은 더 이상 통하지 않습니다.", choices: [], final: true },
     "game_over_communitySpirit": { text: "마을의 공동체 정신이 무너져 주민들이 각자의 이익만을 추구합니다. 더 이상 마을이라 부를 수 없습니다.", choices: [], final: true },
@@ -610,6 +639,77 @@ const gameActions = {
         });
         updateState({ happiness: gameState.happiness - 10, communitySpirit: gameState.communitySpirit - 5, villagers: updatedVillagers, currentScenarioId: 'conflict_resolution_result' }, message);
     },
+    care_for_animal: () => {
+        if (!spendActionPoint()) return;
+        const cost = 5;
+        let message = "";
+        let changes = {};
+        if (gameState.resources.food >= cost) {
+            message = "다친 여우를 돌봐주었습니다. 당신의 따뜻한 마음에 공감 지수가 상승합니다. (+10 공감)";
+            changes.empathy = gameState.empathy + 10;
+            changes.resources = { ...gameState.resources, food: gameState.resources.food - cost };
+        } else {
+            message = "여우를 돌봐주고 싶지만, 식량이 부족합니다.";
+        }
+        updateState({ ...changes, currentScenarioId: 'intro' }, message);
+    },
+    ignore_animal: () => {
+        if (!spendActionPoint()) return;
+        updateState({ currentScenarioId: 'intro' }, "마음이 아프지만, 자연의 섭리라 생각하고 여우를 그대로 두었습니다.");
+    },
+    listen_to_storyteller: () => {
+        if (!spendActionPoint()) return;
+        const rand = currentRandFn();
+        let message = "이야기꾼의 이야기에 귀를 기울였습니다. ";
+        let changes = {};
+        if (rand < 0.5) {
+            message += "재미있는 이야기에 주민 모두가 즐거워합니다. (+10 행복)";
+            changes.happiness = gameState.happiness + 10;
+        } else {
+            message += "이야기 속에 숨겨진 지혜 덕분에 더 나은 리더가 된 것 같습니다. (+10 공감)";
+            changes.empathy = gameState.empathy + 10;
+        }
+        updateState({ ...changes, currentScenarioId: 'intro' }, message);
+    },
+    decline_storyteller: () => {
+        updateState({ currentScenarioId: 'intro' }, "이야기꾼에게 정중히 거절했습니다. 그는 아쉬워하며 다음 마을로 향합니다.");
+    },
+    prepare_festival: () => {
+        if (!spendActionPoint()) return;
+        const cost = { wood: 20, food: 20 };
+        let message = "";
+        let changes = {};
+        if (gameState.resources.wood >= cost.wood && gameState.resources.food >= cost.food) {
+            message = "마을 축제를 성공적으로 준비했습니다! 주민들의 얼굴에 웃음꽃이 핍니다. (+15 행복, +10 공동체 정신)";
+            changes.happiness = gameState.happiness + 15;
+            changes.communitySpirit = gameState.communitySpirit + 10;
+            changes.resources = { ...gameState.resources, wood: gameState.resources.wood - cost.wood, food: gameState.resources.food - cost.food };
+        } else {
+            message = "축제를 준비하기 위한 자원이 부족합니다.";
+        }
+        updateState({ ...changes, currentScenarioId: 'intro' }, message);
+    },
+    decline_festival: () => {
+        updateState({ currentScenarioId: 'intro' }, "지금은 축제보다 내실을 다질 때라고 판단했습니다.");
+    },
+    help_neighbor: () => {
+        if (!spendActionPoint()) return;
+        const cost = 30;
+        let message = "";
+        let changes = {};
+        if (gameState.resources.food >= cost) {
+            message = "어려운 이웃을 돕기로 했습니다. 당신의 이타적인 결정에 마을의 공감과 공동체 정신이 깊어집니다. (+15 공감, +10 공동체 정신)";
+            changes.empathy = gameState.empathy + 15;
+            changes.communitySpirit = gameState.communitySpirit + 10;
+            changes.resources = { ...gameState.resources, food: gameState.resources.food - cost };
+        } else {
+            message = "돕고 싶지만, 우리 마을의 식량도 부족하여 거절할 수밖에 없었습니다.";
+        }
+        updateState({ ...changes, currentScenarioId: 'intro' }, message);
+    },
+    decline_neighbor: () => {
+        updateState({ currentScenarioId: 'intro' }, "고민 끝에, 우리 마을의 안정을 위해 이웃의 요청을 거절했습니다.");
+    },
     show_resource_gathering_options: () => updateState({ currentScenarioId: 'action_resource_gathering' }),
     show_facility_options: () => updateState({ currentScenarioId: 'action_facility_management' }),
     perform_gather_food: () => {
@@ -849,6 +949,24 @@ function generateRandomVillager() {
 }
 
 // --- Daily/Initialization Logic ---
+
+const weightedDailyEvents = [
+    { id: "daily_event_storm", weight: 10, condition: () => true, onTrigger: () => updateState({ resources: { ...gameState.resources, wood: Math.max(0, gameState.resources.wood - 10) } }) },
+    { id: "daily_event_blight", weight: 10, condition: () => true, onTrigger: () => updateState({ resources: { ...gameState.resources, food: Math.max(0, gameState.resources.food - 10) } }) },
+    { id: "daily_event_bountiful_harvest", weight: 5, condition: () => true, onTrigger: () => updateState({ resources: { ...gameState.resources, food: gameState.resources.food + 15 } }) },
+    { id: "daily_event_conflict", weight: 15, condition: () => gameState.villagers.length >= 2 },
+    { id: "daily_event_new_villager", weight: 10, condition: () => gameState.villages.townHall.built && gameState.villagers.length < gameState.maxVillagers, onTrigger: () => {
+        const newVillager = generateRandomVillager();
+        gameState.pendingNewVillager = newVillager;
+        gameScenarios["daily_event_new_villager"].text = `새로운 주민 ${newVillager.name}(${newVillager.personality}, ${newVillager.skill})이(가) 마을에 정착하고 싶어 합니다. (현재 주민 수: ${gameState.villagers.length} / ${gameState.maxVillagers})`;
+    }},
+    { id: "daily_event_trade_offer", weight: 15, condition: () => gameState.villages.townHall.built },
+    { id: "daily_event_injured_animal", weight: 15, condition: () => true },
+    { id: "daily_event_storyteller", weight: 10, condition: () => true },
+    { id: "daily_event_festival_prep", weight: 10, condition: () => gameState.day > 10 && gameState.resources.food > 50 && gameState.resources.wood > 50 },
+    { id: "daily_event_neighbor_request", weight: 5, condition: () => gameState.day > 15 && gameState.resources.food > 100 }
+];
+
 function processDailyEvents() {
     if (gameState.dailyEventTriggered) return;
     currentRandFn = mulberry32(getDailySeed() + gameState.day);
@@ -896,23 +1014,33 @@ function processDailyEvents() {
         dailyMessage += "";
     }
     
-    // Random daily event
-    const rand = currentRandFn();
+    // --- New Weighted Random Event Logic ---
     let eventId = "intro";
-    if (rand < 0.15) { eventId = "daily_event_storm"; updateState({resources: {...gameState.resources, wood: Math.max(0, gameState.resources.wood - 10)}}); }
-    else if (rand < 0.30) { eventId = "daily_event_blight"; updateState({resources: {...gameState.resources, food: Math.max(0, gameState.resources.food - 10)}}); }
-    else if (rand < 0.5 && gameState.villagers.length >= 2) { eventId = "daily_event_conflict"; }
-    else if (rand < 0.7 && gameState.villages.townHall.built && gameState.villagers.length < gameState.maxVillagers) {
-        eventId = "daily_event_new_villager";
-        const newVillager = generateRandomVillager();
-        gameState.pendingNewVillager = newVillager;
-        gameScenarios["daily_event_new_villager"].text = `새로운 주민 ${newVillager.name}(${newVillager.personality}, ${newVillager.skill})이(가) 마을에 정착하고 싶어 합니다. (현재 주민 수: ${gameState.villagers.length} / ${gameState.maxVillagers})`;
+    const possibleEvents = weightedDailyEvents.filter(event => !event.condition || event.condition());
+    const totalWeight = possibleEvents.reduce((sum, event) => sum + event.weight, 0);
+    const rand = currentRandFn() * totalWeight;
+    
+    let cumulativeWeight = 0;
+    let chosenEvent = null;
+
+    for (const event of possibleEvents) {
+        cumulativeWeight += event.weight;
+        if (rand < cumulativeWeight) {
+            chosenEvent = event;
+            break;
+        }
     }
-    else if (rand < 0.85 && gameState.villages.townHall.built) { eventId = "daily_event_trade_offer"; }
+
+    if (chosenEvent) {
+        eventId = chosenEvent.id;
+        if (chosenEvent.onTrigger) {
+            chosenEvent.onTrigger();
+        }
+    }
     
     gameState.currentScenarioId = eventId;
     updateGameDisplay(dailyMessage + (gameScenarios[eventId]?.text || ''));
-    renderChoices(gameScenarios[eventId].choices);
+    renderChoices(gameScenarios[eventId]?.choices);
     saveGameState();
 }
 
