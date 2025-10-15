@@ -188,7 +188,7 @@ function renderChoices(choices) {
         dynamicChoices = choices ? [...choices] : [];
     }
 
-    choicesDiv.innerHTML = dynamicChoices.map(choice => `<button class="choice-btn" data-action="${choice.action}" data-params=\'${JSON.stringify(choice.params || {})}\'>${choice.text}</button>`).join('');
+    choicesDiv.innerHTML = dynamicChoices.map(choice => `<button class="choice-btn" data-action="${choice.action}" data-params='${JSON.stringify(choice.params || {})}' >${choice.text}</button>`).join('');
     choicesDiv.querySelectorAll('.choice-btn').forEach(button => {
         button.addEventListener('click', () => {
             const action = button.dataset.action;
@@ -359,7 +359,7 @@ const gameScenarios = {
         choices: [{ text: "확인", action: "return_to_intro" }]
     },
     "daily_event_wild_animal_attack": {
-        text: "밤새 야생 동물이 마을을 습격했습니다! 자원 창고가 파손되고 있습니다. 어떻게 대응하시겠습니까?",
+        text: "", // Set by onTrigger
         choices: [
             { text: "주민들과 함께 방어한다 (나무 10, 돌 10 소모)", action: "defend_village" },
             { text: "자원 일부를 포기하고 동물을 쫓아낸다 (식량 20 소모)", action: "sacrifice_resources" }
@@ -445,7 +445,7 @@ const meetingOutcomes = [
             };
         }
     },
-    { // New negative outcome: unproductive meeting - more likely if low community spirit or empathy
+    {
         condition: (gs) => gs.communitySpirit < 40 || gs.empathy < 40,
         weight: 25, // Increased weight when conditions met
         effect: (gs) => {
@@ -495,7 +495,7 @@ const exploreOutcomes = [
             };
         }
     },
-    { // Negative outcome: getting lost - now more random, less stat-dependent
+    {
         condition: () => true, // Always possible
         weight: 25, // Increased weight for more frequent occurrence
         effect: (gs) => {
@@ -508,7 +508,7 @@ const exploreOutcomes = [
             };
         }
     },
-    { // Negative outcome: minor setback - now more random, less stat-dependent
+    {
         condition: () => true, // Always possible
         weight: 15, // Increased weight for more frequent occurrence
         effect: (gs) => {
@@ -572,7 +572,7 @@ const talkOutcomes = [
             };
         }
     },
-    { // Negative outcome: misunderstanding - more likely if low community spirit or villager trust
+    {
         condition: (gs, villager) => gs.communitySpirit < 40 || villager.trust < 40,
         weight: 20, // Increased weight when conditions met
         effect: (gs, villager) => {
@@ -586,7 +586,7 @@ const talkOutcomes = [
             };
         }
     },
-    { // Negative outcome: unproductive conversation - more likely if low happiness
+    {
         condition: (gs) => gs.happiness < 30,
         weight: 15, // Increased weight when conditions met
         effect: (gs, villager) => {
@@ -946,12 +946,14 @@ const gameActions = {
         const trustGain = getRandomValue(10, 3);
         const trustLoss = getRandomValue(5, 2);
         const empathyGain = getRandomValue(5, 2);
+        const influenceGain = getRandomValue(5, 2); // Added influence gain
 
         const updatedVillagers = gameState.villagers.map(v => {
             if (v.id === first) {
                 v.trust = Math.min(100, v.trust + trustGain);
                 message += `${v.name}의 이야기를 들어주었습니다. ${v.name}의 신뢰도가 상승했습니다. `; 
                 reward.empathy += empathyGain;
+                reward.influence += influenceGain; // Added influence gain
             } else if (v.id === second) {
                 v.trust = Math.max(0, v.trust - trustLoss);
                 message += `${second}의 신뢰도가 약간 하락했습니다. `; 
@@ -987,8 +989,10 @@ const gameActions = {
         let changes = {};
         if (gameState.resources.food >= cost) {
             const empathyGain = getRandomValue(10, 3);
-            message = `다친 여우를 돌봐주었습니다. 당신의 따뜻한 마음에 공감 지수가 상승합니다. (+${empathyGain} 공감)`;
+            const creativityGain = getRandomValue(5, 2);
+            message = `다친 여우를 돌봐주었습니다. 당신의 따뜻한 마음에 공감 지수와 창의성이 상승합니다. (+${empathyGain} 공감, +${creativityGain} 창의성)`;
             changes.empathy = gameState.empathy + empathyGain;
+            changes.creativity = gameState.creativity + creativityGain;
             changes.resources = { ...gameState.resources, food: gameState.resources.food - cost };
         } else {
             message = "여우를 돌봐주고 싶지만, 식량이 부족합니다.";
@@ -997,7 +1001,9 @@ const gameActions = {
     },
     ignore_animal: () => {
         if (!spendActionPoint()) return;
-        updateState({ currentScenarioId: 'intro' }, "마음이 아프지만, 자연의 섭리라 생각하고 여우를 그대로 두었습니다.");
+        const empathyLoss = getRandomValue(10, 3);
+        const influenceLoss = getRandomValue(5, 2);
+        updateState({ empathy: gameState.empathy - empathyLoss, influence: gameState.influence - influenceLoss, currentScenarioId: 'intro' }, `마음이 아프지만, 자연의 섭리라 생각하고 여우를 그대로 두었습니다. (-${empathyLoss} 공감, -${influenceLoss} 영향력)`);
     },
     listen_to_storyteller: () => {
         if (!spendActionPoint()) return;
@@ -1020,7 +1026,9 @@ const gameActions = {
         updateState({ ...changes, currentScenarioId: 'intro' }, message);
     },
     decline_storyteller: () => {
-        updateState({ currentScenarioId: 'intro' }, "이야기꾼에게 정중히 거절했습니다. 그는 아쉬워하며 다음 마을로 향합니다.");
+        if (!spendActionPoint()) return; // Added action point spend
+        const creativityLoss = getRandomValue(5, 2);
+        updateState({ creativity: gameState.creativity - creativityLoss, currentScenarioId: 'intro' }, `이야기꾼에게 정중히 거절했습니다. 그는 아쉬워하며 다음 마을로 향합니다. (-${creativityLoss} 창의성)`);
     },
     prepare_festival: () => {
         if (!spendActionPoint()) return;
@@ -1042,7 +1050,10 @@ const gameActions = {
         updateState({ ...changes, currentScenarioId: 'intro' }, message);
     },
     decline_festival: () => {
-        updateState({ currentScenarioId: 'intro' }, "지금은 축제보다 내실을 다질 때라고 판단했습니다.");
+        if (!spendActionPoint()) return; // Added action point spend
+        const happinessLoss = getRandomValue(10, 3);
+        const influenceLoss = getRandomValue(5, 2);
+        updateState({ happiness: gameState.happiness - happinessLoss, influence: gameState.influence - influenceLoss, currentScenarioId: 'intro' }, `지금은 축제보다 내실을 다질 때라고 판단했습니다. (-${happinessLoss} 행복, -${influenceLoss} 영향력)`);
     },
     help_neighbor: () => {
         if (!spendActionPoint()) return;
@@ -1064,7 +1075,10 @@ const gameActions = {
         updateState({ ...changes, currentScenarioId: 'intro' }, message);
     },
     decline_neighbor: () => {
-        updateState({ currentScenarioId: 'intro' }, "고민 끝에, 우리 마을의 안정을 위해 이웃의 요청을 거절했습니다.");
+        if (!spendActionPoint()) return; // Added action point spend
+        const influenceLoss = getRandomValue(10, 3);
+        const communityLoss = getRandomValue(5, 2);
+        updateState({ influence: gameState.influence - influenceLoss, communitySpirit: gameState.communitySpirit - communityLoss, currentScenarioId: 'intro' }, `고민 끝에, 우리 마을의 안정을 위해 이웃의 요청을 거절했습니다. (-${influenceLoss} 영향력, -${communityLoss} 공동체 정신)`);
     },
     show_resource_gathering_options: () => updateState({ currentScenarioId: 'action_resource_gathering' }),
     show_facility_options: () => updateState({ currentScenarioId: 'action_facility_management' }),
@@ -1236,16 +1250,22 @@ const gameActions = {
     },
     accept_trade: () => {
         if (!spendActionPoint()) return;
+        let message = "";
+        let changes = {};
         if (gameState.resources.wood >= 50) {
-            updateState({ resources: { ...gameState.resources, wood: gameState.resources.wood - 50, rare_minerals: (gameState.resources.rare_minerals || 0) + 5 } });
-            updateGameDisplay("무역에 성공하여 희귀 광물을 얻었습니다! 이 광물은 고급 시설물에 사용할 수 있습니다.");
-        } else { updateGameDisplay("무역에 필요한 목재가 부족합니다."); }
-        updateState({ currentScenarioId: 'intro' });
+            const influenceGain = getRandomValue(5, 2);
+            message = `무역에 성공하여 희귀 광물을 얻었습니다! 이 광물은 고급 시설물에 사용할 수 있습니다. (+${influenceGain} 영향력)`;
+            changes.resources = { ...gameState.resources, wood: gameState.resources.wood - 50, rare_minerals: (gameState.resources.rare_minerals || 0) + 5 };
+            changes.influence = gameState.influence + influenceGain;
+        } else {
+            message = "무역에 필요한 목재가 부족합니다.";
+        }
+        updateState({ ...changes, currentScenarioId: 'intro' }, message);
     },
     decline_trade: () => {
         if (!spendActionPoint()) return;
-        updateGameDisplay("무역 제안을 거절했습니다. 상인은 아쉬워하며 떠났습니다.");
-        updateState({ currentScenarioId: 'intro' });
+        const influenceLoss = getRandomValue(5, 2);
+        updateState({ influence: gameState.influence - influenceLoss, currentScenarioId: 'intro' }, `무역 제안을 거절했습니다. 상인은 아쉬워하며 떠났습니다. (-${influenceLoss} 영향력)`);
     },
     return_to_intro: () => updateState({ currentScenarioId: 'intro' }),
     play_minigame: () => {
@@ -1283,11 +1303,13 @@ const gameActions = {
         updateState({ ...changes, currentScenarioId: 'rumors_result' }, message);
     },
     ignore_rumors: () => {
+        if (!spendActionPoint()) return; // Added action point spend
         const communityLoss = getRandomValue(15, 5);
         const trustLoss = getRandomValue(10, 3);
+        const influenceLoss = getRandomValue(10, 3);
         const updatedVillagers = gameState.villagers.map(v => ({ ...v, trust: Math.max(0, v.trust - trustLoss) }));
-        const message = `소문을 무시했습니다. 불신이 커져 공동체 정신과 주민들의 신뢰도가 하락합니다. (-${communityLoss} 공동체 정신, -${trustLoss} 주민 신뢰도)`;
-        updateState({ communitySpirit: gameState.communitySpirit - communityLoss, villagers: updatedVillagers, currentScenarioId: 'rumors_result' }, message);
+        const message = `소문을 무시했습니다. 불신이 커져 공동체 정신과 주민들의 신뢰도, 당신의 영향력이 하락합니다. (-${communityLoss} 공동체 정신, -${trustLoss} 주민 신뢰도, -${influenceLoss} 영향력)`;
+        updateState({ communitySpirit: gameState.communitySpirit - communityLoss, villagers: updatedVillagers, influence: gameState.influence - influenceLoss, currentScenarioId: 'rumors_result' }, message);
     },
     defend_village: () => {
         if (!spendActionPoint()) return;
@@ -1297,14 +1319,18 @@ const gameActions = {
         if (gameState.resources.wood >= cost.wood && gameState.resources.stone >= cost.stone) {
             const happinessGain = getRandomValue(15, 5);
             const communityGain = getRandomValue(10, 3);
-            message = `주민들과 힘을 합쳐 야생 동물을 물리쳤습니다! 마을의 행복과 공동체 정신이 상승합니다. (+${happinessGain} 행복, +${communityGain} 공동체 정신)`;
+            const influenceGain = getRandomValue(10, 3);
+            message = `주민들과 힘을 합쳐 야생 동물을 물리쳤습니다! 마을의 행복과 공동체 정신, 당신의 영향력이 상승합니다. (+${happinessGain} 행복, +${communityGain} 공동체 정신, +${influenceGain} 영향력)`;
             changes.happiness = gameState.happiness + happinessGain;
             changes.communitySpirit = gameState.communitySpirit + communityGain;
+            changes.influence = gameState.influence + influenceGain;
             changes.resources = { ...gameState.resources, wood: gameState.resources.wood - cost.wood, stone: gameState.resources.stone - cost.stone };
         } else {
             const happinessLoss = getRandomValue(10, 3);
-            message = `자원이 부족하여 제대로 방어하지 못했습니다. 주민들의 행복도가 감소합니다. (-${happinessLoss} 행복)`;
+            const influenceLoss = getRandomValue(5, 2);
+            message = `자원이 부족하여 제대로 방어하지 못했습니다. 주민들의 행복도와 당신의 영향력이 감소합니다. (-${happinessLoss} 행복, -${influenceLoss} 영향력)`;
             changes.happiness = gameState.happiness - happinessLoss;
+            changes.influence = gameState.influence - influenceLoss;
         }
         updateState({ ...changes, currentScenarioId: 'wild_animal_attack_result' }, message);
     },
@@ -1315,15 +1341,88 @@ const gameActions = {
         let changes = {};
         if (gameState.resources.food >= cost.food) {
             const happinessLoss = getRandomValue(5, 2);
-            message = `야생 동물을 쫓아내기 위해 식량 일부를 포기했습니다. 주민들의 행복도가 약간 감소합니다. (-${happinessLoss} 행복)`;
+            const influenceLoss = getRandomValue(5, 2);
+            message = `야생 동물을 쫓아내기 위해 식량 일부를 포기했습니다. 주민들의 행복도와 당신의 영향력이 약간 감소합니다. (-${happinessLoss} 행복, -${influenceLoss} 영향력)`;
             changes.happiness = gameState.happiness - happinessLoss;
+            changes.influence = gameState.influence - influenceLoss;
             changes.resources = { ...gameState.resources, food: gameState.resources.food - cost.food };
         } else {
             const communityLoss = getRandomValue(10, 3);
-            message = `포기할 식량조차 부족하여 마을이 큰 피해를 입었습니다. 공동체 정신이 하락합니다. (-${communityLoss} 공동체 정신)`;
+            const influenceLoss = getRandomValue(5, 2);
+            message = `포기할 식량조차 부족하여 마을이 큰 피해를 입었습니다. 공동체 정신과 당신의 영향력이 하락합니다. (-${communityLoss} 공동체 정신, -${influenceLoss} 영향력)`;
             changes.communitySpirit = gameState.communitySpirit - communityLoss;
+            changes.influence = gameState.influence - influenceLoss;
         }
         updateState({ ...changes, currentScenarioId: 'wild_animal_attack_result' }, message);
+    },
+    disease_treat: () => {
+        if (!spendActionPoint()) return;
+        const cost = { food: 10, rare_minerals: 1 }; // Example cost for medicine
+        let message = "";
+        let changes = {};
+        if (gameState.resources.food >= cost.food && gameState.resources.rare_minerals >= cost.rare_minerals) {
+            const happinessGain = getRandomValue(15, 5);
+            const empathyGain = getRandomValue(10, 3);
+            message = `자원을 사용하여 전염병을 치료했습니다. 주민들의 행복과 공감 지수가 회복됩니다. (+${happinessGain} 행복, +${empathyGain} 공감)`;
+            changes.happiness = gameState.happiness + happinessGain;
+            changes.empathy = gameState.empathy + empathyGain;
+            changes.resources = { ...gameState.resources, food: gameState.resources.food - cost.food, rare_minerals: gameState.resources.rare_minerals - cost.rare_minerals };
+        } else {
+            message = "치료에 필요한 자원이 부족합니다. (식량 10, 희귀 광물 1 필요)";
+        }
+        updateState({ ...changes, currentScenarioId: 'disease_result' }, message);
+    },
+    disease_ignore: () => {
+        if (!spendActionPoint()) return;
+        const happinessLoss = getRandomValue(20, 5);
+        const communityLoss = getRandomValue(15, 5);
+        const influenceLoss = getRandomValue(10, 3);
+        message = `전염병을 방치했습니다. 주민들의 행복과 공동체 정신, 당신의 영향력이 크게 감소합니다. (-${happinessLoss} 행복, -${communityLoss} 공동체 정신, -${influenceLoss} 영향력)`;
+        updateState({ happiness: gameState.happiness - happinessLoss, communitySpirit: gameState.communitySpirit - communityLoss, influence: gameState.influence - influenceLoss, currentScenarioId: 'disease_result' }, message);
+    },
+    welcome_new_unique_villager: () => {
+        if (!spendActionPoint()) return;
+        let message = "";
+        let changes = {};
+        if (gameState.villagers.length < gameState.maxVillagers && gameState.pendingNewVillager) {
+            const happinessGain = getRandomValue(10, 3);
+            const communityGain = getRandomValue(5, 2);
+            const influenceGain = getRandomValue(5, 2);
+            gameState.villagers.push(gameState.pendingNewVillager);
+            message = `새로운 주민 ${gameState.pendingNewVillager.name}을(를) 따뜻하게 환영했습니다! 마을의 행복과 공동체 정신, 당신의 영향력이 상승합니다. (+${happinessGain} 행복, +${communityGain} 공동체 정신, +${influenceGain} 영향력)`;
+            changes.happiness = gameState.happiness + happinessGain;
+            changes.communitySpirit = gameState.communitySpirit + communityGain;
+            changes.influence = gameState.influence + influenceGain;
+            changes.pendingNewVillager = null;
+        } else {
+            message = "새로운 주민을 맞이할 수 없습니다.";
+        }
+        updateState({ ...changes, currentScenarioId: 'intro' }, message);
+    },
+    observe_villager: () => {
+        if (!spendActionPoint()) return;
+        let message = "";
+        let changes = {};
+        const rand = currentRandFn();
+        if (rand < 0.7) {
+            const creativityGain = getRandomValue(5, 2);
+            message = `새로운 주민을 관찰하며 흥미로운 점을 발견했습니다. 당신의 창의성이 상승합니다. (+${creativityGain} 창의성)`;
+            changes.creativity = gameState.creativity + creativityGain;
+        } else {
+            const influenceLoss = getRandomValue(5, 2);
+            message = `주민을 관찰하는 동안, 당신의 우유부단함이 마을에 좋지 않은 인상을 주었습니다. (-${influenceLoss} 영향력)`;
+            changes.influence = gameState.influence - influenceLoss;
+        }
+        changes.pendingNewVillager = null;
+        updateState({ ...changes, currentScenarioId: 'intro' }, message);
+    },
+    reject_villager: () => {
+        if (!spendActionPoint()) return;
+        const communityLoss = getRandomValue(10, 3);
+        const happinessLoss = getRandomValue(5, 2);
+        const influenceLoss = getRandomValue(5, 2);
+        message = `새로운 주민의 정착을 거절했습니다. 마을의 공동체 정신과 행복, 당신의 영향력이 감소합니다. (-${communityLoss} 공동체 정신, -${happinessLoss} 행복, -${influenceLoss} 영향력)`;
+        updateState({ communitySpirit: gameState.communitySpirit - communityLoss, happiness: gameState.happiness - happinessLoss, influence: gameState.influence - influenceLoss, pendingNewVillager: null, currentScenarioId: 'intro' }, message);
     },
     show_small_pleasures_options: () => updateState({ currentScenarioId: 'small_pleasures_menu' }),
     play_slot_machine: () => {
@@ -1507,8 +1606,10 @@ const weightedDailyEvents = [
     { id: "daily_event_resource_discovery", weight: 8, condition: () => gameState.day > 5, onTrigger: () => {
         const resourceType = currentRandFn() < 0.5 ? "rare_minerals" : (currentRandFn() < 0.5 ? "food" : "wood");
         const amount = getRandomValue(10, 5);
+        const creativityGain = getRandomValue(5, 2);
         gameState.resources[resourceType] += amount;
-        gameScenarios.daily_event_resource_discovery.text = `탐색 중 숨겨진 ${resourceType === "food" ? "식량" : resourceType === "wood" ? "목재" : "희귀 광물"} 저장소를 발견했습니다! (+${amount} ${resourceType === "food" ? "식량" : resourceType === "wood" ? "목재" : "희귀 광물"})`;
+        gameState.creativity += creativityGain;
+        gameScenarios.daily_event_resource_discovery.text = `탐색 중 숨겨진 ${resourceType === "food" ? "식량" : resourceType === "wood" ? "목재" : "희귀 광물"} 저장소를 발견했습니다! (+${amount} ${resourceType === "food" ? "식량" : resourceType === "wood" ? "목재" : "희귀 광물"}, +${creativityGain} 창의성)`;
     }},
     { id: "daily_event_rumors", weight: 12, condition: () => gameState.villagers.length >= 3 },
     { id: "daily_event_wild_animal_attack", weight: 10, condition: () => gameState.resources.food > 20 || gameState.resources.wood > 20 || gameState.resources.stone > 20 }
