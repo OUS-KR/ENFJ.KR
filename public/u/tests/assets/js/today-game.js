@@ -180,7 +180,7 @@ function renderChoices(choices) {
         Object.keys(gameState.villages).forEach(key => {
             const facility = gameState.villages[key];
             if (facility.built && facility.durability < 100) {
-                dynamicChoices.push({ text: `${key} 유지보수 (나무 10, 돌 10)`, action: "maintain_facility", params: { facility: key } });
+                dynamicChoices.push({ text: `${facility.name} 유지보수 (나무 10, 돌 10)`, action: "maintain_facility", params: { facility: key } });
             }
         });
         dynamicChoices.push({ text: "취소", action: "return_to_intro" });
@@ -1214,7 +1214,7 @@ const gameActions = {
         let changes = {};
         if (gameState.resources.wood >= cost.wood && gameState.resources.stone >= cost.stone) {
             gameState.villages[facilityKey].durability = 100;
-            message = `${facilityKey} 시설의 유지보수를 완료했습니다. 내구도가 100으로 회복되었습니다.`;
+            message = `${gameState.villages[facilityKey].name} 시설의 유지보수를 완료했습니다. 내구도가 100으로 회복되었습니다.`;
             changes.resources = { ...gameState.resources, wood: gameState.resources.wood - cost.wood, stone: gameState.resources.stone - cost.stone };
         } else {
             message = "유지보수에 필요한 자원이 부족합니다.";
