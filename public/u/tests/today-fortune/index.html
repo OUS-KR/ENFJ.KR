@@ -75,22 +75,21 @@
         
         <div id="giscus-container" style="margin: 15px 0;"></div>
         <script>
-            function setThemeMode() {
+            function sendGiscusThemeMessage(theme) {
                 const iframe = document.querySelector('iframe.giscus-frame');
                 if (!iframe) return;
-                
                 iframe.contentWindow.postMessage(
                     {
                         giscus: {
                             setConfig: {
-                                theme: localStorage.getItem('data-bs-theme'),
+                                theme: theme,
                             },
                         },
                     },
                     'https://giscus.app'
                 );
             }
-            
+
             function loadGiscus() {
                 const container = document.getElementById('giscus-container');
                 while (container.firstChild) container.removeChild(container.firstChild);
@@ -118,7 +117,8 @@
             loadGiscus();
             
             document.getElementById('theme-switcher').addEventListener('click', () => {
-                loadGiscus();
+                const currentTheme = localStorage.getItem('data-bs-theme') === 'dark' ? 'dark' : 'light';
+                sendGiscusThemeMessage(currentTheme);
             });
         </script>
         
