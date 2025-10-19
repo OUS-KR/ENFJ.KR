@@ -72,24 +72,6 @@
         
         <div id="giscus-container" style="margin: 15px 0;"></div>
         <script>
-            function setThemeMode() {
-                document.querySelector('#theme-switcher').addEventListener('click', () => {
-                    const iframe = document.querySelector('iframe.giscus-frame');
-                    if (!iframe) return;
-                    
-                    iframe.contentWindow.postMessage(
-                        {
-                            giscus: {
-                                setConfig: {
-                                    theme: localStorage.getItem('theme'),
-                                },
-                            },
-                        },
-                        'https://giscus.app'
-                    );
-                })
-            }
-            
             function loadGiscus() {
                 const container = document.getElementById('giscus-container');
                 while (container.firstChild) container.removeChild(container.firstChild);
@@ -114,7 +96,6 @@
                 container.appendChild(script);
             }
             
-            setThemeMode();
             loadGiscus();
         </script>
         
@@ -130,7 +111,7 @@
         </div>
     </div>
 
-    <script src="/u/tests/assets/js/main.js?20251010170000" defer></script>
+    <script src="/u/tests/assets/js/main.js?20251020004000" defer></script>
     <script src="/u/tests/assets/js/dynamic-menu.js?20251010170000" defer></script>
     <script>
     function getDailySeed() {
