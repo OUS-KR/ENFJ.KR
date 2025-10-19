@@ -14,9 +14,6 @@
         }
     </style>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4262871645049971" crossorigin="anonymous"></script>
-    <script>
-        var defaultThemeMode = "light"; var themeMode; if ( document.body ) { if ( document.body.hasAttribute("data-theme")) { themeMode = document.body.getAttribute("data-theme"); } else { if ( localStorage.getItem("data-bs-theme") !== null ) { themeMode = localStorage.getItem("theme"); } else { themeMode = defaultThemeMode; } } if (themeMode === "system") { themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; } document.body.setAttribute("data-theme", themeMode); }
-    </script>
 </head>
 <body>
     <header class="main-nav">
@@ -108,7 +105,7 @@
                 script.setAttribute('data-reactions-enabled', '1');
                 script.setAttribute('data-emit-metadata', '1');
                 script.setAttribute('data-input-position', 'top');
-                script.setAttribute('data-theme', localStorage.getItem('theme'));
+                script.setAttribute('data-theme', localStorage.getItem('theme') ?? 'light');
                 script.setAttribute('data-loading', 'lazy');
                 script.setAttribute('data-lang', 'ko');
                 script.setAttribute('crossorigin', 'anonymous');
