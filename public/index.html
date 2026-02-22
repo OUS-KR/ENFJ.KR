@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ENFJ — enfj.kr</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Outfit:wght@300;400;500;600&family=Satisfy&display=swap" rel="stylesheet" />
+
+  <style type="text/tailwindcss">
+    @theme {
+      /* Amber — warmth, charisma, stage light */
+      --color-amber-100: #fff8e1;
+      --color-amber-200: #ffecb3;
+      --color-amber-300: #ffe082;
+      --color-amber-400: #ffd54f;
+      --color-amber-500: #ffb300;
+      --color-amber-600: #ff8f00;
+
+      /* Teal — depth, wisdom, ocean of empathy */
+      --color-teal-200: #b2dfdb;
+      --color-teal-300: #80cbc4;
+      --color-teal-400: #4db6ac;
+      --color-teal-500: #00897b;
+      --color-teal-600: #00695c;
+
+      /* Rose — heart, connection, warmth */
+      --color-rose-200: #f8bbd0;
+      --color-rose-300: #f48fb1;
+      --color-rose-400: #f06292;
+      --color-rose-500: #e91e63;
+
+      /* Ivory — stage, spotlight base */
+      --color-ivory-100: #fffdf5;
+      --color-ivory-200: #fdf5e0;
+      --color-ivory-300: #f5e6c0;
+
+      /* Dusk — deep background */
+      --color-dusk-800: #1a1228;
+      --color-dusk-900: #100c1c;
+      --color-dusk-950: #080610;
+
+      --font-display: "Cormorant Garamond", Georgia, serif;
+      --font-script:  "Satisfy", cursive;
+      --font-body:    "Outfit", system-ui, sans-serif;
+    }
+
+    @layer base {
+      *, *::before, *::after { box-sizing: border-box; }
+      html {
+        scroll-behavior: smooth;
+        background-color: var(--color-dusk-950);
+        color: var(--color-ivory-200);
+      }
+      body {
+        font-family: var(--font-body);
+        font-weight: 300;
+        overflow-x: hidden;
+      }
+      ::selection {
+        background-color: var(--color-amber-500);
+        color: var(--color-dusk-950);
+      }
+      ::-webkit-scrollbar { width: 3px; }
+      ::-webkit-scrollbar-track { background: var(--color-dusk-950); }
+      ::-webkit-scrollbar-thumb { background: rgba(255,179,0,0.4); }
+    }
+
+    /* ── Canvas ── */
+    #stage-canvas {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    /* Stage curtain gradient — deep sides, lit center */
+    .stage-layer {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      background:
+        linear-gradient(to right,
+          rgba(8,6,16,0.7) 0%,
+          transparent 25%,
+          transparent 75%,
+          rgba(8,6,16,0.7) 100%),
+        radial-gradient(ellipse 70% 55% at 50% 30%,
+          rgba(255,179,0,0.07) 0%,
+          rgba(255,143,0,0.04) 40%,
+          transparent 70%);
+      animation: stage-breathe 6s ease-in-out infinite alternate;
+    }
+    @keyframes stage-breathe {
+      from { opacity: 0.8; }
+      to   { opacity: 1.0; }
+    }
+
+    /* Warm halo above hero */
+    .halo-layer {
+      position: fixed;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: min(900px, 120vw);
+      height: 600px;
+      pointer-events: none;
+      z-index: 1;
+      background: radial-gradient(ellipse 65% 50% at 50% 0%,
+        rgba(255,179,0,0.10) 0%,
+        rgba(255,143,0,0.05) 40%,
+        transparent 70%);
+      animation: halo-pulse 5s ease-in-out infinite alternate;
+    }
+    @keyframes halo-pulse {
+      from { opacity: 0.7; transform: translateX(-50%) scaleY(0.95); }
+      to   { opacity: 1.0; transform: translateX(-50%) scaleY(1.05); }
+    }
+
+    .vignette {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 2;
+      background: radial-gradient(ellipse at 50% 40%, transparent 28%, rgba(8,6,16,0.88) 100%);
+    }
+
+    /* ── Site Wrapper ── */
+    .site-wrapper {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .glass-header {
+      position: sticky; top: 0;
+      backdrop-filter: blur(22px) saturate(1.5);
+      background: rgba(8, 6, 16, 0.76);
+      border-bottom: 1px solid rgba(255,179,0,0.12);
+      z-index: 100;
+    }
+
+    .logo-enfj {
+      font-family: var(--font-display);
+      font-size: 1.9rem;
+      font-weight: 700;
+      font-style: italic;
+      letter-spacing: 0.15em;
+      text-decoration: none;
+      color: var(--color-amber-400);
+      position: relative;
+      text-shadow: 0 0 30px rgba(255,179,0,0.3);
+    }
+    .logo-enfj::after {
+      content: '';
+      position: absolute; bottom: -3px; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg,
+        var(--color-amber-500), var(--color-rose-400), transparent);
+    }
+
+    .nav-link {
+      font-family: var(--font-body);
+      font-size: 0.75rem;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(253,245,224,0.45);
+      text-decoration: none;
+      position: relative;
+      transition: color 0.3s;
+    }
+    .nav-link::after {
+      content: '';
+      position: absolute; bottom: -3px; left: 0; right: 0; height: 1px;
+      background: linear-gradient(90deg, var(--color-amber-500), var(--color-teal-400));
+      transform: scaleX(0); transform-origin: left;
+      transition: transform 0.3s ease;
+    }
+    .nav-link:hover { color: rgba(253,245,224,0.95); }
+    .nav-link:hover::after { transform: scaleX(1); }
+
+    .domain-badge {
+      font-family: var(--font-body);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      color: rgba(255,179,0,0.45);
+      border: 1px solid rgba(255,179,0,0.18);
+      padding: 3px 10px;
+    }
+
+    /* ── Hero ── */
+    .hero-section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ghost text */
+    .hero-bg-text {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--font-display);
+      font-size: clamp(18vw, 28vw, 38vw);
+      font-weight: 700;
+      font-style: italic;
+      line-height: 1;
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,179,0,0.06);
+      pointer-events: none;
+      user-select: none;
+      white-space: nowrap;
+      letter-spacing: 0.06em;
+    }
+
+    /* Spotlight cone from top */
+    .spotlight-cone {
+      position: absolute;
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left:  200px solid transparent;
+      border-right: 200px solid transparent;
+      border-top: 500px solid rgba(255,179,0,0.03);
+      pointer-events: none;
+      filter: blur(40px);
+      animation: cone-flicker 8s ease-in-out infinite alternate;
+    }
+    @keyframes cone-flicker {
+      0%   { opacity: 0.6; border-top-width: 480px; }
+      33%  { opacity: 0.9; }
+      66%  { opacity: 0.7; border-top-width: 520px; }
+      100% { opacity: 1.0; border-top-width: 500px; }
+    }
+
+    .protagonist-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--font-body);
+      font-size: 0.63rem;
+      font-weight: 500;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--color-amber-400);
+      border: 1px solid rgba(255,179,0,0.35);
+      padding: 5px 16px;
+      margin-bottom: 2.8rem;
+      position: relative;
+    }
+    /* Pulse dot */
+    .protagonist-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--color-amber-400);
+      box-shadow: 0 0 8px var(--color-amber-400);
+      animation: badge-pulse 2s ease-in-out infinite;
+    }
+    @keyframes badge-pulse {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50%      { opacity: 0.3; transform: scale(0.6); }
+    }
+
+    .logo-display {
+      font-family: var(--font-display);
+      font-size: clamp(5rem, 15vw, 13rem);
+      font-weight: 700;
+      font-style: italic;
+      line-height: 1;
+      letter-spacing: 0.12em;
+      color: var(--color-amber-400);
+      text-shadow:
+        0 0 60px rgba(255,179,0,0.25),
+        0 0 120px rgba(255,143,0,0.12);
+      animation: curtain-rise 1.1s cubic-bezier(0.16,1,0.3,1) forwards;
+    }
+    /* Warm underline */
+    .logo-display::after {
+      content: '';
+      display: block;
+      width: 55%;
+      height: 2px;
+      margin: 0.6rem auto 0;
+      background: linear-gradient(90deg,
+        transparent,
+        var(--color-amber-500),
+        var(--color-rose-400),
+        transparent);
+    }
+    @keyframes curtain-rise {
+      from { opacity: 0; transform: translateY(40px); filter: blur(6px); }
+      to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
+    }
+
+    .hero-tagline {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(1rem, 2.5vw, 1.6rem);
+      font-weight: 300;
+      color: rgba(253,245,224,0.7);
+      letter-spacing: 0.05em;
+      margin-top: 1.8rem;
+      animation: fade-up 1s 0.3s both;
+    }
+
+    /* Handwritten script accent */
+    .script-accent {
+      font-family: var(--font-script);
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+      color: var(--color-teal-400);
+      margin-top: 0.5rem;
+      opacity: 0.7;
+      animation: fade-up 1s 0.45s both;
+      display: block;
+    }
+
+    .divider-warm {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 2.2rem auto;
+      animation: fade-up 1s 0.5s both;
+    }
+    .warm-line {
+      width: 55px; height: 1px;
+      background: linear-gradient(90deg,
+        transparent, rgba(255,179,0,0.35));
+    }
+    .warm-line.right {
+      background: linear-gradient(90deg,
+        rgba(255,179,0,0.35), transparent);
+    }
+    .warm-diamond {
+      width: 6px; height: 6px;
+      background: var(--color-amber-500);
+      transform: rotate(45deg);
+      box-shadow: 0 0 8px rgba(255,179,0,0.5);
+    }
+
+    .hero-quote {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(0.9rem, 1.9vw, 1.1rem);
+      font-weight: 300;
+      color: rgba(253,245,224,0.42);
+      max-width: 480px;
+      line-height: 1.95;
+      animation: fade-up 1s 0.6s both;
+    }
+
+    .trait-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-body);
+      font-size: 0.62rem;
+      font-weight: 400;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 5px 13px;
+      border: 1px solid rgba(255,255,255,0.08);
+      color: rgba(253,245,224,0.5);
+      transition: all 0.25s;
+      cursor: default;
+    }
+    .trait-pill:hover {
+      color: rgba(253,245,224,1);
+      border-color: rgba(255,179,0,0.45);
+      background: rgba(255,179,0,0.07);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(255,179,0,0.1);
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--color-dusk-950);
+      background: linear-gradient(135deg,
+        var(--color-amber-500), var(--color-amber-400));
+      padding: 15px 42px;
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.28s, box-shadow 0.28s;
+    }
+    /* Shimmer sweep */
+    .cta-btn::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(120deg,
+        transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+    .cta-btn:hover::before { transform: translateX(100%); }
+    .cta-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 36px rgba(255,179,0,0.38);
+    }
+
+    .scroll-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4.5rem;
+      animation: fade-up 1s 1.2s both;
+    }
+    .scroll-label {
+      font-family: var(--font-body);
+      font-size: 0.57rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: rgba(253,245,224,0.2);
+    }
+    .scroll-line {
+      width: 1px; height: 52px;
+      background: linear-gradient(to bottom, var(--color-amber-600), transparent);
+      animation: scroll-fall 2.3s ease-in-out infinite;
+    }
+    @keyframes scroll-fall {
+      0%   { transform: scaleY(0); transform-origin: top; }
+      50%  { transform: scaleY(1); transform-origin: top; }
+      51%  { transform: scaleY(1); transform-origin: bottom; }
+      100% { transform: scaleY(0); transform-origin: bottom; }
+    }
+
+    /* ── Stats Row ── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-top:    1px solid rgba(255,179,0,0.09);
+      border-bottom: 1px solid rgba(255,179,0,0.09);
+    }
+    .stat-cell {
+      padding: 2.8rem 2rem;
+      text-align: center;
+      border-right: 1px solid rgba(255,179,0,0.09);
+      transition: background 0.3s;
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-cell:hover { background: rgba(255,179,0,0.04); }
+    .stat-number {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      color: var(--color-amber-400);
+      letter-spacing: 0.06em;
+      line-height: 1;
+      text-shadow: 0 0 20px rgba(255,179,0,0.2);
+    }
+    .stat-label {
+      font-family: var(--font-body);
+      font-size: 0.6rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(253,245,224,0.28);
+      margin-top: 7px;
+    }
+
+    /* ── Letter Blocks ── */
+    .letters-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid rgba(255,179,0,0.09);
+    }
+    .letter-block {
+      padding: 3.5rem 1.5rem;
+      border-right: 1px solid rgba(255,179,0,0.09);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+    .letter-block:last-child { border-right: none; }
+    .letter-block::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      transform: scaleX(0); transform-origin: center;
+      transition: transform 0.45s ease;
+    }
+    .letter-block:hover::before { transform: scaleX(1); }
+    .letter-block:hover { background: rgba(255,255,255,0.02); }
+
+    /* Glow on hover */
+    .letter-block::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      transform: translate(-50%,-50%) scale(0);
+      transition: transform 0.5s ease;
+      pointer-events: none;
+    }
+    .letter-block:hover::after {
+      transform: translate(-50%,-50%) scale(2.5);
+    }
+
+    .l-e::before { background: linear-gradient(90deg, var(--color-amber-400), var(--color-amber-300)); }
+    .l-n::before { background: linear-gradient(90deg, var(--color-teal-400),  var(--color-teal-300)); }
+    .l-f::before { background: linear-gradient(90deg, var(--color-rose-400),  var(--color-rose-300)); }
+    .l-j::before { background: linear-gradient(90deg, var(--color-ivory-300), var(--color-ivory-200)); }
+
+    .l-e::after { background: radial-gradient(circle, rgba(255,179,0,0.1),  transparent 70%); }
+    .l-n::after { background: radial-gradient(circle, rgba(77,182,172,0.1), transparent 70%); }
+    .l-f::after { background: radial-gradient(circle, rgba(240,98,146,0.1), transparent 70%); }
+    .l-j::after { background: radial-gradient(circle, rgba(245,230,192,0.1),transparent 70%); }
+
+    .letter-char {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-weight: 700;
+      font-size: clamp(3.5rem, 8vw, 6.5rem);
+      line-height: 1;
+      position: relative; z-index: 1;
+    }
+    .l-e .letter-char { color: var(--color-amber-400); text-shadow: 0 0 25px rgba(255,179,0,0.3); }
+    .l-n .letter-char { color: var(--color-teal-400);  text-shadow: 0 0 25px rgba(77,182,172,0.3); }
+    .l-f .letter-char { color: var(--color-rose-400);  text-shadow: 0 0 25px rgba(240,98,146,0.3); }
+    .l-j .letter-char { color: var(--color-ivory-300); }
+
+    .letter-word {
+      font-family: var(--font-body);
+      font-size: 0.6rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(253,245,224,0.28);
+      margin-top: 7px;
+      position: relative; z-index: 1;
+    }
+    .letter-desc {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 0.85rem;
+      color: rgba(253,245,224,0.42);
+      margin-top: 9px;
+      line-height: 1.6;
+      position: relative; z-index: 1;
+    }
+
+    /* ── Section Shared ── */
+    .section-label {
+      font-family: var(--font-body);
+      font-size: 0.6rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--color-amber-600);
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(2.2rem, 5vw, 4rem);
+      font-weight: 700;
+      color: rgba(253,245,224,0.95);
+      line-height: 1.15;
+    }
+
+    /* ── Stage Cards ── */
+    .stage-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1px;
+      background: rgba(255,179,0,0.07);
+    }
+    .stage-card {
+      background: var(--color-dusk-950);
+      padding: 3.2rem 2.8rem;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+    .stage-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .stage-card::after {
+      content: '';
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      transform: scaleX(0); transform-origin: center;
+      transition: transform 0.45s ease;
+    }
+    .stage-card:hover { background: rgba(255,255,255,0.015); }
+    .stage-card:hover::before { opacity: 1; }
+    .stage-card:hover::after  { transform: scaleX(1); }
+
+    .card-amber::before  { background: radial-gradient(circle at 0% 0%, rgba(255,179,0,0.09), transparent 65%); }
+    .card-teal::before   { background: radial-gradient(circle at 0% 0%, rgba(77,182,172,0.09), transparent 65%); }
+    .card-rose::before   { background: radial-gradient(circle at 0% 0%, rgba(240,98,146,0.09), transparent 65%); }
+
+    .card-amber::after { background: linear-gradient(90deg, var(--color-amber-500), transparent); }
+    .card-teal::after  { background: linear-gradient(90deg, var(--color-teal-400),  transparent); }
+    .card-rose::after  { background: linear-gradient(90deg, var(--color-rose-400),  transparent); }
+
+    .card-icon {
+      font-size: 2.2rem;
+      margin-bottom: 1.5rem;
+      display: block;
+      position: relative; z-index: 1;
+    }
+    .card-title {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      line-height: 1.1;
+      position: relative; z-index: 1;
+    }
+    .card-amber .card-title { color: var(--color-amber-300); }
+    .card-teal  .card-title { color: var(--color-teal-300);  }
+    .card-rose  .card-title { color: var(--color-rose-300);  }
+
+    .card-desc {
+      font-family: var(--font-body);
+      font-size: 0.87rem;
+      line-height: 1.82;
+      color: rgba(253,245,224,0.42);
+      font-weight: 300;
+      position: relative; z-index: 1;
+    }
+
+    /* ── Wisdom Box ── */
+    .wisdom-box {
+      border: 1px solid rgba(255,179,0,0.15);
+      padding: 3.5rem;
+      position: relative;
+    }
+    /* Top warm glow */
+    .wisdom-box::before {
+      content: '';
+      position: absolute; top: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 200px; height: 2px;
+      background: linear-gradient(90deg,
+        transparent, var(--color-amber-500), transparent);
+    }
+    .wisdom-label {
+      position: absolute; top: -0.65rem; left: 2.5rem;
+      font-family: var(--font-body);
+      font-size: 0.58rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--color-amber-600);
+      background: var(--color-dusk-950);
+      padding: 0 8px;
+    }
+
+    .wisdom-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.6rem;
+      padding: 1.4rem 0;
+      border-bottom: 1px solid rgba(255,179,0,0.07);
+    }
+    .wisdom-row:last-child { border-bottom: none; }
+
+    .wisdom-icon {
+      font-size: 1.6rem;
+      min-width: 2.4rem;
+      text-align: center;
+      padding-top: 2px;
+    }
+    .wisdom-name {
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(253,245,224,0.72);
+      margin-bottom: 5px;
+    }
+    .wisdom-text {
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      line-height: 1.76;
+      color: rgba(253,245,224,0.36);
+      font-weight: 300;
+    }
+
+    /* ── Origin ── */
+    .origin-text {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(0.92rem, 1.9vw, 1.1rem);
+      line-height: 2.05;
+      color: rgba(253,245,224,0.42);
+      font-weight: 300;
+    }
+    .origin-text em {
+      font-style: normal;
+      color: var(--color-amber-400);
+    }
+
+    /* ── Contact ── */
+    .contact-link {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: clamp(1.3rem, 3.2vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      color: var(--color-amber-400);
+      text-shadow: 0 0 30px rgba(255,179,0,0.2);
+      border-bottom: 1px solid rgba(255,179,0,0.25);
+      padding-bottom: 4px;
+      transition: color 0.3s, text-shadow 0.3s, border-color 0.3s;
+    }
+    .contact-link:hover {
+      color: var(--color-amber-300);
+      text-shadow: 0 0 50px rgba(255,179,0,0.4);
+      border-bottom-color: rgba(255,179,0,0.6);
+    }
+
+    /* ── Footer ── */
+    .site-footer {
+      padding: 2.5rem 3rem;
+      border-top: 1px solid rgba(255,179,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-copy {
+      font-family: var(--font-body);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      color: rgba(253,245,224,0.2);
+    }
+
+    /* ── Animations ── */
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up  { animation: fade-up 0.9s ease both; }
+    .delay-1  { animation-delay: 0.1s; }
+    .delay-2  { animation-delay: 0.25s; }
+    .delay-3  { animation-delay: 0.4s; }
+    .delay-4  { animation-delay: 0.55s; }
+    .delay-5  { animation-delay: 0.7s; }
+    .delay-6  { animation-delay: 0.9s; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .letters-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-row    { grid-template-columns: repeat(3, 1fr); }
+      .wisdom-box   { padding: 2rem 1.5rem; }
+      .site-footer  { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="stage-canvas"></canvas>
+  <div class="stage-layer" aria-hidden="true"></div>
+  <div class="halo-layer"  aria-hidden="true"></div>
+  <div class="vignette"    aria-hidden="true"></div>
+
+  <div class="site-wrapper">
+
+    <!-- ══════════════ HEADER ══════════════ -->
+    <header class="glass-header flex items-center justify-between px-8 py-5">
+      <a href="/" class="logo-enfj">ENFJ</a>
+      <nav class="hidden sm:flex gap-10">
+        <a href="#letters"    class="nav-link">Letters</a>
+        <a href="#stage"      class="nav-link">Stage</a>
+        <a href="#contact"    class="nav-link">Contact</a>
+      </nav>
+      <div class="domain-badge hidden sm:block">enfj.kr</div>
+    </header>
+
+    <main>
+
+      <!-- ══════════════ HERO ══════════════ -->
+      <section class="hero-section">
+        <div class="hero-bg-text"   aria-hidden="true">ENFJ</div>
+        <div class="spotlight-cone" aria-hidden="true"></div>
+
+        <div class="protagonist-badge fade-up">The Protagonist</div>
+
+        <h1 class="logo-display">ENFJ</h1>
+
+        <p class="hero-tagline">사람을 보고, 가능성을 깨운다</p>
+        <span class="script-accent">— the world moves when you speak —</span>
+
+        <div class="divider-warm fade-up delay-3">
+          <div class="warm-line"></div>
+          <div class="warm-diamond"></div>
+          <div class="warm-diamond"
+            style="background:var(--color-rose-400);box-shadow:0 0 8px rgba(240,98,146,0.5);"></div>
+          <div class="warm-line right"></div>
+        </div>
+
+        <p class="hero-quote fade-up delay-3">
+          "I don't lead because I want power —<br />
+          I lead because I can see<br />
+          who you could become."
+        </p>
+
+        <div class="flex flex-wrap justify-center gap-3 mt-10 fade-up delay-4">
+          <span class="trait-pill">🌟 Charismatic</span>
+          <span class="trait-pill">💛 Empathetic</span>
+          <span class="trait-pill">🎯 Visionary</span>
+          <span class="trait-pill">🤲 Altruistic</span>
+          <span class="trait-pill">🔥 Inspiring</span>
+        </div>
+
+        <div class="mt-12 fade-up delay-5">
+          <a href="#stage" class="cta-btn">
+            Take the Stage →
+          </a>
+        </div>
+
+        <div class="scroll-indicator">
+          <span class="scroll-label">scroll</span>
+          <div class="scroll-line"></div>
+        </div>
+      </section>
+
+      <!-- ══════════════ STATS ══════════════ -->
+      <div class="stats-row">
+        <div class="stat-cell fade-up delay-1">
+          <div class="stat-number">2%</div>
+          <div class="stat-label">Of Population</div>
+        </div>
+        <div class="stat-cell fade-up delay-2">
+          <div class="stat-number">Fe</div>
+          <div class="stat-label">Dominant Function</div>
+        </div>
+        <div class="stat-cell fade-up delay-3">
+          <div class="stat-number">∞</div>
+          <div class="stat-label">Lives Touched</div>
+        </div>
+      </div>
+
+      <!-- ══════════════ LETTERS ══════════════ -->
+      <section id="letters">
+        <div class="letters-grid">
+          <div class="letter-block l-e">
+            <div class="letter-char">E</div>
+            <div class="letter-word">Extraverted</div>
+            <div class="letter-desc">사람들 속에서<br />빛을 발산한다</div>
+          </div>
+          <div class="letter-block l-n">
+            <div class="letter-char">N</div>
+            <div class="letter-word">iNtuitive</div>
+            <div class="letter-desc">미래의 가능성과<br />큰 그림을 본다</div>
+          </div>
+          <div class="letter-block l-f">
+            <div class="letter-char">F</div>
+            <div class="letter-word">Feeling</div>
+            <div class="letter-desc">감정으로 연결하고<br />마음으로 이끈다</div>
+          </div>
+          <div class="letter-block l-j">
+            <div class="letter-char">J</div>
+            <div class="letter-word">Judging</div>
+            <div class="letter-desc">비전을 계획으로<br />현실로 완성한다</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ STAGE SECTION ══════════════ -->
+      <section id="stage" class="py-24 px-6 max-w-6xl mx-auto">
+        <div class="mb-16 fade-up">
+          <div class="section-label mb-3">Core Gifts</div>
+          <div class="section-title">The Three Lights<br />of the Protagonist</div>
+        </div>
+
+        <div class="stage-grid fade-up delay-2">
+          <div class="stage-card card-amber">
+            <span class="card-icon">🌟</span>
+            <div class="card-title">Charisma</div>
+            <p class="card-desc">
+              ENFJ는 방에 들어서는 순간 분위기를 바꾼다. 지배 기능인 외향 감정(Fe)은 주변 사람들의 감정 상태를 실시간으로 감지하고, 그에 맞게 자신을 조율하는 능력을 준다. 이 천부적 카리스마는 의도된 퍼포먼스가 아니라 진정한 관심과 온기에서 나온다. 사람들이 ENFJ 주변에서 특별함을 느끼는 이유다.
+            </p>
+          </div>
+          <div class="stage-card card-teal">
+            <span class="card-icon">🔭</span>
+            <div class="card-title">Vision</div>
+            <p class="card-desc">
+              보조 기능인 내향 직관(Ni)은 ENFJ에게 인간의 잠재력을 꿰뚫어 보는 능력을 준다. 지금의 모습이 아니라 될 수 있는 모습을 본다. 이 미래 지향적 시각이 ENFJ를 단순한 공감자가 아닌 진정한 리더로 만든다. 그들은 개인의 성장뿐 아니라 공동체 전체의 방향을 설계한다.
+            </p>
+          </div>
+          <div class="stage-card card-rose">
+            <span class="card-icon">🤝</span>
+            <div class="card-title">Devotion</div>
+            <p class="card-desc">
+              ENFJ는 타인의 성공을 자신의 성공만큼 기뻐한다. 이 헌신은 때로 자신을 소모시킬 만큼 깊지만, 그것이 그들의 본질이다. Champion이라는 별칭처럼, 다른 사람의 꿈을 위해 싸울 준비가 언제나 되어 있다. 관계는 ENFJ에게 프로젝트가 아닌 소명이다.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ WISDOM BOX ══════════════ -->
+      <section class="py-10 px-6 max-w-6xl mx-auto">
+        <div class="wisdom-box fade-up">
+          <span class="wisdom-label">PROTAGONIST_PROFILE</span>
+          <div class="wisdom-row">
+            <div class="wisdom-icon">✨</div>
+            <div>
+              <div class="wisdom-name">The Fe Conductor</div>
+              <div class="wisdom-text">
+                ENFJ의 지배 기능 외향 감정(Fe)은 집단의 감정적 흐름을 지휘하는 능력이다. 회의실에 들어서면 누가 불안한지, 누가 동기를 잃었는지, 어디에서 에너지가 막혔는지를 직관적으로 파악한다. 그리고 말 한마디, 표정 하나로 그 흐름을 바꾼다.
+              </div>
+            </div>
+          </div>
+          <div class="wisdom-row">
+            <div class="wisdom-icon">🌱</div>
+            <div>
+              <div class="wisdom-name">The Growth Catalyst</div>
+              <div class="wisdom-text">
+                ENFJ는 인간 성장의 촉매제다. 다른 사람의 잠재력을 알아보고, 그것을 현실로 이끄는 데서 깊은 보람을 찾는다. 코치, 교사, 멘토 — 어떤 역할이든 ENFJ는 타인이 더 나은 버전의 자신이 되도록 돕는 것에서 존재 의미를 찾는다.
+              </div>
+            </div>
+          </div>
+          <div class="wisdom-row">
+            <div class="wisdom-icon">🎭</div>
+            <div>
+              <div class="wisdom-name">The Authentic Mask</div>
+              <div class="wisdom-text">
+                ENFJ는 다양한 사람에게 맞춰 자신을 조율하지만, 그것이 가식이 아니다. 그들의 진짜 자아는 타인과의 연결 그 자체에 있기 때문이다. 그러나 이 적응력이 때로는 자신의 진정한 필요와 감정을 뒤로 미루는 결과를 낳기도 한다.
+              </div>
+            </div>
+          </div>
+          <div class="wisdom-row">
+            <div class="wisdom-icon">🌍</div>
+            <div>
+              <div class="wisdom-name">The Humanitarian Vision</div>
+              <div class="wisdom-text">
+                ENFJ의 시야는 개인을 넘어 인류 전체를 향한다. 더 나은 세상, 더 공정한 사회, 더 연결된 공동체를 만드는 것이 그들의 궁극적 사명이다. 이 거대한 비전이 ENFJ를 역사의 무대에서 변화의 주인공으로 만드는 이유다.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ ORIGIN ══════════════ -->
+      <section class="py-20 px-6 max-w-4xl mx-auto text-center">
+        <div class="section-label mb-6 fade-up">About</div>
+        <p class="origin-text fade-up delay-1">
+          <em>ENFJ</em>는 Myers-Briggs 16개 유형 중 가장 희귀한 유형 중 하나로,
+          전체 인구의 약 <em>2~3%</em>를 차지한다.
+          <em>Protagonist</em> 또는 <em>Teacher</em>라 불리며,
+          따뜻하고 카리스마 넘치며 타인의 성장에 진심으로 헌신한다.
+          지배 기능인 <em>외향 감정(Fe)</em>은 사람들의 감정을 실시간으로 감지하고 이끄는 능력을 주며,
+          보조 기능인 <em>내향 직관(Ni)</em>은 인간 잠재력의 미래를 꿰뚫어 본다.
+          <em>빛</em>이 되어 사람들을 이끄는 것 —
+          그것이 ENFJ가 존재하는 이유다.
+        </p>
+      </section>
+
+      <!-- ══════════════ CONTACT ══════════════ -->
+      <section id="contact" class="py-24 px-6 text-center"
+        style="border-top: 1px solid rgba(255,179,0,0.08);">
+        <div class="section-label mb-6 fade-up">Contact</div>
+        <div class="section-title mb-10 fade-up delay-1">Let's Build Something<br />Together</div>
+        <a href="mailto:hello@enfj.kr" class="contact-link fade-up delay-2">
+          hello@enfj.kr
+        </a>
+        <p class="mt-8 fade-up delay-3"
+          style="font-family:var(--font-script); font-size:1.15rem;
+                 color:rgba(253,245,224,0.25); letter-spacing:0.04em;">
+          warm · visionary · endlessly devoted
+        </p>
+      </section>
+
+    </main>
+
+    <!-- ══════════════ FOOTER ══════════════ -->
+    <footer class="site-footer">
+      <span class="footer-copy">© 2026 enfj.kr — All rights reserved.</span>
+      <span class="footer-copy" style="opacity:0.5;">
+        charisma · vision · devotion · light
+      </span>
+    </footer>
+
+  </div><!-- /site-wrapper -->
+
+  <!-- ══════════════ PARTICLE SCRIPT ══════════════ -->
+  <script>
+    (() => {
+      const canvas = document.getElementById('stage-canvas');
+      const ctx    = canvas.getContext('2d');
+
+      const AMBER  = 'rgba(255, 179,   0,';
+      const ROSE   = 'rgba(240,  98, 146,';
+      const TEAL   = 'rgba( 77, 182, 172,';
+      const IVORY  = 'rgba(253, 245, 224,';
+      const WARM   = [AMBER, ROSE, TEAL, IVORY];
+
+      let W, H;
+      const resize = () => {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      };
+      window.addEventListener('resize', () => { resize(); rebuildAll(); });
+      resize();
+
+      /* ═══ 1. StageLight — large warm glow orbs rising slowly ═══ */
+      class StageLight {
+        constructor() { this.reset(true); }
+        reset(init = false) {
+          this.x     = Math.random() * W;
+          this.y     = init ? Math.random() * H : H + 60;
+          this.r     = Math.random() * 90 + 40;
+          this.vy    = -(Math.random() * 0.2 + 0.05);
+          this.vx    = (Math.random() - 0.5) * 0.15;
+          this.life     = 0;
+          this.maxLife  = Math.random() * 600 + 400;
+          this.color    = WARM[Math.floor(Math.random() * WARM.length)];
+        }
+        update() {
+          this.x += this.vx + Math.sin(this.life * 0.012) * 0.25;
+          this.y += this.vy;
+          this.life++;
+          if (this.y + this.r < -10 || this.life > this.maxLife) this.reset();
+        }
+        draw() {
+          const t   = this.life / this.maxLife;
+          const a   = t < 0.1 ? t / 0.1 : t > 0.88 ? (1 - t) / 0.12 : 1;
+          const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r);
+          grd.addColorStop(0, this.color + (a * 0.18) + ')');
+          grd.addColorStop(1, this.color + '0)');
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+          ctx.fillStyle = grd;
+          ctx.fill();
+        }
+      }
+
+      /* ═══ 2. GoldMote — tiny gold dust rising upward ═══ */
+      class GoldMote {
+        constructor() { this.reset(true); }
+        reset(init = false) {
+          this.x     = Math.random() * W;
+          this.y     = init ? Math.random() * H : H + 6;
+          this.r     = Math.random() * 1.8 + 0.4;
+          this.vy    = -(Math.random() * 0.45 + 0.1);
+          this.vx    = (Math.random() - 0.5) * 0.25;
+          this.life     = 0;
+          this.maxLife  = Math.random() * 400 + 250;
+          this.phase    = Math.random() * Math.PI * 2;
+          this.color    = Math.random() < 0.65 ? AMBER : (Math.random() < 0.5 ? ROSE : IVORY);
+        }
+        update() {
+          this.x += this.vx + Math.sin(this.life * 0.035 + this.phase) * 0.4;
+          this.y += this.vy;
+          this.life++;
+          if (this.y < -6 || this.life > this.maxLife) this.reset();
+        }
+        draw() {
+          const t = this.life / this.maxLife;
+          const a = t < 0.1 ? t / 0.1 : t > 0.88 ? (1 - t) / 0.12 : 1;
+          /* core */
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+          ctx.fillStyle = this.color + (a * 0.8) + ')';
+          ctx.fill();
+          /* halo */
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.r * 3.5, 0, Math.PI * 2);
+          ctx.fillStyle = this.color + (a * 0.1) + ')';
+          ctx.fill();
+        }
+      }
+
+      /* ═══ 3. ConnectionLine — lines linking nearby gold motes ═══ */
+      class ConnectionLine {
+        constructor() { this.reset(true); }
+        reset(init = false) {
+          this.x1   = Math.random() * W;
+          this.y1   = init ? Math.random() * H : H + 5;
+          this.x2   = this.x1 + (Math.random() - 0.5) * 200;
+          this.y2   = this.y1 + (Math.random() - 0.5) * 200;
+          this.prog  = init ? Math.random() : 0;
+          this.speed = Math.random() * 0.005 + 0.002;
+          this.life     = 0;
+          this.maxLife  = Math.floor(1 / this.speed);
+          this.color    = Math.random() < 0.6 ? AMBER : (Math.random() < 0.5 ? ROSE : TEAL);
+          this.width    = Math.random() * 0.6 + 0.15;
+          this.delay    = init ? 0 : Math.floor(Math.random() * 180);
+        }
+        update() {
+          if (this.delay > 0) { this.delay--; return; }
+          this.prog += this.speed;
+          if (this.prog >= 1) this.reset();
+        }
+        draw() {
+          if (this.delay > 0 || this.prog <= 0) return;
+          const t  = this.prog;
+          const a  = t < 0.12 ? t / 0.12 : t > 0.88 ? (1 - t) / 0.12 : 1;
+          /* Partial line — grows from x1,y1 toward x2,y2 */
+          const px = this.x1 + (this.x2 - this.x1) * t;
+          const py = this.y1 + (this.y2 - this.y1) * t;
+          ctx.beginPath();
+          ctx.moveTo(this.x1, this.y1);
+          ctx.lineTo(px, py);
+          ctx.strokeStyle = this.color + (a * 0.2) + ')';
+          ctx.lineWidth   = this.width;
+          ctx.stroke();
+        }
+      }
+
+      /* ═══ 4. WarmRing — expanding warm ring pulses ═══ */
+      class WarmRing {
+        constructor() { this.reset(true); }
+        reset(init = false) {
+          this.cx    = Math.random() * W;
+          this.cy    = Math.random() * H;
+          this.r     = 0;
+          this.maxR  = Math.random() * 100 + 40;
+          this.life     = 0;
+          this.maxLife  = Math.random() * 200 + 120;
+          this.color    = Math.random() < 0.6 ? AMBER : ROSE;
+          this.delay    = init ? Math.floor(Math.random() * 250) : Math.floor(Math.random() * 150);
+          if (init) this.life = Math.floor(Math.random() * this.maxLife);
+        }
+        update() {
+          if (this.delay > 0) { this.delay--; return; }
+          this.life++;
+          this.r = (this.life / this.maxLife) * this.maxR;
+          if (this.life >= this.maxLife) this.reset();
+        }
+        draw() {
+          if (this.delay > 0 || this.r <= 0) return;
+          const t = this.life / this.maxLife;
+          const a = (1 - t) * 0.3;
+          ctx.beginPath();
+          ctx.arc(this.cx, this.cy, this.r, 0, Math.PI * 2);
+          ctx.strokeStyle = this.color + a + ')';
+          ctx.lineWidth   = 1;
+          ctx.stroke();
+        }
+      }
+
+      /* ── Pools ── */
+      let lights, motes, lines, rings;
+      const rebuildAll = () => {
+        lights = Array.from({ length: 14 }, () => new StageLight());
+        motes  = Array.from({ length: 60 }, () => new GoldMote());
+        lines  = Array.from({ length: 25 }, () => new ConnectionLine());
+        rings  = Array.from({ length: 18 }, () => new WarmRing());
+      };
+      rebuildAll();
+
+      /* ── Loop ── */
+      const loop = () => {
+        ctx.clearRect(0, 0, W, H);
+        lights.forEach(p => { p.update(); p.draw(); });
+        rings.forEach(p  => { p.update(); p.draw(); });
+        lines.forEach(p  => { p.update(); p.draw(); });
+        motes.forEach(p  => { p.update(); p.draw(); });
+        requestAnimationFrame(loop);
+      };
+      loop();
+    })();
+  </script>
+
+</body>
+</html>
