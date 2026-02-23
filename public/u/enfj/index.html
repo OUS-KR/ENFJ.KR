@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ENFJ — enfj.kr</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Cinzel:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style type="text/tailwindcss">
+    @theme {
+      --color-gold-300: #fde68a;
+      --color-gold-400: #fbbf24;
+      --color-gold-500: #f59e0b;
+      --color-rose-400: #fb7185;
+      --color-rose-500: #f43f5e;
+      --color-sky-400: #38bdf8;
+      --color-emerald-400: #34d399;
+      --color-void-950: #05030a;
+      --color-void-900: #0b0715;
+      --color-void-800: #130f22;
+      --font-serif: 'Cinzel', 'Noto Serif KR', serif;
+      --font-sans: 'Inter', 'Noto Serif KR', sans-serif;
+    }
+  </style>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: #05030a;
+      color: #f5e9d0;
+      font-family: 'Inter', 'Noto Serif KR', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Aurora background */
+    .aurora {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 20%, rgba(251,191,36,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 80%, rgba(244,63,94,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 70% 50% at 50% 50%, rgba(56,189,248,0.04) 0%, transparent 70%);
+      animation: auroraShift 12s ease-in-out infinite alternate;
+    }
+    @keyframes auroraShift {
+      0% { opacity: 0.7; transform: scale(1) rotate(0deg); }
+      100% { opacity: 1; transform: scale(1.06) rotate(2deg); }
+    }
+
+    /* Radial vignette */
+    .vignette {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: radial-gradient(ellipse 90% 90% at 50% 50%, transparent 40%, rgba(5,3,10,0.85) 100%);
+    }
+
+    /* Shimmer stripe */
+    .top-stripe {
+      position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 50;
+      background: linear-gradient(90deg, #f59e0b, #fb7185, #38bdf8, #34d399, #f59e0b);
+      background-size: 300% 100%;
+      animation: stripeFlow 4s linear infinite;
+    }
+    @keyframes stripeFlow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 300% 50%; }
+    }
+
+    /* Particle layer */
+    #particle-layer {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none; overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0;
+      animation: floatUp var(--dur, 8s) var(--delay, 0s) ease-in-out infinite;
+    }
+    @keyframes floatUp {
+      0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+      10%  { opacity: 0.6; }
+      90%  { opacity: 0.3; }
+      100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+    }
+
+    /* SVG corner decor */
+    .corner-decor {
+      position: fixed; width: 80px; height: 80px; z-index: 3; pointer-events: none; opacity: 0.25;
+    }
+    .corner-tl { top: 12px; left: 12px; }
+    .corner-tr { top: 12px; right: 12px; transform: scaleX(-1); }
+    .corner-bl { bottom: 12px; left: 12px; transform: scaleY(-1); }
+    .corner-br { bottom: 12px; right: 12px; transform: scale(-1,-1); }
+
+    /* Main wrapper */
+    .main { position: relative; z-index: 10; max-width: 480px; margin: 0 auto; padding: 60px 16px 40px; }
+
+    /* Section card */
+    .section-card {
+      background: rgba(19,15,34,0.75);
+      border: 1px solid rgba(251,191,36,0.15);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(251,191,36,0.08);
+    }
+
+    /* Avatar ring */
+    .avatar-ring {
+      width: 110px; height: 110px; border-radius: 50%; padding: 3px;
+      background: conic-gradient(#f59e0b, #fb7185, #38bdf8, #34d399, #f59e0b);
+      animation: ringRotate 5s linear infinite;
+      margin: 0 auto 16px;
+      position: relative;
+    }
+    @keyframes ringRotate { to { transform: rotate(360deg); } }
+    .avatar-ring img {
+      width: 100%; height: 100%; border-radius: 50%;
+      border: 3px solid #05030a; object-fit: cover;
+    }
+    .status-dot {
+      position: absolute; bottom: 6px; right: 6px;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #34d399; border: 2px solid #05030a;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(52,211,153,0.5);} 50%{box-shadow:0 0 0 8px rgba(52,211,153,0);} }
+
+    /* Shimmer text */
+    .shimmer-text {
+      background: linear-gradient(90deg, #fde68a, #fb7185, #fbbf24, #38bdf8, #fde68a);
+      background-size: 300% 100%;
+      -webkit-background-clip: text; background-clip: text; color: transparent;
+      animation: shimmer 4s linear infinite;
+    }
+    @keyframes shimmer { 0%{background-position:0% 50%;} 100%{background-position:300% 50%;} }
+
+    /* Tag pills */
+    .tag {
+      display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 11px;
+      font-weight: 600; letter-spacing: 0.08em;
+      border: 1px solid; margin: 3px;
+    }
+
+    /* ENFJ type cards */
+    .type-card {
+      background: rgba(251,191,36,0.08);
+      border: 1px solid rgba(251,191,36,0.25);
+      border-radius: 12px; padding: 14px 8px; text-align: center; flex: 1;
+    }
+
+    /* Link buttons */
+    .link-btn {
+      display: flex; align-items: center; gap: 14px;
+      width: 100%; padding: 14px 18px; border-radius: 14px;
+      border: 1px solid rgba(251,191,36,0.2);
+      background: rgba(19,15,34,0.6);
+      color: #f5e9d0; text-decoration: none;
+      font-size: 14px; font-weight: 600;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(8px);
+      margin-bottom: 10px;
+    }
+    .link-btn:hover {
+      background: rgba(245,158,11,0.15);
+      border-color: rgba(245,158,11,0.5);
+      transform: translateX(4px);
+      box-shadow: 0 0 20px rgba(245,158,11,0.15);
+    }
+    .link-btn .icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+
+    /* Progress bars */
+    .progress-track {
+      background: rgba(255,255,255,0.08); border-radius: 999px; height: 8px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; border-radius: 999px; width: 0%;
+      transition: width 1.4s cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* Carousel */
+    .carousel-wrapper { position: relative; overflow: hidden; border-radius: 16px; }
+    .carousel-track {
+      display: flex; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+    }
+    .carousel-slide { min-width: 100%; position: relative; }
+    .carousel-slide img { width: 100%; height: 220px; object-fit: cover; display: block; }
+    .carousel-caption {
+      position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 16px;
+      background: linear-gradient(transparent, rgba(5,3,10,0.85));
+      font-size: 13px; color: #fde68a;
+    }
+    .carousel-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(5,3,10,0.6); border: 1px solid rgba(251,191,36,0.3);
+      color: #fbbf24; width: 36px; height: 36px; border-radius: 50%;
+      cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; backdrop-filter: blur(4px);
+    }
+    .carousel-btn:hover { background: rgba(245,158,11,0.25); }
+    .carousel-prev { left: 10px; }
+    .carousel-next { right: 10px; }
+    .carousel-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+    .carousel-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(251,191,36,0.3); cursor: pointer; transition: all 0.2s;
+    }
+    .carousel-dot.active { background: #f59e0b; transform: scale(1.3); }
+
+    /* Music player */
+    .vinyl {
+      width: 80px; height: 80px; border-radius: 50%; flex-shrink: 0;
+      background: conic-gradient(#1a1025 0deg, #2d1b4e 60deg, #1a1025 120deg, #3b2060 180deg, #1a1025 240deg, #2d1b4e 300deg, #1a1025 360deg);
+      position: relative; cursor: pointer; border: 3px solid rgba(251,191,36,0.3);
+    }
+    .vinyl::after {
+      content: ''; position: absolute; inset: 28%;
+      border-radius: 50%; background: #f59e0b;
+      box-shadow: 0 0 10px rgba(245,158,11,0.5);
+    }
+    .vinyl.playing { animation: vinylSpin 4s linear infinite; }
+    @keyframes vinylSpin { to { transform: rotate(360deg); } }
+    .track-list { margin-top: 12px; }
+    .track-item {
+      display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px;
+      cursor: pointer; transition: background 0.2s; font-size: 13px;
+    }
+    .track-item:hover { background: rgba(245,158,11,0.1); }
+    .track-item.active { background: rgba(245,158,11,0.15); color: #fbbf24; }
+    .progress-bar-wrapper { margin-top: 12px; }
+
+    /* Project cards */
+    .project-card {
+      background: rgba(19,15,34,0.8);
+      border: 1px solid rgba(251,191,36,0.12);
+      border-radius: 14px; padding: 16px;
+      transition: all 0.3s ease; cursor: pointer;
+    }
+    .project-card:hover {
+      border-color: rgba(245,158,11,0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(245,158,11,0.1);
+    }
+
+    /* FAQ */
+    details { border-bottom: 1px solid rgba(251,191,36,0.12); }
+    details summary {
+      padding: 14px 0; cursor: pointer; font-weight: 600; font-size: 14px;
+      list-style: none; display: flex; justify-content: space-between; align-items: center;
+      color: #fde68a;
+    }
+    details summary::-webkit-details-marker { display: none; }
+    details summary::after { content: '+'; color: #f59e0b; font-size: 18px; }
+    details[open] summary::after { content: '−'; }
+    details p { padding: 0 0 14px; font-size: 13px; color: #c4b5a0; line-height: 1.7; }
+
+    /* Forms */
+    .form-input {
+      width: 100%; background: rgba(19,15,34,0.8);
+      border: 1px solid rgba(251,191,36,0.2);
+      color: #f5e9d0; border-radius: 10px; padding: 12px 14px;
+      font-size: 14px; outline: none; transition: border-color 0.2s;
+      margin-bottom: 10px;
+    }
+    .form-input:focus { border-color: rgba(245,158,11,0.6); }
+    .form-input option { background: #130f22; }
+    .btn-submit {
+      width: 100%; padding: 13px; border-radius: 12px; border: none; cursor: pointer;
+      font-weight: 700; font-size: 14px; letter-spacing: 0.06em;
+      background: linear-gradient(135deg, #f59e0b, #fb7185);
+      color: #05030a; transition: all 0.3s ease;
+    }
+    .btn-submit:hover { opacity: 0.88; transform: translateY(-1px); }
+
+    /* Reveal animation */
+    .reveal { opacity: 0; transform: translateY(28px); transition: all 0.7s cubic-bezier(0.4,0,0.2,1); }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* Influence meter */
+    .influence-bar {
+      display: flex; gap: 4px; margin-top: 6px;
+    }
+    .influence-segment {
+      flex: 1; height: 10px; border-radius: 3px;
+      background: rgba(245,158,11,0.15);
+      transition: background 0.6s ease;
+    }
+    .influence-segment.lit { background: linear-gradient(90deg, #f59e0b, #fb7185); }
+
+    /* Divider */
+    .gold-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #f59e0b55, transparent);
+      margin: 6px 0 16px;
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: fixed; bottom: 20px; right: 20px; z-index: 100;
+      width: 42px; height: 42px; border-radius: 50%;
+      background: rgba(245,158,11,0.15);
+      border: 1px solid rgba(245,158,11,0.4);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; backdrop-filter: blur(4px);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .scroll-indicator.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div class="aurora"></div>
+  <div class="vignette"></div>
+  <div class="top-stripe"></div>
+  <div id="particle-layer"></div>
+
+  <!-- Corner SVG Decor -->
+  <svg class="corner-decor corner-tl" viewBox="0 0 80 80" fill="none">
+    <path d="M4 76 L4 4 L76 4" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M4 40 L20 40 M40 4 L40 20" stroke="#fb7185" stroke-width="1" opacity="0.6"/>
+    <circle cx="4" cy="4" r="3" fill="#f59e0b"/>
+  </svg>
+  <svg class="corner-decor corner-tr" viewBox="0 0 80 80" fill="none">
+    <path d="M4 76 L4 4 L76 4" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M4 40 L20 40 M40 4 L40 20" stroke="#fb7185" stroke-width="1" opacity="0.6"/>
+    <circle cx="4" cy="4" r="3" fill="#f59e0b"/>
+  </svg>
+  <svg class="corner-decor corner-bl" viewBox="0 0 80 80" fill="none">
+    <path d="M4 76 L4 4 L76 4" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M4 40 L20 40 M40 4 L40 20" stroke="#fb7185" stroke-width="1" opacity="0.6"/>
+    <circle cx="4" cy="4" r="3" fill="#f59e0b"/>
+  </svg>
+  <svg class="corner-decor corner-br" viewBox="0 0 80 80" fill="none">
+    <path d="M4 76 L4 4 L76 4" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M4 40 L20 40 M40 4 L40 20" stroke="#fb7185" stroke-width="1" opacity="0.6"/>
+    <circle cx="4" cy="4" r="3" fill="#f59e0b"/>
+  </svg>
+
+  <!-- Scroll to top -->
+  <div class="scroll-indicator" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="#f59e0b">
+      <path d="M8 3l5 5H3z"/>
+    </svg>
+  </div>
+
+  <main class="main">
+
+    <!-- ① HERO -->
+    <section class="section-card reveal" style="text-align:center;">
+      <p style="font-size:11px;color:#c4b5a0;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:16px;">
+        ✦ The Protagonist ✦
+      </p>
+      <div class="avatar-ring">
+        <img src="https://api.dicebear.com/9.x/shapes/svg?seed=enfj&backgroundColor=0b0715&color=f59e0b,fb7185,38bdf8,34d399" alt="ENFJ Avatar" />
+        <div class="status-dot"></div>
+      </div>
+      <h1 class="shimmer-text" style="font-family:'Cinzel',serif;font-size:42px;font-weight:700;letter-spacing:0.12em;">ENFJ</h1>
+      <p style="font-size:14px;color:#f59e0b;font-weight:600;margin-top:4px;letter-spacing:0.08em;">enfj.kr · 주인공형</p>
+      <div class="gold-divider" style="margin:14px 0;"></div>
+      <p style="font-size:13px;color:#c4b5a0;font-style:italic;line-height:1.7;margin-bottom:16px;">
+        "나는 당신 안의 가능성을 봅니다.<br/>그리고 그것을 세상에 드러낼 수 있도록 돕겠습니다."
+      </p>
+      <div style="margin-bottom:16px;">
+        <span class="tag" style="border-color:#f59e0b44;color:#fde68a;background:rgba(245,158,11,0.08);">#주인공</span>
+        <span class="tag" style="border-color:#fb718544;color:#fda4af;background:rgba(251,113,133,0.08);">#카리스마</span>
+        <span class="tag" style="border-color:#38bdf844;color:#7dd3fc;background:rgba(56,189,248,0.08);">#공감능력</span>
+        <span class="tag" style="border-color:#34d39944;color:#6ee7b7;background:rgba(52,211,153,0.08);">#리더십</span>
+      </div>
+
+      <!-- E·N·F·J type cards -->
+      <div style="display:flex;gap:8px;margin-bottom:18px;">
+        <div class="type-card">
+          <div style="font-size:24px;font-weight:700;color:#fbbf24;font-family:'Cinzel',serif;">E</div>
+          <div style="font-size:10px;color:#c4b5a0;margin-top:2px;">Extroverted<br/>외향형</div>
+        </div>
+        <div class="type-card" style="border-color:rgba(244,63,94,0.25);background:rgba(244,63,94,0.08);">
+          <div style="font-size:24px;font-weight:700;color:#fb7185;font-family:'Cinzel',serif;">N</div>
+          <div style="font-size:10px;color:#c4b5a0;margin-top:2px;">Intuitive<br/>직관형</div>
+        </div>
+        <div class="type-card" style="border-color:rgba(56,189,248,0.25);background:rgba(56,189,248,0.08);">
+          <div style="font-size:24px;font-weight:700;color:#38bdf8;font-family:'Cinzel',serif;">F</div>
+          <div style="font-size:10px;color:#c4b5a0;margin-top:2px;">Feeling<br/>감정형</div>
+        </div>
+        <div class="type-card" style="border-color:rgba(52,211,153,0.25);background:rgba(52,211,153,0.08);">
+          <div style="font-size:24px;font-weight:700;color:#34d399;font-family:'Cinzel',serif;">J</div>
+          <div style="font-size:10px;color:#c4b5a0;margin-top:2px;">Judging<br/>판단형</div>
+        </div>
+      </div>
+
+      <!-- Influence Meter -->
+      <div style="text-align:left;">
+        <p style="font-size:11px;color:#a09080;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px;">영향력 지수</p>
+        <div class="influence-bar" id="influenceMeter">
+          <div class="influence-segment" data-delay="0"></div>
+          <div class="influence-segment" data-delay="1"></div>
+          <div class="influence-segment" data-delay="2"></div>
+          <div class="influence-segment" data-delay="3"></div>
+          <div class="influence-segment" data-delay="4"></div>
+          <div class="influence-segment" data-delay="5"></div>
+          <div class="influence-segment" data-delay="6"></div>
+          <div class="influence-segment" data-delay="7"></div>
+          <div class="influence-segment" data-delay="8"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">
+          <span style="font-size:10px;color:#a09080;">최소</span>
+          <span style="font-size:10px;color:#f59e0b;font-weight:700;">MAX</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ② ANNOUNCEMENT -->
+    <section class="section-card reveal" style="border-color:rgba(245,158,11,0.3);background:rgba(245,158,11,0.06);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">📣</span>
+        <div>
+          <p style="font-size:11px;color:#f59e0b;letter-spacing:0.12em;font-weight:700;">ANNOUNCEMENT</p>
+          <p style="font-size:14px;color:#f5e9d0;margin-top:2px;">새로운 리더십 워크숍 <strong style="color:#fbbf24;">Season 5</strong> 오픈! 함께 성장하는 여정에 참여하세요.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ③ SOCIAL LINKS -->
+    <section class="section-card reveal">
+      <p style="font-size:11px;color:#a09080;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:14px;">Connect</p>
+      <a href="https://instagram.com/enfj.kr" class="link-btn" target="_blank" rel="noopener">
+        <span class="icon" style="background:linear-gradient(135deg,#f59e0b,#fb7185);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
+          </svg>
+        </span>
+        <span>Instagram</span>
+        <span style="margin-left:auto;font-size:12px;color:#a09080;">@enfj.kr</span>
+      </a>
+      <a href="https://youtube.com/@enfj.kr" class="link-btn" target="_blank" rel="noopener">
+        <span class="icon" style="background:#ef4444;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+            <path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        </span>
+        <span>YouTube</span>
+        <span style="margin-left:auto;font-size:12px;color:#a09080;">@enfj.kr</span>
+      </a>
+      <a href="https://x.com/enfj_kr" class="link-btn" target="_blank" rel="noopener">
+        <span class="icon" style="background:#000;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.747l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+        </span>
+        <span>X / Twitter</span>
+        <span style="margin-left:auto;font-size:12px;color:#a09080;">@enfj_kr</span>
+      </a>
+      <a href="https://github.com/enfj-kr" class="link-btn" target="_blank" rel="noopener">
+        <span class="icon" style="background:#333;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+            <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+          </svg>
+        </span>
+        <span>GitHub</span>
+        <span style="margin-left:auto;font-size:12px;color:#a09080;">github.com/enfj-kr</span>
+      </a>
+      <a href="mailto:hello@enfj.kr" class="link-btn">
+        <span class="icon" style="background:linear-gradient(135deg,#38bdf8,#34d399);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+            <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+          </svg>
+        </span>
+        <span>Email</span>
+        <span style="margin-left:auto;font-size:12px;color:#a09080;">hello@enfj.kr</span>
+      </a>
+    </section>
+
+    <!-- ④ PROTAGONIST TRAITS -->
+    <section class="section-card reveal">
+      <p style="font-size:11px;color:#a09080;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:16px;">Protagonist Traits</p>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:13px;font-weight:600;color:#fde68a;">✨ 공감 능력 (Empathy)</span>
+            <span style="font-size:13px;font-weight:700;color:#f59e0b;" data-target="96">0%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="background:linear-gradient(90deg,#f59e0b,#fbbf24);" data-width="96"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:13px;font-weight:600;color:#fda4af;">🌟 카리스마 (Charisma)</span>
+            <span style="font-size:13px;font-weight:700;color:#fb7185;" data-target="94">0%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="background:linear-gradient(90deg,#fb7185,#f43f5e);" data-width="94"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:13px;font-weight:600;color:#7dd3fc;">💬 소통 능력 (Communication)</span>
+            <span style="font-size:13px;font-weight:700;color:#38bdf8;" data-target="98">0%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="background:linear-gradient(90deg,#38bdf8,#0ea5e9);" data-width="98"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+            <span style="font-size:13px;font-weight:600;color:#6ee7b7;">🌱 성장 촉진 (Growth Facilitation)</span>
+            <span style="font-size:13px;font-weight:700;color:#34d399;" data-target="92">0%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" style="background:linear-gradient(90deg,#34d399,#10b981);" data-width="92"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑤ PROTAGONIST VOICE (Quotes) -->
+    <section class="section-card reveal" style="border-color:rgba(244,63,94,0.2);">
+      <p style="font-size:11px;color:#a09080;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:14px;">Protagonist Voice</p>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="border-left:3px solid #f59e0b;padding-left:14px;">
+          <p style="font-size:14px;color:#f5e9d0;font-style:italic;line-height:1.7;">"진정한 리더는 앞에서 끌어당기는 사람이 아니라, 옆에서 함께 걷는 사람입니다."</p>
+          <p style="font-size:11px;color:#a09080;margin-top:4px;">— Leadership Insight</p>
+        </div>
+        <div style="border-left:3px solid #fb7185;padding-left:14px;">
+          <p style="font-size:14px;color:#f5e9d0;font-style:italic;line-height:1.7;">"당신의 이야기가 누군가의 생명줄이 될 수 있습니다. 당신의 목소리를 숨기지 마세요."</p>
+          <p style="font-size:11px;color:#a09080;margin-top:4px;">— Community Post</p>
+        </div>
+        <div style="border-left:3px solid #38bdf8;padding-left:14px;">
+          <p style="font-size:14px;color:#f5e9d0;font-style:italic;line-height:1.7;">"모든 사람은 성장할 수 있습니다. 단지 올바른 환경과 사람이 필요할 뿐입니다."</p>
+          <p style="font-size:11px;color:#a09080;margin-top:4px;">— Workshop Talk</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑥ FEATURED VIDEO -->
+    <section class="section-card reveal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+        <p style="font-size:11px;color:#a09080;letter-spacing:0.15em;text-transform:uppercase;">Featured Video</p>
+        <span style="font-size:11px;color:#fb7185;">▶ 33.6K views</span>
+      </div>
+      <div style="border-radius:12px;overflow:hidden;border:1px solid rgba(251,191,36,0.15);">
+        <iframe
+          width="100%" height="220"
+          src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+          title="ENFJ Featured Video"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          style="display:block;">
+        </iframe>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:10px;">
+        <p style="font-size:13px;color:#fde68a;font-weight:600;">ENFJ 리더십의 비밀 | 주인공형 인간관계 특강</p>
+        <span style="font-size:11px;color:#34d399;">4.8K 좋아요</span>
+      </div>
+    </section>
+
+    <!-- ⑦ VIDEO PLAYLIST -->
+    <section class="section-card reveal">
+      <p style="font-size:11px;color:#a09080;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:14px;">Playlist</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <a href="https://youtube.com/@enfj.kr" target="_blank" rel="noopener" style="display:flex;gap:10px;align-items:center;text-decoration:none;padding:8px;border-radius:10px;border:1px solid rgba(251,191,36,0.1);transition:all 0.2s;" onmouseover="this.style.background='rgba(245,158,11,0.08)'" onmouseout="this.style.background='transparent'">
+          <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg" alt="video 1" style="width:80px;height:52px;border-radius:6px;object-fit:cover;" />
+          <div>
+            <p style="font-size:13px;color:#f5e9d0;font-weight:600;line-height:1.4;">공감으로 세상을 바꾸는 ENFJ의 대화법</p>
+            <p style="font-size:11px;color:#a09080;margin-top:2px;">12:34 · 21K views</p>
+          </div>
+        </a>
+        <a href="https://youtube.com/@enfj.kr" target="_blank" rel="noopener" style="display:flex;gap:10px;align-items:center;text-decoration:none;padding:8px;border-radius:10px;border:1px solid rgba(251,191,36,0.1);transition:all 0.2s;" onmouseover="this.style.background='rgba(245,158,11,0.08)'" onmouseout="this.style.background='transparent'">
+          <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg" alt="video 2" style="width:80px;height:52px;border-radius:6px;object-fit:cover;" />
+          <div>
+            <p style="font-size:13px;color:#f5e9d0;font-weight:600;line-height:1.4;">ENFJ가 번아웃을 극복하는 방법</p>
+            <p style="font-size:11px;color:#a09080;margin-top:2px;">9:17 · 18K views</p>
+          </div>
+        </a>
+        <a href="https://youtube.com/@enfj.kr" target="_blank" rel="noopener" style="display:flex;gap:10px;align-items:center;text-decoration:none;padding:8px;border-radius:10px;border:1px solid rgba(251,191,36,0.1);transition:all 0.2s;" onmouseover="this.style.background='rgba(245,158,11,0.08)'" onmouseout="this.style.background='transparent'">
+          <img src="https://img.youtube.com/vi/dQw4w9WgXcQ/mqdefault.jpg" alt="video 3" style="width:80px;height:52px;border-radius:6px;object-fit:cover;" />
+          <div>
+            <p style="font-size:13px;color:#f5e9d0;font-weight:600;line-height:1.4;">주인공형이 사랑받는 진짜 이유 TOP 7</p>
+            <p style="font-size:11px;color:#a09080;margin-top:2px;">15:02 · 29K views</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ⑧ IMAGE CAROUSEL -->
+    <section class="section-card reveal" style="padding:24px 16px;">
+      <p style="font-size:11px;color:#a09080;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:14px;padding:0 8px;">Gallery</p>
+      <div class="carousel-wrapper">
+        <div class="carousel-track" id="carouselTrack">
+          <div class="carousel-slide">
+            <img src="https://images.unsplash.com/photo-1527689368864-3a821dbccc34?w=480&q=80" alt="Leadership" />
+            <div class="carousel-caption">🌟 리더십의 빛 — 함께 만드는 무대</div>
+          </div>
+          <div class="carousel-slide">
+            <img src="https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=480&q=80" alt="Community" />
+            <div class="carousel-caption">🤝 커뮤니티 — 연결의 힘</div>
+          </div>
+          <div class="carousel-slide">
+            <img src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=480&q=80" alt="Workshop" />
+            <div class="carousel-caption">📚 워크숍 — 함께 성장하는 공간</div>
+          </div>
+          <div class="carousel-slide">
+            <img src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=480&q=80" alt="Speaking" />
+            <div class="carousel-caption">🎤 스피치 — 말로 세상을 움직이다</div>
+          </div>
+          <div class="carousel-slide">
+            <img src="https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=480&q=80" alt="Vision" />
+            <div class="carousel-caption">🌈 비전 — 미래를 함께 그리다</div>
+          </div>
+        </div>
+        <button class="carousel-btn carousel-prev" id="carouselPrev">‹</button>
+        <button class="carousel-btn carousel-next" id="carouselNext">›</button>
+      </div>
+      <div class="carousel-dots" id="carouselDots">
+        <div class="carousel-dot active" data-index="0"></div>
+        <div class="carousel-dot" data-index="1"></div>
+        <div class="carousel-dot" data-index="2"></div>
+        <div class="carousel-dot" data-index="3"></div>
+        <div class="carousel-dot" data-index="4"></div>
+      </div>
+    </section>
+
+    <!-- ⑨ SPOTLIGHT -->
+    <section class="section-card reveal" style="padding:0;overflow:hidden;border-radius:20px;">
+      <div style="position:relative;">
+        <img src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=480&q=80" alt="Spotlight" style="width:100%;height:200px;object-fit:cover;display:block;" />
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(5,3,10,0.9) 100%);display:flex;align-items:flex-end;padding:20px;">
+          <div>
+            <p style="font-size:11px;color:#f59e0b;letter-spacing:0.15em;font-weight:700;">SPOTLIGHT</p>
+            <p style="font-size:16px;color:#fff;font-weight:700;margin-top:4px;">당신의 가능성을 깨우는 ENFJ의 공간</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑩ MUSIC PLAYER -->
+    <section class="section-card reveal">
+      <p style="font-size:11px;color:#a09080;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:16px;">Now Playing</p>
+      <div style="display:flex;gap:16px;align-items:center;">
+        <div class="vinyl" id="vinyl" onclick="toggleMusic()"></div>
+        <div style="flex:1;">
+          <p style="font-size:15px;font-weight:700;color:#fde68a;" id="trackTitle">Protagonist Theme</p>
+          <p style="font-size:12px;color:#a09080;" id="trackArtist">ENFJ Orchestra</p>
+          <div class="progress-bar-wrapper">
+            <div class="progress-track" style="margin-top:8px;">
+              <div class="progress-fill" id="musicProgress" style="background:linear-gradient(90deg,#f59e0b,#fb7185);width:0%;transition:width 0.1s linear;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:4px;">
+              <span style="font-size:10px;color:#a09080;" id="currentTime">0:00</span>
+              <span style="font-size:10px;color:#a09080;">3:45</span>
+            </div>
+          </div>
+        </div>
+        <button onclick="toggleMusic()" style="background:none;border:1px solid rgba(245,158,11,0.4);color:#f59e0b;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;" id="playBtn">▶</button>
+      </div>
+      <div class="track-list">
+        <div class="track-item active" onclick="selectTrack(0,'Protagonist Theme','ENFJ Orchestra')">
+          <span style="font-size:14px;">🎵</span>
+          <span style="flex:1;">Protagonist Theme</span>
+          <span style="font-size:11px;color:#a09080;">3:45</span>
+        </div>
+        <div class="track-item" onclick="selectTrack(1,'Empathy Waves','Heart Strings')">
+          <span style="font-size:14px;">🎶</span>
+          <span style="flex:1;">Empathy Waves</span>
+          <span style="font-size:11px;color:#a09080;">4:12</span>
+        </div>
+        <div class="track-item" onclick="selectTrack(2,'Rise Together','Vision Choir')">
+          <span style="font-size:14px;">🎸</span>
+          <span style="flex:1;">Rise Together</span>
+          <span style="font-size:11px;color:#a09080;">5:03</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑪ PROJECTS -->
+    <section class="section-card reveal">
+      <p style="font-size:11px;color:#a09080;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:14px;">Projects</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="project-card">
+          <div style="font-size:22px;margin-bottom:8px;">🏛️</div>
+          <p style="font-size:13px;font-weight:700;color:#fde68a;">Growth Lab</p>
+          <p style="font-size:11px;color:#a09080;margin-top:4px;line-height:1.5;">성장을 위한 실험적 커뮤니티 플랫폼</p>
+          <span style="display:inline-block;margin-top:8px;font-size:10px;color:#34d399;border:1px solid rgba(52,211,153,0.3);padding:2px 8px;border-radius:999px;">Active</span>
+        </div>
+        <div class="project-card">
+          <div style="font-size:22px;margin-bottom:8px;">🗺️</div>
+          <p style="font-size:13px;font-weight:700;color:#fde68a;">Soul Map</p>
+          <p style="font-size:11px;color:#a09080;margin-top:4px;line-height:1.5;">내면 탐구와 자기 이해를 위한 가이드</p>
+          <span style="display:inline-block;margin-top:8px;font-size:10px;color:#38bdf8;border:1px solid rgba(56,189,248,0.3);padding:2px 8px;border-radius:999px;">Beta</span>
+        </div>
+        <div class="project-card">
+          <div style="font-size:22px;margin-bottom:8px;">🎙️</div>
+          <p style="font-size:13px;font-weight:700;color:#fde68a;">Voice Studio</p>
+          <p style="font-size:11px;color:#a09080;margin-top:4px;line-height:1.5;">당신의 이야기를 세상과 연결하는 공간</p>
+          <span style="display:inline-block;margin-top:8px;font-size:10px;color:#fbbf24;border:1px solid rgba(251,191,36,0.3);padding:2px 8px;border-radius:999px;">New</span>
+        </div>
+        <div class="project-card">
+          <div style="font-size:22px;margin-bottom:8px;">🌱</div>
+          <p style="font-size:13px;font-weight:700;color:#fde68a;">Mentor Circle</p>
+          <p style="font-size:11px;color:#a09080;margin-top:4px;line-height:1.5;">1:1 멘토링과 그룹 코칭 프로그램</p>
+          <span style="display:inline-block;margin-top:8px;font-size:10px;color:#fb7185;border:1px solid rgba(251,113,133,0.3);padding:2px 8px;border-radius:999px;">Open</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑫ RECENT POSTS -->
+    <section class="section-card reveal">
+      <p style="font-size:11px;color:#a09080;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:14px;">Recent Posts</p>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="border-bottom:1px solid rgba(251,191,36,0.08);padding-bottom:14px;">
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <span class="tag" style="border-color:#f59e0b44;color:#fde68a;background:rgba(245,158,11,0.08);font-size:10px;">#리더십</span>
+            <span class="tag" style="border-color:#34d39944;color:#6ee7b7;background:rgba(52,211,153,0.08);font-size:10px;">#성장</span>
+          </div>
+          <p style="font-size:14px;font-weight:600;color:#f5e9d0;line-height:1.5;">ENFJ가 팀을 이끄는 5가지 비밀 원칙</p>
+          <p style="font-size:11px;color:#a09080;margin-top:4px;">2025.12.08 · 5분 읽기</p>
+        </div>
+        <div style="border-bottom:1px solid rgba(251,191,36,0.08);padding-bottom:14px;">
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <span class="tag" style="border-color:#fb718544;color:#fda4af;background:rgba(251,113,133,0.08);font-size:10px;">#공감</span>
+            <span class="tag" style="border-color:#38bdf844;color:#7dd3fc;background:rgba(56,189,248,0.08);font-size:10px;">#관계</span>
+          </div>
+          <p style="font-size:14px;font-weight:600;color:#f5e9d0;line-height:1.5;">감정을 읽는 사람 — ENFJ의 공감 능력과 경계 설정</p>
+          <p style="font-size:11px;color:#a09080;margin-top:4px;">2025.11.22 · 7분 읽기</p>
+        </div>
+        <div>
+          <div style="display:flex;gap:6px;margin-bottom:6px;">
+            <span class="tag" style="border-color:#a78bfa44;color:#c4b5fd;background:rgba(167,139,250,0.08);font-size:10px;">#자기계발</span>
+            <span class="tag" style="border-color:#fbbf2444;color:#fde68a;background:rgba(251,191,36,0.08);font-size:10px;">#MBTI</span>
+          </div>
+          <p style="font-size:14px;font-weight:600;color:#f5e9d0;line-height:1.5;">주인공형 인간 — ENFJ의 빛과 그림자</p>
+          <p style="font-size:11px;color:#a09080;margin-top:4px;">2025.11.05 · 6분 읽기</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ⑬ FAQ -->
+    <section class="section-card reveal">
+      <p style="font-size:11px;color:#a09080;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:14px;">FAQ</p>
+      <details>
+        <summary>ENFJ는 어떤 성격 유형인가요?</summary>
+        <p>ENFJ는 Myers-Briggs 성격 유형 중 "주인공형"으로 불립니다. 외향적(E), 직관적(N), 감정적(F), 판단적(J) 특성을 가지며, 타인의 감정에 깊이 공감하고 주변 사람들의 성장을 이끄는 천부적인 리더십을 보여줍니다. 전 세계 인구의 약 2~5%를 차지합니다.</p>
+      </details>
+      <details>
+        <summary>ENFJ의 주요 강점은 무엇인가요?</summary>
+        <p>ENFJ는 탁월한 공감 능력, 강력한 카리스마, 뛰어난 소통 능력을 보유합니다. 사람들의 잠재력을 발견하고 이를 이끌어내는 능력이 특출나며, 팀 내 갈등을 중재하고 조화로운 환경을 만드는 데 탁월합니다. 또한 장기적인 비전을 설정하고 타인을 그 방향으로 감화시키는 능력이 뛰어납니다.</p>
+      </details>
+      <details>
+        <summary>enfj.kr에서 무엇을 찾을 수 있나요?</summary>
+        <p>enfj.kr은 ENFJ 성격 유형에 대한 심층 분석, 리더십 인사이트, 인간관계 가이드를 제공합니다. 워크숍, 멘토링 프로그램, 그리고 ENFJ들이 모여 서로 성장을 응원하는 커뮤니티 공간입니다. 모든 콘텐츠는 "함께 성장한다"는 ENFJ의 핵심 가치를 중심으로 구성됩니다.</p>
+      </details>
+    </section>
+
+    <!-- ⑭ NEWSLETTER -->
+    <section class="section-card reveal" style="border-color:rgba(52,211,153,0.2);background:rgba(52,211,153,0.04);">
+      <p style="font-size:11px;color:#a09080;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:8px;">Newsletter</p>
+      <p style="font-size:14px;color:#f5e9d0;margin-bottom:16px;">ENFJ의 성장 이야기를 매주 받아보세요. 리더십, 공감, 그리고 연결에 관한 인사이트.</p>
+      <div style="display:flex;gap:8px;">
+        <input type="email" id="newsletterEmail" class="form-input" placeholder="your@email.com" style="margin-bottom:0;flex:1;" />
+        <button onclick="handleNewsletter()" class="btn-submit" style="width:auto;padding:12px 18px;white-space:nowrap;">구독하기</button>
+      </div>
+      <p id="newsletterMsg" style="font-size:12px;margin-top:8px;color:#34d399;display:none;">✓ 구독 완료! 함께 성장해요 🌱</p>
+    </section>
+
+    <!-- ⑮ CONTACT -->
+    <section class="section-card reveal">
+      <p style="font-size:11px;color:#a09080;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:16px;">Contact</p>
+      <input type="text" id="contactName" class="form-input" placeholder="이름 (Name)" />
+      <input type="email" id="contactEmail" class="form-input" placeholder="이메일 (Email)" />
+      <select id="contactTopic" class="form-input">
+        <option value="">문의 유형 선택</option>
+        <option value="workshop">워크숍 / 강연 요청</option>
+        <option value="mentoring">멘토링 신청</option>
+        <option value="collab">콜라보레이션 제안</option>
+        <option value="media">미디어 인터뷰</option>
+        <option value="etc">기타 문의</option>
+      </select>
+      <textarea id="contactMessage" class="form-input" rows="4" placeholder="메시지를 입력해주세요…" style="resize:none;"></textarea>
+      <button onclick="handleContact()" class="btn-submit">메시지 보내기 ✦</button>
+      <p id="contactMsg" style="font-size:12px;margin-top:8px;color:#34d399;text-align:center;display:none;">✓ 메시지가 전송되었습니다. 곧 연락드릴게요!</p>
+    </section>
+
+    <!-- ⑯ FOOTER -->
+    <footer class="reveal" style="text-align:center;padding:20px 0 40px;">
+      <div class="gold-divider" style="margin-bottom:20px;"></div>
+      <div style="margin-bottom:14px;">
+        <span class="tag" style="border-color:#f59e0b44;color:#fde68a;background:rgba(245,158,11,0.08);">#ENFJ</span>
+        <span class="tag" style="border-color:#fb718544;color:#fda4af;background:rgba(251,113,133,0.08);">#주인공형</span>
+        <span class="tag" style="border-color:#38bdf844;color:#7dd3fc;background:rgba(56,189,248,0.08);">#리더십</span>
+        <span class="tag" style="border-color:#34d39944;color:#6ee7b7;background:rgba(52,211,153,0.08);">#공감</span>
+        <span class="tag" style="border-color:#a78bfa44;color:#c4b5fd;background:rgba(167,139,250,0.08);">#MBTI</span>
+      </div>
+      <p style="font-size:13px;color:#a09080;margin-bottom:8px;font-style:italic;">"세상을 더 좋은 곳으로 만드는 것, 그것이 주인공의 사명입니다."</p>
+      <a href="https://enfj.kr" style="font-size:16px;color:#f59e0b;font-weight:700;text-decoration:none;letter-spacing:0.1em;font-family:'Cinzel',serif;">enfj.kr</a>
+      <p style="font-size:10px;color:#6b5e4e;margin-top:10px;">© 2025 enfj.kr · Built with ❤️ for Protagonists</p>
+    </footer>
+
+  </main>
+
+  <script>
+    // ── Particles ──────────────────────────────────────────────
+    (function createParticles() {
+      const layer = document.getElementById('particle-layer');
+      const colors = ['#f59e0b','#fb7185','#38bdf8','#34d399','#fbbf24','#a78bfa','#fde68a'];
+      for (let i = 0; i < 48; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random() * 5 + 2;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        p.style.cssText = `
+          left:${Math.random()*100}%;
+          bottom:0;
+          width:${size}px; height:${size}px;
+          background:${color};
+          --dur:${6+Math.random()*10}s;
+          --delay:${Math.random()*10}s;
+          box-shadow:0 0 ${size*2}px ${color};
+        `;
+        layer.appendChild(p);
+      }
+    })();
+
+    // ── Scroll Reveal ──────────────────────────────────────────
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          // Animate progress bars
+          e.target.querySelectorAll('.progress-fill[data-width]').forEach(bar => {
+            setTimeout(() => { bar.style.width = bar.dataset.width + '%'; }, 200);
+          });
+          // Animate progress percentage labels
+          e.target.querySelectorAll('[data-target]').forEach(el => {
+            const target = parseInt(el.dataset.target);
+            let current = 0;
+            const step = () => {
+              current += 2;
+              if (current >= target) { el.textContent = target + '%'; return; }
+              el.textContent = current + '%';
+              setTimeout(step, 20);
+            };
+            setTimeout(step, 200);
+          });
+          // Animate influence meter
+          if (e.target.querySelector('#influenceMeter')) {
+            const segs = e.target.querySelectorAll('.influence-segment');
+            segs.forEach((seg, i) => {
+              setTimeout(() => seg.classList.add('lit'), 200 + i * 120);
+            });
+          }
+        }
+      });
+    }, { threshold: 0.15 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // ── Carousel ───────────────────────────────────────────────
+    let carouselIndex = 0;
+    const totalSlides = 5;
+    const track = document.getElementById('carouselTrack');
+    const dots = document.querySelectorAll('.carousel-dot');
+
+    function goToSlide(n) {
+      carouselIndex = (n + totalSlides) % totalSlides;
+      track.style.transform = `translateX(-${carouselIndex * 100}%)`;
+      dots.forEach((d, i) => d.classList.toggle('active', i === carouselIndex));
+    }
+
+    document.getElementById('carouselPrev').addEventListener('click', () => goToSlide(carouselIndex - 1));
+    document.getElementById('carouselNext').addEventListener('click', () => goToSlide(carouselIndex + 1));
+    dots.forEach(d => d.addEventListener('click', () => goToSlide(+d.dataset.index)));
+
+    // Touch support
+    let touchStartX = 0;
+    track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, {passive:true});
+    track.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 40) goToSlide(carouselIndex + (dx < 0 ? 1 : -1));
+    });
+
+    // Keyboard
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') goToSlide(carouselIndex - 1);
+      if (e.key === 'ArrowRight') goToSlide(carouselIndex + 1);
+    });
+
+    // Auto-play
+    let carouselTimer = setInterval(() => goToSlide(carouselIndex + 1), 5000);
+    track.parentElement.addEventListener('mouseenter', () => clearInterval(carouselTimer));
+    track.parentElement.addEventListener('mouseleave', () => {
+      clearInterval(carouselTimer);
+      carouselTimer = setInterval(() => goToSlide(carouselIndex + 1), 5000);
+    });
+
+    // ── Music Player ───────────────────────────────────────────
+    let isPlaying = false;
+    let musicInterval = null;
+    let progress = 0;
+    let currentTrackIndex = 0;
+
+    const tracks = [
+      { title: 'Protagonist Theme', artist: 'ENFJ Orchestra' },
+      { title: 'Empathy Waves',     artist: 'Heart Strings'  },
+      { title: 'Rise Together',     artist: 'Vision Choir'   }
+    ];
+
+    function toggleMusic() {
+      isPlaying = !isPlaying;
+      const vinyl = document.getElementById('vinyl');
+      const btn   = document.getElementById('playBtn');
+      if (isPlaying) {
+        vinyl.classList.add('playing');
+        btn.textContent = '⏸';
+        musicInterval = setInterval(() => {
+          progress = (progress + 0.044) % 100;
+          document.getElementById('musicProgress').style.width = progress + '%';
+          const totalSec = 225;
+          const cur = Math.floor(progress / 100 * totalSec);
+          document.getElementById('currentTime').textContent =
+            Math.floor(cur / 60) + ':' + String(cur % 60).padStart(2, '0');
+        }, 100);
+      } else {
+        vinyl.classList.remove('playing');
+        btn.textContent = '▶';
+        clearInterval(musicInterval);
+      }
+    }
+
+    function selectTrack(idx, title, artist) {
+      currentTrackIndex = idx;
+      progress = 0;
+      document.getElementById('trackTitle').textContent = title;
+      document.getElementById('trackArtist').textContent = artist;
+      document.getElementById('musicProgress').style.width = '0%';
+      document.getElementById('currentTime').textContent = '0:00';
+      document.querySelectorAll('.track-item').forEach((item, i) => {
+        item.classList.toggle('active', i === idx);
+      });
+      if (!isPlaying) toggleMusic();
+    }
+
+    // ── Scroll-to-top button ───────────────────────────────────
+    const scrollTopBtn = document.getElementById('scrollTop');
+    window.addEventListener('scroll', () => {
+      scrollTopBtn.classList.toggle('show', window.scrollY > 400);
+    });
+
+    // ── Newsletter ─────────────────────────────────────────────
+    function handleNewsletter() {
+      const email = document.getElementById('newsletterEmail').value;
+      const msg   = document.getElementById('newsletterMsg');
+      if (!email || !email.includes('@')) {
+        msg.style.color = '#f43f5e';
+        msg.textContent = '✗ 올바른 이메일 주소를 입력해주세요.';
+        msg.style.display = 'block';
+        return;
+      }
+      msg.style.color = '#34d399';
+      msg.textContent = '✓ 구독 완료! 함께 성장해요 🌱';
+      msg.style.display = 'block';
+      document.getElementById('newsletterEmail').value = '';
+    }
+
+    // ── Contact Form ───────────────────────────────────────────
+    function handleContact() {
+      const name    = document.getElementById('contactName').value;
+      const email   = document.getElementById('contactEmail').value;
+      const message = document.getElementById('contactMessage').value;
+      const msg     = document.getElementById('contactMsg');
+      if (!name || !email || !message) {
+        msg.style.color = '#f43f5e';
+        msg.textContent = '✗ 이름, 이메일, 메시지를 모두 입력해주세요.';
+        msg.style.display = 'block';
+        return;
+      }
+      if (!email.includes('@')) {
+        msg.style.color = '#f43f5e';
+        msg.textContent = '✗ 올바른 이메일 주소를 입력해주세요.';
+        msg.style.display = 'block';
+        return;
+      }
+      msg.style.color = '#34d399';
+      msg.textContent = '✓ 메시지가 전송되었습니다. 곧 연락드릴게요!';
+      msg.style.display = 'block';
+      ['contactName','contactEmail','contactTopic','contactMessage'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+    }
+  </script>
+</body>
+</html>
